@@ -17,3 +17,4 @@
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
+- 2026-03-24: Initial Next.js 16 + Tailwind CSS v4 setup. Cleaned boilerplate, stripped default styles and SVGs.
