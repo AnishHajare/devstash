@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Plus, Search } from "lucide-react";
 
 export default function DashboardPage() {
@@ -38,18 +39,10 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-52 shrink-0 border-r border-border p-4">
-          <h2 className="text-sm font-semibold text-muted-foreground">Sidebar</h2>
-        </aside>
-
-        {/* Main */}
-        <main className="flex-1 overflow-y-auto p-6">
-          <h2 className="text-sm font-semibold text-muted-foreground">Main</h2>
-        </main>
-      </div>
+      {/* Body: sidebar + main */}
+      <DashboardShell>
+        <h2 className="text-sm font-semibold text-muted-foreground">Main</h2>
+      </DashboardShell>
     </div>
   );
 }
