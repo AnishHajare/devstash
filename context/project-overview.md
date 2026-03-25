@@ -374,6 +374,11 @@ Set up the foundation for Pro (Stripe integration, `isPro` flag, feature gates),
 
 **Design references:** Notion, Linear, Raycast
 
+### Screenshots
+Refere to the Screenshots below as a base for the dashboard UI. It does not have to exact use it as a reference:
+- @context/screenshots/dashboard-ui-drawer.png
+- context/screenshots/dashboard-ui-main.png
+
 ### Layout
 
 ```
