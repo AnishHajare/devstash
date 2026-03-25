@@ -3,8 +3,31 @@ import { Input } from "@/components/ui/input";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { DashboardMain } from "@/components/dashboard/dashboard-main";
 import { Plus, Search } from "lucide-react";
+import {
+  getCollectionsForUser,
+  getCollectionStats,
+} from "@/lib/db/collections";
+import { prisma } from "@/lib/prisma";
 
-export default function DashboardPage() {
+// Hardcoded demo user until auth is set up
+async function getDemoUserId() {
+  const user = await prisma.user.findFirst({
+    where: { email: "demo@devstash.io" },
+    select: { id: true },
+  });
+  return user?.id;
+}
+
+export default async function DashboardPage() {
+  const userId = await getDemoUserId();
+
+  const [collections, stats] = userId
+    ? await Promise.all([
+        getCollectionsForUser(userId),
+        getCollectionStats(userId),
+      ])
+    : [[], { totalCollections: 0, favoriteCollections: 0 }];
+
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
       {/* Top Bar */}
@@ -42,7 +65,7 @@ export default function DashboardPage() {
 
       {/* Body: sidebar + main */}
       <DashboardShell>
-        <DashboardMain />
+        <DashboardMain collections={collections} collectionStats={stats} />
       </DashboardShell>
     </div>
   );

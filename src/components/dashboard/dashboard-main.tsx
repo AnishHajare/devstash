@@ -18,10 +18,10 @@ import {
 } from "lucide-react";
 import {
   mockItems,
-  mockCollections,
   mockItemTypes,
   mockItemTypeCounts,
 } from "@/lib/mock-data";
+import type { CollectionWithMeta } from "@/lib/db/collections";
 
 // ── Icon map (shared with sidebar) ──────────────────────────
 
@@ -48,16 +48,25 @@ const totalItems = Object.values(mockItemTypeCounts).reduce(
   (a, b) => a + b,
   0
 );
-const totalCollections = mockCollections.length;
 const favoriteItems = mockItems.filter((i) => i.isFavorite).length;
-const favoriteCollections = mockCollections.filter((c) => c.isFavorite).length;
 
 const pinnedItems = mockItems.filter((i) => i.isPinned);
 const recentItems = mockItems.slice(0, 10);
 
 // ── Main component ──────────────────────────────────────────
 
-export function DashboardMain() {
+type DashboardMainProps = {
+  collections: CollectionWithMeta[];
+  collectionStats: {
+    totalCollections: number;
+    favoriteCollections: number;
+  };
+};
+
+export function DashboardMain({
+  collections,
+  collectionStats,
+}: DashboardMainProps) {
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -77,7 +86,7 @@ export function DashboardMain() {
         />
         <StatCard
           label="Collections"
-          value={totalCollections}
+          value={collectionStats.totalCollections}
           icon={<FolderOpen className="h-4 w-4 text-emerald-400" />}
         />
         <StatCard
@@ -87,7 +96,7 @@ export function DashboardMain() {
         />
         <StatCard
           label="Favorite Collections"
-          value={favoriteCollections}
+          value={collectionStats.favoriteCollections}
           icon={<Star className="h-4 w-4 text-yellow-400" />}
         />
       </div>
@@ -104,7 +113,7 @@ export function DashboardMain() {
           </Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {mockCollections.map((col) => (
+          {collections.map((col) => (
             <CollectionCard key={col.id} collection={col} />
           ))}
         </div>
@@ -167,12 +176,20 @@ function StatCard({
 function CollectionCard({
   collection,
 }: {
-  collection: (typeof mockCollections)[number];
+  collection: CollectionWithMeta;
 }) {
+  // Border color from the most-used content type
+  const dominantColor = collection.types[0]?.color;
+
   return (
     <Link
       href={`/collections/${collection.id}`}
-      className="group relative rounded-lg border border-border bg-card p-4 transition-colors hover:bg-muted/50"
+      className="group relative rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50"
+      style={{
+        borderColor: dominantColor
+          ? `${dominantColor}40`
+          : undefined,
+      }}
     >
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
@@ -185,7 +202,7 @@ function CollectionCard({
             )}
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {collection.itemCount} items
+            {collection.itemCount} {collection.itemCount === 1 ? "item" : "items"}
           </p>
         </div>
         <button
@@ -200,11 +217,21 @@ function CollectionCard({
           {collection.description}
         </p>
       )}
-      {/* Type icon badges placeholder */}
-      <div className="mt-3 flex items-center gap-1.5 text-muted-foreground/60">
-        <FolderOpen className="h-3 w-3" />
-        <Code className="h-3 w-3" />
-      </div>
+      {/* Type icon badges */}
+      {collection.types.length > 0 && (
+        <div className="mt-3 flex items-center gap-1.5">
+          {collection.types.map((type) => {
+            const Icon = iconMap[type.icon];
+            return Icon ? (
+              <Icon
+                key={type.name}
+                className="h-3 w-3"
+                style={{ color: type.color }}
+              />
+            ) : null;
+          })}
+        </div>
+      )}
     </Link>
   );
 }
