@@ -7,6 +7,11 @@ import {
   getCollectionsForUser,
   getCollectionStats,
 } from "@/lib/db/collections";
+import {
+  getPinnedItems,
+  getRecentItems,
+  getItemStats,
+} from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
 // Hardcoded demo user until auth is set up
@@ -21,12 +26,22 @@ async function getDemoUserId() {
 export default async function DashboardPage() {
   const userId = await getDemoUserId();
 
-  const [collections, stats] = userId
-    ? await Promise.all([
-        getCollectionsForUser(userId),
-        getCollectionStats(userId),
-      ])
-    : [[], { totalCollections: 0, favoriteCollections: 0 }];
+  const [collections, collectionStats, pinnedItems, recentItems, itemStats] =
+    userId
+      ? await Promise.all([
+          getCollectionsForUser(userId),
+          getCollectionStats(userId),
+          getPinnedItems(userId),
+          getRecentItems(userId),
+          getItemStats(userId),
+        ])
+      : [
+          [],
+          { totalCollections: 0, favoriteCollections: 0 },
+          [],
+          [],
+          { totalItems: 0, favoriteItems: 0 },
+        ];
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
@@ -65,7 +80,13 @@ export default async function DashboardPage() {
 
       {/* Body: sidebar + main */}
       <DashboardShell>
-        <DashboardMain collections={collections} collectionStats={stats} />
+        <DashboardMain
+          collections={collections}
+          collectionStats={collectionStats}
+          pinnedItems={pinnedItems}
+          recentItems={recentItems}
+          itemStats={itemStats}
+        />
       </DashboardShell>
     </div>
   );

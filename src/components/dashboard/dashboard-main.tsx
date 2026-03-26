@@ -16,12 +16,8 @@ import {
   Package,
   Heart,
 } from "lucide-react";
-import {
-  mockItems,
-  mockItemTypes,
-  mockItemTypeCounts,
-} from "@/lib/mock-data";
 import type { CollectionWithMeta } from "@/lib/db/collections";
+import type { ItemWithType } from "@/lib/db/items";
 
 // ── Icon map (shared with sidebar) ──────────────────────────
 
@@ -38,21 +34,6 @@ const iconMap: Record<
   Link: LinkIcon,
 };
 
-// ── Helpers ─────────────────────────────────────────────────
-
-function getItemType(typeId: string) {
-  return mockItemTypes.find((t) => t.id === typeId);
-}
-
-const totalItems = Object.values(mockItemTypeCounts).reduce(
-  (a, b) => a + b,
-  0
-);
-const favoriteItems = mockItems.filter((i) => i.isFavorite).length;
-
-const pinnedItems = mockItems.filter((i) => i.isPinned);
-const recentItems = mockItems.slice(0, 10);
-
 // ── Main component ──────────────────────────────────────────
 
 type DashboardMainProps = {
@@ -61,11 +42,20 @@ type DashboardMainProps = {
     totalCollections: number;
     favoriteCollections: number;
   };
+  pinnedItems: ItemWithType[];
+  recentItems: ItemWithType[];
+  itemStats: {
+    totalItems: number;
+    favoriteItems: number;
+  };
 };
 
 export function DashboardMain({
   collections,
   collectionStats,
+  pinnedItems,
+  recentItems,
+  itemStats,
 }: DashboardMainProps) {
   return (
     <div className="space-y-8">
@@ -81,7 +71,7 @@ export function DashboardMain({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label="Total Items"
-          value={totalItems}
+          value={itemStats.totalItems}
           icon={<Package className="h-4 w-4 text-blue-400" />}
         />
         <StatCard
@@ -91,7 +81,7 @@ export function DashboardMain({
         />
         <StatCard
           label="Favorite Items"
-          value={favoriteItems}
+          value={itemStats.favoriteItems}
           icon={<Heart className="h-4 w-4 text-rose-400" />}
         />
         <StatCard
@@ -238,21 +228,20 @@ function CollectionCard({
 
 // ── Item Row ────────────────────────────────────────────────
 
-function ItemRow({ item }: { item: (typeof mockItems)[number] }) {
-  const type = getItemType(item.itemTypeId);
-  const Icon = type ? iconMap[type.icon] : null;
+function ItemRow({ item }: { item: ItemWithType }) {
+  const Icon = iconMap[item.itemType.icon];
 
   return (
     <div className="group flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-muted/50">
       {/* Type icon */}
       <div
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
-        style={{ backgroundColor: type ? `${type.color}15` : undefined }}
+        style={{ backgroundColor: `${item.itemType.color}15` }}
       >
         {Icon && (
           <Icon
             className="h-4 w-4"
-            style={{ color: type?.color }}
+            style={{ color: item.itemType.color }}
           />
         )}
       </div>
@@ -276,14 +265,14 @@ function ItemRow({ item }: { item: (typeof mockItems)[number] }) {
       </div>
 
       {/* Tags */}
-      {item.tags && item.tags.length > 0 && (
+      {item.tags.length > 0 && (
         <div className="hidden sm:flex items-center gap-1">
           {item.tags.slice(0, 3).map((tag) => (
             <span
-              key={tag}
+              key={tag.id}
               className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground"
             >
-              {tag}
+              {tag.name}
             </span>
           ))}
         </div>
