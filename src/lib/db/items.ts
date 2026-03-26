@@ -79,3 +79,69 @@ export async function getItemStats(userId: string) {
 
   return { totalItems, favoriteItems };
 }
+
+export type ItemTypeWithCount = {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  isSystem: boolean;
+  count: number;
+};
+
+/**
+ * Fetch all item types (system + user-created) with per-type item counts.
+ */
+export async function getItemTypesWithCounts(
+  userId: string
+): Promise<ItemTypeWithCount[]> {
+  const types = await prisma.itemType.findMany({
+    where: {
+      OR: [{ isSystem: true }, { userId }],
+    },
+    include: {
+      _count: { select: { items: { where: { userId } } } },
+    },
+  });
+
+  const displayOrder: Record<string, number> = {
+    snippet: 0,
+    prompt: 1,
+    command: 2,
+    note: 3,
+    file: 4,
+    image: 5,
+    link: 6,
+  };
+
+  return types
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      icon: t.icon,
+      color: t.color,
+      isSystem: t.isSystem,
+      count: t._count.items,
+    }))
+    .sort((a, b) => {
+      const orderA = displayOrder[a.name.toLowerCase()] ?? 99;
+      const orderB = displayOrder[b.name.toLowerCase()] ?? 99;
+      return orderA - orderB;
+    });
+}
+
+export type SidebarUser = {
+  name: string | null;
+  email: string | null;
+};
+
+/**
+ * Fetch minimal user info for the sidebar.
+ */
+export async function getSidebarUser(userId: string): Promise<SidebarUser> {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { name: true, email: true },
+  });
+  return user;
+}

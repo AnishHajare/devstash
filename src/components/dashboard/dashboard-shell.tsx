@@ -9,8 +9,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { SidebarContent } from "./sidebar-content";
+import type { SidebarData } from "./sidebar-content";
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+type DashboardShellProps = {
+  sidebarData: SidebarData;
+  children: React.ReactNode;
+};
+
+export function DashboardShell({ sidebarData, children }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -36,7 +42,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <PanelLeft className="h-4 w-4" />
           </Button>
         </div>
-        <SidebarContent collapsed={collapsed} />
+        <SidebarContent collapsed={collapsed} data={sidebarData} />
       </aside>
 
       {/* Mobile drawer toggle — shown in the main area on small screens */}
@@ -55,7 +61,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-64 p-0" showCloseButton>
           <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SidebarContent collapsed={false} />
+          <SidebarContent collapsed={false} data={sidebarData} />
         </SheetContent>
       </Sheet>
 

@@ -11,6 +11,8 @@ import {
   getPinnedItems,
   getRecentItems,
   getItemStats,
+  getItemTypesWithCounts,
+  getSidebarUser,
 } from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
@@ -26,7 +28,7 @@ async function getDemoUserId() {
 export default async function DashboardPage() {
   const userId = await getDemoUserId();
 
-  const [collections, collectionStats, pinnedItems, recentItems, itemStats] =
+  const [collections, collectionStats, pinnedItems, recentItems, itemStats, itemTypes, sidebarUser] =
     userId
       ? await Promise.all([
           getCollectionsForUser(userId),
@@ -34,6 +36,8 @@ export default async function DashboardPage() {
           getPinnedItems(userId),
           getRecentItems(userId),
           getItemStats(userId),
+          getItemTypesWithCounts(userId),
+          getSidebarUser(userId),
         ])
       : [
           [],
@@ -41,6 +45,8 @@ export default async function DashboardPage() {
           [],
           [],
           { totalItems: 0, favoriteItems: 0 },
+          [],
+          { name: null, email: null },
         ];
 
   return (
@@ -79,7 +85,7 @@ export default async function DashboardPage() {
       </header>
 
       {/* Body: sidebar + main */}
-      <DashboardShell>
+      <DashboardShell sidebarData={{ itemTypes, collections, user: sidebarUser }}>
         <DashboardMain
           collections={collections}
           collectionStats={collectionStats}

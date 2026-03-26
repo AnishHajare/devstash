@@ -14,15 +14,12 @@ import {
   FolderOpen,
   Settings,
   ChevronRight,
+  Circle,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import {
-  mockItemTypes,
-  mockItemTypeCounts,
-  mockCollections,
-  mockUser,
-} from "@/lib/mock-data";
+import type { ItemTypeWithCount, SidebarUser } from "@/lib/db/items";
+import type { CollectionWithMeta } from "@/lib/db/collections";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   Code,
@@ -34,18 +31,22 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; style?: 
   Link: LinkIcon,
 };
 
-const countMap = mockItemTypeCounts as Record<string, number>;
+export type SidebarData = {
+  itemTypes: ItemTypeWithCount[];
+  collections: CollectionWithMeta[];
+  user: SidebarUser;
+};
 
-const favoriteCollections = mockCollections.filter((c) => c.isFavorite);
-const allCollections = mockCollections.filter((c) => !c.isFavorite);
-
-export function SidebarContent({ collapsed }: { collapsed: boolean }) {
+export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: SidebarData }) {
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [allOpen, setAllOpen] = useState(true);
 
   if (collapsed) {
-    return <CollapsedSidebar />;
+    return <CollapsedSidebar data={data} />;
   }
+
+  const favoriteCollections = data.collections.filter((c) => c.isFavorite);
+  const recentCollections = data.collections.filter((c) => !c.isFavorite);
 
   return (
     <div className="flex h-full flex-col">
@@ -53,9 +54,8 @@ export function SidebarContent({ collapsed }: { collapsed: boolean }) {
       <div className="flex-1 overflow-y-auto px-3 py-4">
         <SectionLabel>Types</SectionLabel>
         <nav className="mt-1 space-y-0.5">
-          {mockItemTypes.map((type) => {
+          {data.itemTypes.map((type) => {
             const Icon = iconMap[type.icon];
-            const count = countMap[type.name.toLowerCase()] ?? 0;
             return (
               <Link
                 key={type.id}
@@ -67,7 +67,7 @@ export function SidebarContent({ collapsed }: { collapsed: boolean }) {
                 )}
                 <span className="truncate">{type.name}s</span>
                 <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
-                  {count}
+                  {type.count}
                 </span>
               </Link>
             );
@@ -80,50 +80,70 @@ export function SidebarContent({ collapsed }: { collapsed: boolean }) {
         <SectionLabel>Collections</SectionLabel>
 
         {/* Favorites */}
-        <CollapsibleSection
-          label="Favorites"
-          open={favoritesOpen}
-          onToggle={() => setFavoritesOpen(!favoritesOpen)}
-        >
-          <nav className="space-y-0.5">
-            {favoriteCollections.map((col) => (
-              <Link
-                key={col.id}
-                href={`/collections/${col.id}`}
-                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-500 text-yellow-500" />
-                <span className="truncate">{col.name}</span>
-                <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
-                  {col.itemCount}
-                </span>
-              </Link>
-            ))}
-          </nav>
-        </CollapsibleSection>
+        {favoriteCollections.length > 0 && (
+          <CollapsibleSection
+            label="Favorites"
+            open={favoritesOpen}
+            onToggle={() => setFavoritesOpen(!favoritesOpen)}
+          >
+            <nav className="space-y-0.5">
+              {favoriteCollections.map((col) => (
+                <Link
+                  key={col.id}
+                  href={`/collections/${col.id}`}
+                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-500 text-yellow-500" />
+                  <span className="truncate">{col.name}</span>
+                  <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
+                    {col.itemCount}
+                  </span>
+                </Link>
+              ))}
+            </nav>
+          </CollapsibleSection>
+        )}
 
-        {/* All Collections */}
+        {/* Recent Collections */}
         <CollapsibleSection
-          label="All Collections"
+          label="Recent"
           open={allOpen}
           onToggle={() => setAllOpen(!allOpen)}
         >
           <nav className="space-y-0.5">
-            {allCollections.map((col) => (
-              <Link
-                key={col.id}
-                href={`/collections/${col.id}`}
-                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <FolderOpen className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{col.name}</span>
-                <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
-                  {col.itemCount}
-                </span>
-              </Link>
-            ))}
+            {recentCollections.map((col) => {
+              const dominantColor = col.types[0]?.color;
+              return (
+                <Link
+                  key={col.id}
+                  href={`/collections/${col.id}`}
+                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  {dominantColor ? (
+                    <Circle
+                      className="h-3 w-3 shrink-0"
+                      style={{ color: dominantColor, fill: dominantColor }}
+                    />
+                  ) : (
+                    <FolderOpen className="h-3.5 w-3.5 shrink-0" />
+                  )}
+                  <span className="truncate">{col.name}</span>
+                  <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
+                    {col.itemCount}
+                  </span>
+                </Link>
+              );
+            })}
           </nav>
         </CollapsibleSection>
+
+        {/* View all collections link */}
+        <Link
+          href="/collections"
+          className="mt-2 flex items-center justify-center rounded-md px-2 py-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground"
+        >
+          View all collections
+        </Link>
       </div>
 
       {/* User area */}
@@ -131,7 +151,7 @@ export function SidebarContent({ collapsed }: { collapsed: boolean }) {
         <div className="flex items-center gap-2.5">
           <Avatar size="sm">
             <AvatarFallback>
-              {mockUser.name
+              {data.user.name
                 ?.split(" ")
                 .map((n) => n[0])
                 .join("") ?? "?"}
@@ -139,10 +159,10 @@ export function SidebarContent({ collapsed }: { collapsed: boolean }) {
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium leading-tight">
-              {mockUser.name}
+              {data.user.name}
             </p>
             <p className="truncate text-xs text-muted-foreground">
-              {mockUser.email}
+              {data.user.email}
             </p>
           </div>
           <button className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
@@ -154,11 +174,11 @@ export function SidebarContent({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-function CollapsedSidebar() {
+function CollapsedSidebar({ data }: { data: SidebarData }) {
   return (
     <div className="flex h-full flex-col items-center">
       <div className="flex-1 overflow-y-auto py-4 space-y-1">
-        {mockItemTypes.map((type) => {
+        {data.itemTypes.map((type) => {
           const Icon = iconMap[type.icon];
           return (
             <Link
@@ -175,7 +195,7 @@ function CollapsedSidebar() {
       <div className="shrink-0 border-t border-border py-3">
         <Avatar size="sm">
           <AvatarFallback>
-            {mockUser.name
+            {data.user.name
               ?.split(" ")
               .map((n) => n[0])
               .join("") ?? "?"}
