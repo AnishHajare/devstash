@@ -2,9 +2,19 @@
 
 ## Status
 
-
+In Progress
 
 ## Goals
+
+Address low-risk quick wins identified by the code-scanner audit to improve code quality, performance, and maintainability.
+
+## Quick Wins
+
+- [x] Extract shared `iconMap` from `dashboard-main.tsx` and `sidebar-content.tsx` into `src/lib/icon-map.ts`
+- [x] Use `findUnique` instead of `findFirst` in `getDemoUserId` (`src/app/dashboard/page.tsx`)
+- [x] Add explicit `DATABASE_URL` guard in `src/lib/prisma.ts` instead of non-null assertion
+- [x] Add `aria-label="Collection options"` to overflow menu button in `dashboard-main.tsx`
+- [x] Extract duplicated avatar initials logic in `sidebar-content.tsx` into a utility
 
 ## Notes
 

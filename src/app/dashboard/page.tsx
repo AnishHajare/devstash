@@ -18,7 +18,7 @@ import { prisma } from "@/lib/prisma";
 
 // Hardcoded demo user until auth is set up
 async function getDemoUserId() {
-  const user = await prisma.user.findFirst({
+  const user = await prisma.user.findUnique({
     where: { email: "demo@devstash.io" },
     select: { id: true },
   });

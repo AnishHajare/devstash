@@ -3,40 +3,28 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link as LinkIcon,
   Star,
   FolderOpen,
   Settings,
   ChevronRight,
   Circle,
 } from "lucide-react";
+import { iconMap } from "@/lib/icon-map";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { ItemTypeWithCount, SidebarUser } from "@/lib/db/items";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 
-const iconMap: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link: LinkIcon,
-};
-
 export type SidebarData = {
   itemTypes: ItemTypeWithCount[];
   collections: CollectionWithMeta[];
   user: SidebarUser;
 };
+
+function getInitials(name: string | null | undefined): string {
+  return name?.split(" ").map((n) => n[0]).join("") ?? "?";
+}
 
 export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: SidebarData }) {
   const [favoritesOpen, setFavoritesOpen] = useState(true);
@@ -158,10 +146,7 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
         <div className="flex items-center gap-2.5">
           <Avatar size="sm">
             <AvatarFallback>
-              {data.user.name
-                ?.split(" ")
-                .map((n) => n[0])
-                .join("") ?? "?"}
+              {getInitials(data.user.name)}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">

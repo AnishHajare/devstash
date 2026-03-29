@@ -2,13 +2,6 @@
 
 import Link from "next/link";
 import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link as LinkIcon,
   Star,
   FolderOpen,
   Pin,
@@ -16,23 +9,9 @@ import {
   Package,
   Heart,
 } from "lucide-react";
+import { iconMap } from "@/lib/icon-map";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 import type { ItemWithType } from "@/lib/db/items";
-
-// ── Icon map (shared with sidebar) ──────────────────────────
-
-const iconMap: Record<
-  string,
-  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
-> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link: LinkIcon,
-};
 
 // ── Main component ──────────────────────────────────────────
 
@@ -196,6 +175,7 @@ function CollectionCard({
           </p>
         </div>
         <button
+          aria-label="Collection options"
           className="shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
           onClick={(e) => e.preventDefault()}
         >
