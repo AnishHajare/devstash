@@ -1,22 +1,12 @@
-# Current Feature: Sidebar Pro Badge
+# Current Feature
 
 ## Status
 
-In Progress
+
 
 ## Goals
 
-- Add a "Pro" badge next to the File and Image item types in the sidebar
-- Use shadcn/ui `Badge` component (install if needed)
-- Badge should be visually subtle — small, secondary/outline variant
-- Only show on item types where `isSystem` is true and name is "file" or "image"
-- Badge should not interfere with existing icon, label, and count layout
-
 ## Notes
-
-- Spec: context/features/sidebar-pro-badge-spec.md
-- Sidebar component: src/components/dashboard/sidebar-content.tsx
-- File and Image are Pro-only types per project-overview.md
 
 ## History
 
@@ -30,3 +20,4 @@ In Progress
 - 2026-03-25: Expanded seed script — added password field to User model, demo user (demo@devstash.io, hashed password via bcryptjs), 5 collections (React Patterns, AI Workflows, DevOps, Terminal Commands, Design Resources), 21 items (snippets, prompts, commands, links), tags, favorites, and pinned items.
 - 2026-03-25: Completed Dashboard Collections — replaced mock collection data with real Prisma queries (src/lib/db/collections.ts), async server component fetching, collection card border color from dominant type, type icons per collection, real collection stats.
 - 2026-03-26: Completed Stats & Sidebar — replaced all mock data in sidebar with real Prisma queries (getItemTypesWithCounts, getSidebarUser), item types with counts and custom display order, favorite collections with stars, recent collections with colored circles from dominant type, "View all collections" link, real user info in avatar area. Mock data no longer imported anywhere.
+- 2026-03-29: Completed Sidebar Pro Badge — added PRO badge (shadcn/ui Badge, outline variant) next to File and Image types in sidebar, installed badge component, badge only shown for system pro-only types.
