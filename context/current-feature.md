@@ -2,19 +2,9 @@
 
 ## Status
 
-In Progress
+
 
 ## Goals
-
-Address low-risk quick wins identified by the code-scanner audit to improve code quality, performance, and maintainability.
-
-## Quick Wins
-
-- [x] Extract shared `iconMap` from `dashboard-main.tsx` and `sidebar-content.tsx` into `src/lib/icon-map.ts`
-- [x] Use `findUnique` instead of `findFirst` in `getDemoUserId` (`src/app/dashboard/page.tsx`)
-- [x] Add explicit `DATABASE_URL` guard in `src/lib/prisma.ts` instead of non-null assertion
-- [x] Add `aria-label="Collection options"` to overflow menu button in `dashboard-main.tsx`
-- [x] Extract duplicated avatar initials logic in `sidebar-content.tsx` into a utility
 
 ## Notes
 
@@ -31,3 +21,4 @@ Address low-risk quick wins identified by the code-scanner audit to improve code
 - 2026-03-26: Completed Dashboard Items — replaced mock item data with real Prisma queries (src/lib/db/items.ts), pinned items, recent items, item stats, item type icons/colors from DB, tags from DB, pinned section hidden when empty.
 - 2026-03-26: Completed Stats & Sidebar — replaced all mock data in sidebar with real Prisma queries (getItemTypesWithCounts, getSidebarUser), item types with counts and custom display order, favorite collections with stars, recent collections with colored circles from dominant type, "View all collections" link, real user info in avatar area. Mock data no longer imported anywhere.
 - 2026-03-29: Completed Sidebar Pro Badge — added PRO badge (shadcn/ui Badge, outline variant) next to File and Image types in sidebar, installed badge component, badge only shown for system pro-only types.
+- 2026-03-29: Completed Audit Quick Wins — extracted shared iconMap to src/lib/icon-map.ts, used findUnique for demo user lookup, added DATABASE_URL env guard in prisma.ts, added aria-label to collection overflow button, extracted getInitials() utility in sidebar.
