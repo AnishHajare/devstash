@@ -17,6 +17,7 @@ import {
   Circle,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { ItemTypeWithCount, SidebarUser } from "@/lib/db/items";
 import type { CollectionWithMeta } from "@/lib/db/collections";
@@ -56,6 +57,7 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
         <nav className="mt-1 space-y-0.5">
           {data.itemTypes.map((type) => {
             const Icon = iconMap[type.icon];
+            const isProType = type.isSystem && (type.name === "File" || type.name === "Image");
             return (
               <Link
                 key={type.id}
@@ -66,7 +68,12 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
                   <Icon className="h-4 w-4 shrink-0" style={{ color: type.color }} />
                 )}
                 <span className="truncate">{type.name}s</span>
-                <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
+                {isProType && (
+                  <Badge variant="outline" className="ml-auto h-4 px-1 text-[10px] leading-none font-semibold tracking-wide text-zinc-400 border-zinc-400/50">
+                    PRO
+                  </Badge>
+                )}
+                <span className={`text-xs tabular-nums text-muted-foreground/60 ${!isProType ? "ml-auto" : ""}`}>
                   {type.count}
                 </span>
               </Link>
