@@ -1,22 +1,13 @@
-# Current Feature: Email Verification on Register
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- After registration, send a verification email via Resend with a unique token/link
-- User must click the verification link to activate their account
-- Unverified users cannot sign in (show clear error message)
-- Verification link sets `emailVerified` on the User model
-- Use the existing `VerificationToken` model in Prisma schema for token storage
-- Handle expired/invalid tokens gracefully with user-friendly error pages
-- Add a "resend verification email" option on the sign-in page when blocked
+<!-- Define what success looks like -->
 
 ## Notes
-- Using Resend as the email provider (RESEND_API_KEY already in .env)
-- The Prisma schema already has a `VerificationToken` model and `emailVerified` field on User
-- Only applies to email/password registration — GitHub OAuth users are auto-verified
-- NextAuth v5 is already configured with JWT session strategy and split config pattern
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -35,3 +26,4 @@ In Progress
 - 2026-03-31: Completed Auth Phase 1 — NextAuth v5 (beta) with Prisma adapter, GitHub OAuth provider, JWT session strategy, split auth config pattern, Next.js 16 proxy protecting /dashboard routes, session type extended with user.id.
 - 2026-03-31: Completed Auth Phase 2 — Credentials provider for email/password sign-in (split config pattern), registration API route at /api/auth/register with validation, fixed proxy.ts to use Next.js 16 named export convention.
 - 2026-03-31: Completed Auth Phase 3 — Custom sign-in page (/sign-in) with email/password and GitHub OAuth, register page (/register) with validation and success toast, sidebar user dropdown with avatar (image/initials), sign out, and profile link. Dashboard wired to real auth session.
+- 2026-03-31: Completed Email Verification — verification email via Resend on registration, token generation and storage using VerificationToken model, /verify-email page with token validation, unverified users blocked from sign-in with clear error, resend verification option on sign-in page, expired/invalid token handling, GitHub OAuth users auto-verified.
