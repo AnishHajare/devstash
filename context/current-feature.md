@@ -1,23 +1,12 @@
-# Current Feature: Auth UI — Sign In, Register & Sign Out
+# Current Feature
 
 ## Status
 
-In Progress
+
 
 ## Goals
 
-- Custom sign-in page at `/sign-in` with email/password fields, GitHub OAuth button, and link to register
-- Custom register page at `/register` with name, email, password, confirm password fields and validation
-- Sidebar bottom: user avatar (GitHub image or initials fallback), user name, dropdown with "Sign out"
-- Clicking avatar icon navigates to `/profile`
-- Reusable avatar component handling both image and initials cases
-
 ## Notes
-
-- Avatar logic: use GitHub `image` if available, otherwise generate initials from name (e.g., "Brad Traversy" → "BT")
-- Register form submits to existing `/api/auth/register` endpoint
-- Register redirects to sign-in on success
-- Form validation and error display on both pages
 
 ## History
 
@@ -35,3 +24,4 @@ In Progress
 - 2026-03-29: Completed Audit Quick Wins — extracted shared iconMap to src/lib/icon-map.ts, used findUnique for demo user lookup, added DATABASE_URL env guard in prisma.ts, added aria-label to collection overflow button, extracted getInitials() utility in sidebar.
 - 2026-03-31: Completed Auth Phase 1 — NextAuth v5 (beta) with Prisma adapter, GitHub OAuth provider, JWT session strategy, split auth config pattern, Next.js 16 proxy protecting /dashboard routes, session type extended with user.id.
 - 2026-03-31: Completed Auth Phase 2 — Credentials provider for email/password sign-in (split config pattern), registration API route at /api/auth/register with validation, fixed proxy.ts to use Next.js 16 named export convention.
+- 2026-03-31: Completed Auth Phase 3 — Custom sign-in page (/sign-in) with email/password and GitHub OAuth, register page (/register) with validation and success toast, sidebar user dropdown with avatar (image/initials), sign out, and profile link. Dashboard wired to real auth session.
