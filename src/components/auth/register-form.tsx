@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +17,7 @@ import {
 } from "@/components/ui/card";
 
 export function RegisterForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,6 +58,12 @@ export function RegisterForm() {
     if (!res.ok) {
       setError(data.error ?? "Something went wrong");
       setLoading(false);
+      return;
+    }
+
+    if (data.requireVerification === false) {
+      toast.success("Account created! You can now sign in.");
+      router.push("/sign-in");
       return;
     }
 

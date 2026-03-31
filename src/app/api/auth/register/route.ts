@@ -31,19 +31,30 @@ export async function POST(request: Request) {
 
   const hashedPassword = await hash(password, 12);
 
+  const requireVerification =
+    process.env.REQUIRE_EMAIL_VERIFICATION !== "false";
+
   await prisma.user.create({
     data: {
       name,
       email,
       password: hashedPassword,
+      emailVerified: requireVerification ? null : new Date(),
     },
   });
 
-  const token = await createVerificationToken(email);
-  await sendVerificationEmail(email, token);
+  if (requireVerification) {
+    const token = await createVerificationToken(email);
+    await sendVerificationEmail(email, token);
+  }
 
   return Response.json(
-    { message: "Check your email to verify your account." },
+    {
+      message: requireVerification
+        ? "Check your email to verify your account."
+        : "Account created successfully.",
+      requireVerification,
+    },
     { status: 201 }
   );
 }

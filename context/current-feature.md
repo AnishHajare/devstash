@@ -1,13 +1,20 @@
-# Current Feature
+# Current Feature: Email Verification Toggle
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
-<!-- Define what success looks like -->
+- Add a way to disable the entire email verification system with a single flag
+- When disabled: registration auto-verifies users (sets `emailVerified` immediately), sign-in skips the verification check
+- When enabled: existing verification flow works as-is (send email, block unverified users, etc.)
+- Use an env variable `REQUIRE_EMAIL_VERIFICATION=true|false` (default `true`)
+- Minimal code changes — single source of truth for the flag, checked in the right places
 
 ## Notes
-<!-- Additional context, constraints, or details -->
+- No custom domain linked to Resend yet, so only the Resend test email can receive verification emails
+- This flag is needed for development/testing — allows any email to register and sign in without verification
+- Should touch: registration route (skip sending email + auto-verify), auth config (skip unverified check), sign-in form (hide resend option)
+- Env var approach keeps it simple — no DB changes, no UI settings, just flip it in `.env`
 
 ## History
 
