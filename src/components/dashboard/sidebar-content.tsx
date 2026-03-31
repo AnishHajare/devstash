@@ -2,17 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import {
   Star,
   FolderOpen,
-  Settings,
+  LogOut,
   ChevronRight,
   Circle,
 } from "lucide-react";
 import { iconMap } from "@/lib/icon-map";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { ItemTypeWithCount, SidebarUser } from "@/lib/db/items";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 
@@ -143,24 +150,33 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
 
       {/* User area */}
       <div className="shrink-0 border-t border-border p-3">
-        <div className="flex items-center gap-2.5">
-          <Avatar size="sm">
-            <AvatarFallback>
-              {getInitials(data.user.name)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium leading-tight">
-              {data.user.name}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {data.user.email}
-            </p>
-          </div>
-          <button className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-            <Settings className="h-4 w-4" />
-          </button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md p-1 transition-colors hover:bg-muted">
+            <Avatar size="sm">
+              {data.user.image && <AvatarImage src={data.user.image} alt={data.user.name ?? "User"} />}
+              <AvatarFallback>
+                {getInitials(data.user.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1 text-left">
+              <p className="truncate text-sm font-medium leading-tight">
+                {data.user.name}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {data.user.email}
+              </p>
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-48">
+            <DropdownMenuItem render={<Link href="/profile" />}>
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut({ redirectTo: "/sign-in" })}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -185,14 +201,14 @@ function CollapsedSidebar({ data }: { data: SidebarData }) {
         })}
       </div>
       <div className="shrink-0 border-t border-border py-3">
-        <Avatar size="sm">
-          <AvatarFallback>
-            {data.user.name
-              ?.split(" ")
-              .map((n) => n[0])
-              .join("") ?? "?"}
-          </AvatarFallback>
-        </Avatar>
+        <Link href="/profile">
+          <Avatar size="sm">
+            {data.user.image && <AvatarImage src={data.user.image} alt={data.user.name ?? "User"} />}
+            <AvatarFallback>
+              {getInitials(data.user.name)}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
       </div>
     </div>
   );

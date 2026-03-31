@@ -133,6 +133,7 @@ export async function getItemTypesWithCounts(
 export type SidebarUser = {
   name: string | null;
   email: string | null;
+  image: string | null;
 };
 
 /**
@@ -141,7 +142,7 @@ export type SidebarUser = {
 export async function getSidebarUser(userId: string): Promise<SidebarUser> {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { name: true, email: true },
+    select: { name: true, email: true, image: true },
   });
   return user;
 }

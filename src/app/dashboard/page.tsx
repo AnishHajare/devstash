@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -14,19 +16,12 @@ import {
   getItemTypesWithCounts,
   getSidebarUser,
 } from "@/lib/db/items";
-import { prisma } from "@/lib/prisma";
-
-// Hardcoded demo user until auth is set up
-async function getDemoUserId() {
-  const user = await prisma.user.findUnique({
-    where: { email: "demo@devstash.io" },
-    select: { id: true },
-  });
-  return user?.id;
-}
 
 export default async function DashboardPage() {
-  const userId = await getDemoUserId();
+  const session = await auth();
+  if (!session?.user?.id) redirect("/sign-in");
+
+  const userId = session.user.id;
 
   const [collections, collectionStats, pinnedItems, recentItems, itemStats, itemTypes, sidebarUser] =
     userId
@@ -46,7 +41,7 @@ export default async function DashboardPage() {
           [],
           { totalItems: 0, favoriteItems: 0 },
           [],
-          { name: null, email: null },
+          { name: null, email: null, image: null },
         ];
 
   return (
