@@ -1,5 +1,7 @@
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { createVerificationToken } from "@/lib/auth/verification";
+import { sendVerificationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -37,8 +39,11 @@ export async function POST(request: Request) {
     },
   });
 
+  const token = await createVerificationToken(email);
+  await sendVerificationEmail(email, token);
+
   return Response.json(
-    { message: "User registered successfully" },
+    { message: "Check your email to verify your account." },
     { status: 201 }
   );
 }

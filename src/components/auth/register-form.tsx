@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,13 +15,13 @@ import {
 } from "@/components/ui/card";
 
 export function RegisterForm() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,7 +58,32 @@ export function RegisterForm() {
       return;
     }
 
-    router.push("/sign-in?registered=true");
+    setEmailSent(true);
+  }
+
+  if (emailSent) {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2">
+            <Mail className="h-10 w-10 text-primary" />
+          </div>
+          <CardTitle className="text-xl">Check your email</CardTitle>
+          <CardDescription>
+            We sent a verification link to <strong>{email}</strong>. Click the
+            link to activate your account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link
+            href="/sign-in"
+            className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-background px-2.5 h-8 text-sm font-medium hover:bg-muted hover:text-foreground transition-all"
+          >
+            Back to sign in
+          </Link>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

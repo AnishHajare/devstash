@@ -31,23 +31,46 @@ export function SignInForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const isUnverified =
+    authError === "CredentialsSignin" &&
+    searchParams.get("code") === "EMAIL_NOT_VERIFIED";
   const [error, setError] = useState(
-    authError === "CredentialsSignin"
-      ? "Invalid email or password"
-      : authError
-        ? "Something went wrong"
-        : ""
+    isUnverified
+      ? ""
+      : authError === "CredentialsSignin"
+        ? "Invalid email or password"
+        : authError
+          ? "Something went wrong"
+          : ""
   );
   const [loading, setLoading] = useState(false);
+  const [showUnverified, setShowUnverified] = useState(isUnverified);
+  const [resending, setResending] = useState(false);
   const registered = searchParams.get("registered");
   const toastShown = useRef(false);
 
   useEffect(() => {
     if (registered === "true" && !toastShown.current) {
       toastShown.current = true;
-      toast.success("Account created! You can now sign in.");
+      toast.success("Account created! Check your email to verify.");
     }
   }, [registered]);
+
+  async function handleResendVerification() {
+    if (!email) {
+      setError("Enter your email above, then click resend.");
+      return;
+    }
+    setResending(true);
+    await fetch("/api/auth/resend-verification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    setResending(false);
+    setShowUnverified(false);
+    toast.success("Verification email sent! Check your inbox.");
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,6 +105,19 @@ export function SignInForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {showUnverified && (
+            <div className="rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-500">
+              <p>Your email is not verified. Check your inbox or resend the link.</p>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resending}
+                className="mt-1 font-medium underline underline-offset-4 hover:text-amber-400 disabled:opacity-50"
+              >
+                {resending ? "Sending…" : "Resend verification email"}
+              </button>
+            </div>
+          )}
           {error && (
             <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}

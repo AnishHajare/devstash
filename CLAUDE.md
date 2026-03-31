@@ -22,6 +22,10 @@ npm run lint     # run ESLint
 
 There is no test runner configured.
 
+## Neon MCP
+
+When using the Neon MCP tools, **always** target the **devstash** project and the **development** branch. Never read from, write to, or run queries against the production branch (typically `main` or `production`) unless explicitly instructed. If a Neon tool call requires a branch parameter, default to `development`. This applies to all operations: queries, schema changes, branching, and any other Neon API actions.
+
 ## Stack
 
 - **Next.js 16** (App Router) with **React 19** and **TypeScript**
