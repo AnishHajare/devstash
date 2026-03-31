@@ -7,7 +7,7 @@ export default {
     signIn: "/sign-in",
   },
   providers: [
-    GitHub,
+    GitHub({ allowDangerousEmailAccountLinking: true }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
