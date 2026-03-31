@@ -1,20 +1,12 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
 ## Status
-In Progress
+
+
 
 ## Goals
-- Add Credentials provider to NextAuth for email/password sign-in
-- Add `authorize` placeholder in `auth.config.ts`, real bcrypt validation in `auth.ts` (split pattern)
-- Create registration API route at `POST /api/auth/register` (name, email, password, confirmPassword)
-- Validate passwords match, check for existing user, hash with bcryptjs, create user
-- Ensure GitHub OAuth still works alongside Credentials
 
 ## Notes
-- bcryptjs is already installed
-- password field already exists on User model (added during seed script expansion)
-- Split pattern: `auth.config.ts` gets `authorize: () => null` placeholder; `auth.ts` overrides with real logic
-- Test via curl for registration, then sign in at `/api/auth/signin`
 
 ## History
 
@@ -31,3 +23,4 @@ In Progress
 - 2026-03-29: Completed Sidebar Pro Badge — added PRO badge (shadcn/ui Badge, outline variant) next to File and Image types in sidebar, installed badge component, badge only shown for system pro-only types.
 - 2026-03-29: Completed Audit Quick Wins — extracted shared iconMap to src/lib/icon-map.ts, used findUnique for demo user lookup, added DATABASE_URL env guard in prisma.ts, added aria-label to collection overflow button, extracted getInitials() utility in sidebar.
 - 2026-03-31: Completed Auth Phase 1 — NextAuth v5 (beta) with Prisma adapter, GitHub OAuth provider, JWT session strategy, split auth config pattern, Next.js 16 proxy protecting /dashboard routes, session type extended with user.id.
+- 2026-03-31: Completed Auth Phase 2 — Credentials provider for email/password sign-in (split config pattern), registration API route at /api/auth/register with validation, fixed proxy.ts to use Next.js 16 named export convention.
