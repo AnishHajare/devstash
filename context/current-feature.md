@@ -1,20 +1,13 @@
-# Current Feature: Email Verification Toggle
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- Add a way to disable the entire email verification system with a single flag
-- When disabled: registration auto-verifies users (sets `emailVerified` immediately), sign-in skips the verification check
-- When enabled: existing verification flow works as-is (send email, block unverified users, etc.)
-- Use an env variable `REQUIRE_EMAIL_VERIFICATION=true|false` (default `true`)
-- Minimal code changes — single source of truth for the flag, checked in the right places
+<!-- Define what success looks like -->
 
 ## Notes
-- No custom domain linked to Resend yet, so only the Resend test email can receive verification emails
-- This flag is needed for development/testing — allows any email to register and sign in without verification
-- Should touch: registration route (skip sending email + auto-verify), auth config (skip unverified check), sign-in form (hide resend option)
-- Env var approach keeps it simple — no DB changes, no UI settings, just flip it in `.env`
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -34,3 +27,4 @@ In Progress
 - 2026-03-31: Completed Auth Phase 2 — Credentials provider for email/password sign-in (split config pattern), registration API route at /api/auth/register with validation, fixed proxy.ts to use Next.js 16 named export convention.
 - 2026-03-31: Completed Auth Phase 3 — Custom sign-in page (/sign-in) with email/password and GitHub OAuth, register page (/register) with validation and success toast, sidebar user dropdown with avatar (image/initials), sign out, and profile link. Dashboard wired to real auth session.
 - 2026-03-31: Completed Email Verification — verification email via Resend on registration, token generation and storage using VerificationToken model, /verify-email page with token validation, unverified users blocked from sign-in with clear error, resend verification option on sign-in page, expired/invalid token handling, GitHub OAuth users auto-verified.
+- 2026-03-31: Completed Email Verification Toggle — added REQUIRE_EMAIL_VERIFICATION env flag (defaults to true). When false, registration auto-verifies users, sign-in skips verification check, and register form redirects to sign-in instead of showing "check email" screen.
