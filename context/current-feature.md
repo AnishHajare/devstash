@@ -1,12 +1,20 @@
-# Current Feature
+# Current Feature: Auth Credentials - Email/Password Provider
 
 ## Status
-
-
+In Progress
 
 ## Goals
+- Add Credentials provider to NextAuth for email/password sign-in
+- Add `authorize` placeholder in `auth.config.ts`, real bcrypt validation in `auth.ts` (split pattern)
+- Create registration API route at `POST /api/auth/register` (name, email, password, confirmPassword)
+- Validate passwords match, check for existing user, hash with bcryptjs, create user
+- Ensure GitHub OAuth still works alongside Credentials
 
 ## Notes
+- bcryptjs is already installed
+- password field already exists on User model (added during seed script expansion)
+- Split pattern: `auth.config.ts` gets `authorize: () => null` placeholder; `auth.ts` overrides with real logic
+- Test via curl for registration, then sign in at `/api/auth/signin`
 
 ## History
 

@@ -1,20 +1,22 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  const isProtectedRoute = nextUrl.pathname.startsWith("/dashboard");
+  const isProtectedRoute = pathname.startsWith("/dashboard");
+  if (!isProtectedRoute) return NextResponse.next();
 
-  if (isProtectedRoute && !isLoggedIn) {
-    const signInUrl = new URL("/api/auth/signin", nextUrl.origin);
-    signInUrl.searchParams.set("callbackUrl", nextUrl.href);
+  const session = await auth();
+  if (!session) {
+    const signInUrl = new URL("/api/auth/signin", request.url);
+    signInUrl.searchParams.set("callbackUrl", request.url);
     return NextResponse.redirect(signInUrl);
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/dashboard/:path*"],
