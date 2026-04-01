@@ -1,27 +1,13 @@
 # Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- Production-grade rate limiting on all auth and sensitive API endpoints
-- Upstash Redis with sliding window algorithm via `@upstash/ratelimit`
-- 8 pre-configured limiters: auth (5/15min), registration (3/1hr), password reset (3/1hr), reset token (5/15min), email resend (3/15min), change password (5/15min), delete account (3/1hr), global API (60/1min)
-- IP extraction with proxy-awareness (Vercel, Cloudflare, nginx)
-- Composite rate limit keys: IP-only for public endpoints, IP+email for targeted endpoints, userId for authenticated endpoints
-- Fail-open design: requests proceed if Redis is unreachable or unconfigured
-- 429 responses with `Retry-After` and `X-RateLimit-*` headers
-- Frontend toast messages with human-readable retry times
-- Special handling for NextAuth credentials login (rate limit inside `authorize()`)
+<!-- Define what success looks like -->
 
 ## Notes
-- Spec file: `context/features/rate-limiting-spec.md`
-- Upstash Redis credentials already in `.env`
-- No new env vars needed
-- Login rate limiting is tricky — applied inside `authorize()` in `src/auth.ts`, throws `CredentialsSignin("TOO_MANY_ATTEMPTS")`
-- All other endpoints use a simple pattern: check at top of handler, return 429 Response if blocked
-- Key namespacing ensures hitting one limit doesn't affect other endpoints
-- 14 files to create/modify across backend and frontend
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -44,3 +30,4 @@ In Progress
 - 2026-03-31: Completed Email Verification Toggle — added REQUIRE_EMAIL_VERIFICATION env flag (defaults to true). When false, registration auto-verifies users, sign-in skips verification check, and register form redirects to sign-in instead of showing "check email" screen.
 - 2026-04-01: Completed Forgot Password — forgot password link on sign-in page, /forgot-password page with email form, /reset-password page with token validation and new password form, reuses VerificationToken model with "reset:" identifier prefix (no schema changes), 1-hour token expiry, password reset email via Resend, privacy-safe responses, OAuth-only users silently skipped.
 - 2026-04-01: Completed Profile Page — /dashboard/profile route inside dashboard shell with sidebar, account information card (avatar, email, member since), usage statistics with per-type breakdown, change password for credentials users (with toast), delete account with typed "DELETE" confirmation dialog, shared dashboard layout extracted, optimized parallel Prisma queries.
+- 2026-04-01: Completed Rate Limiting — Upstash Redis with sliding window algorithm via @upstash/ratelimit, 7 pre-configured limiters protecting all auth and profile endpoints (login, register, forgot-password, reset-password, resend-verification, change-password, delete-account), fail-open design, IP/email/userId composite keys, 429 responses with Retry-After headers, frontend forms display human-readable retry times.
