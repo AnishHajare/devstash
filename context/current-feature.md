@@ -1,23 +1,13 @@
-# Current Feature: Forgot Password
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- "Forgot password?" link on the sign-in page that navigates to /forgot-password
-- /forgot-password page with email input that sends a password reset email via Resend
-- Reuse the existing VerificationToken model to store password reset tokens (use a distinct identifier prefix like "reset:" to distinguish from email verification tokens)
-- /reset-password page that accepts a token, validates it, and allows the user to set a new password
-- Expired/invalid token handling with clear error messages
-- Password hashed with bcryptjs before saving
-- Only credential-based users can reset passwords (GitHub OAuth users shown appropriate message)
-- Success feedback after password reset, redirect to sign-in
+<!-- Define what success looks like -->
 
 ## Notes
-- Reuse existing VerificationToken model — no schema changes needed
-- Follow the same email sending pattern used for email verification (Resend)
-- Token expiration: 1 hour
-- Match existing auth page styling (sign-in, register pages)
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -38,3 +28,4 @@ In Progress
 - 2026-03-31: Completed Auth Phase 3 — Custom sign-in page (/sign-in) with email/password and GitHub OAuth, register page (/register) with validation and success toast, sidebar user dropdown with avatar (image/initials), sign out, and profile link. Dashboard wired to real auth session.
 - 2026-03-31: Completed Email Verification — verification email via Resend on registration, token generation and storage using VerificationToken model, /verify-email page with token validation, unverified users blocked from sign-in with clear error, resend verification option on sign-in page, expired/invalid token handling, GitHub OAuth users auto-verified.
 - 2026-03-31: Completed Email Verification Toggle — added REQUIRE_EMAIL_VERIFICATION env flag (defaults to true). When false, registration auto-verifies users, sign-in skips verification check, and register form redirects to sign-in instead of showing "check email" screen.
+- 2026-04-01: Completed Forgot Password — forgot password link on sign-in page, /forgot-password page with email form, /reset-password page with token validation and new password form, reuses VerificationToken model with "reset:" identifier prefix (no schema changes), 1-hour token expiry, password reset email via Resend, privacy-safe responses, OAuth-only users silently skipped.
