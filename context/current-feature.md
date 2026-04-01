@@ -1,13 +1,23 @@
-# Current Feature
+# Current Feature: Forgot Password
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
-<!-- Define what success looks like -->
+- "Forgot password?" link on the sign-in page that navigates to /forgot-password
+- /forgot-password page with email input that sends a password reset email via Resend
+- Reuse the existing VerificationToken model to store password reset tokens (use a distinct identifier prefix like "reset:" to distinguish from email verification tokens)
+- /reset-password page that accepts a token, validates it, and allows the user to set a new password
+- Expired/invalid token handling with clear error messages
+- Password hashed with bcryptjs before saving
+- Only credential-based users can reset passwords (GitHub OAuth users shown appropriate message)
+- Success feedback after password reset, redirect to sign-in
 
 ## Notes
-<!-- Additional context, constraints, or details -->
+- Reuse existing VerificationToken model — no schema changes needed
+- Follow the same email sending pattern used for email verification (Resend)
+- Token expiration: 1 hour
+- Match existing auth page styling (sign-in, register pages)
 
 ## History
 
