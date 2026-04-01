@@ -2,8 +2,13 @@ import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { createVerificationToken } from "@/lib/auth/verification";
 import { sendVerificationEmail } from "@/lib/email";
+import { checkRateLimit, getClientIp, rateLimitKey, registrationLimiter } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const rateCheck = await checkRateLimit(registrationLimiter, rateLimitKey("register", ip));
+  if (rateCheck instanceof Response) return rateCheck;
+
   const body = await request.json();
   const { name, email, password, confirmPassword } = body;
 

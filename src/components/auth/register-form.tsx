@@ -55,6 +55,13 @@ export function RegisterForm() {
 
     const data = await res.json();
 
+    if (res.status === 429) {
+      const minutes = Math.ceil(data.retryAfter / 60);
+      setError(`Too many attempts. Try again in ${minutes} minute${minutes > 1 ? "s" : ""}.`);
+      setLoading(false);
+      return;
+    }
+
     if (!res.ok) {
       setError(data.error ?? "Something went wrong");
       setLoading(false);

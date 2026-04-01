@@ -33,6 +33,13 @@ export function DeleteAccountSection() {
         method: "DELETE",
       });
 
+      if (res.status === 429) {
+        const data = await res.json();
+        const minutes = Math.ceil(data.retryAfter / 60);
+        setError(`Too many attempts. Try again in ${minutes} minute${minutes > 1 ? "s" : ""}.`);
+        return;
+      }
+
       if (!res.ok) {
         const data = await res.json();
         setError(data.error ?? "Something went wrong");

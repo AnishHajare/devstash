@@ -1,13 +1,27 @@
 # Current Feature
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
-<!-- Define what success looks like -->
+- Production-grade rate limiting on all auth and sensitive API endpoints
+- Upstash Redis with sliding window algorithm via `@upstash/ratelimit`
+- 8 pre-configured limiters: auth (5/15min), registration (3/1hr), password reset (3/1hr), reset token (5/15min), email resend (3/15min), change password (5/15min), delete account (3/1hr), global API (60/1min)
+- IP extraction with proxy-awareness (Vercel, Cloudflare, nginx)
+- Composite rate limit keys: IP-only for public endpoints, IP+email for targeted endpoints, userId for authenticated endpoints
+- Fail-open design: requests proceed if Redis is unreachable or unconfigured
+- 429 responses with `Retry-After` and `X-RateLimit-*` headers
+- Frontend toast messages with human-readable retry times
+- Special handling for NextAuth credentials login (rate limit inside `authorize()`)
 
 ## Notes
-<!-- Additional context, constraints, or details -->
+- Spec file: `context/features/rate-limiting-spec.md`
+- Upstash Redis credentials already in `.env`
+- No new env vars needed
+- Login rate limiting is tricky — applied inside `authorize()` in `src/auth.ts`, throws `CredentialsSignin("TOO_MANY_ATTEMPTS")`
+- All other endpoints use a simple pattern: check at top of handler, return 429 Response if blocked
+- Key namespacing ensures hitting one limit doesn't affect other endpoints
+- 14 files to create/modify across backend and frontend
 
 ## History
 

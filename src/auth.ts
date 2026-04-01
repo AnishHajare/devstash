@@ -3,10 +3,15 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { authLimiter, checkRateLimit, getClientIp, rateLimitKey } from "@/lib/rate-limit";
 import authConfig from "./auth.config";
 
 class EmailNotVerifiedError extends CredentialsSignin {
   code = "EMAIL_NOT_VERIFIED";
+}
+
+class TooManyAttemptsError extends CredentialsSignin {
+  code = "TOO_MANY_ATTEMPTS";
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -36,11 +41,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = credentials?.email as string | undefined;
         const password = credentials?.password as string | undefined;
 
         if (!email || !password) return null;
+
+        // Rate limit login attempts by IP + email
+        const ip = getClientIp(request);
+        const key = rateLimitKey("login", ip, email);
+        const rateCheck = await checkRateLimit(authLimiter, key);
+        if (rateCheck instanceof Response) {
+          throw new TooManyAttemptsError();
+        }
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user?.password) return null;

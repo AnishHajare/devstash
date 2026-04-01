@@ -1,12 +1,19 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { compare, hash } from "bcryptjs";
+import { checkRateLimit, rateLimitKey, changePasswordLimiter } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rateCheck = await checkRateLimit(
+    changePasswordLimiter,
+    rateLimitKey("chpw", session.user.id)
+  );
+  if (rateCheck instanceof Response) return rateCheck;
 
   const { currentPassword, newPassword } = await request.json();
 

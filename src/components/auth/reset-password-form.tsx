@@ -100,6 +100,12 @@ export function ResetPasswordForm() {
 
       const data = await res.json();
 
+      if (res.status === 429) {
+        const minutes = Math.ceil(data.retryAfter / 60);
+        setError(`Too many attempts. Try again in ${minutes} minute${minutes > 1 ? "s" : ""}.`);
+        return;
+      }
+
       if (!res.ok) {
         setError(data.message ?? "Something went wrong.");
         return;

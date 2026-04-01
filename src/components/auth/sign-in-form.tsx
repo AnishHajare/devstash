@@ -31,17 +31,21 @@ export function SignInForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const errorCode = searchParams.get("code");
   const isUnverified =
-    authError === "CredentialsSignin" &&
-    searchParams.get("code") === "EMAIL_NOT_VERIFIED";
+    authError === "CredentialsSignin" && errorCode === "EMAIL_NOT_VERIFIED";
+  const isRateLimited =
+    authError === "CredentialsSignin" && errorCode === "TOO_MANY_ATTEMPTS";
   const [error, setError] = useState(
     isUnverified
       ? ""
-      : authError === "CredentialsSignin"
-        ? "Invalid email or password"
-        : authError
-          ? "Something went wrong"
-          : ""
+      : isRateLimited
+        ? "Too many login attempts. Please try again in 15 minutes."
+        : authError === "CredentialsSignin"
+          ? "Invalid email or password"
+          : authError
+            ? "Something went wrong"
+            : ""
   );
   const [loading, setLoading] = useState(false);
   const [showUnverified, setShowUnverified] = useState(isUnverified);
@@ -62,12 +66,20 @@ export function SignInForm() {
       return;
     }
     setResending(true);
-    await fetch("/api/auth/resend-verification", {
+    const res = await fetch("/api/auth/resend-verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     });
     setResending(false);
+
+    if (res.status === 429) {
+      const data = await res.json();
+      const minutes = Math.ceil(data.retryAfter / 60);
+      toast.error(`Too many attempts. Try again in ${minutes} minute${minutes > 1 ? "s" : ""}.`);
+      return;
+    }
+
     setShowUnverified(false);
     toast.success("Verification email sent! Check your inbox.");
   }
