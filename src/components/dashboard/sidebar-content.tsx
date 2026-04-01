@@ -168,7 +168,7 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-48">
-            <DropdownMenuItem render={<Link href="/profile" />}>
+            <DropdownMenuItem render={<Link href="/dashboard/profile" />}>
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => signOut({ redirectTo: "/sign-in" })}>
@@ -201,7 +201,7 @@ function CollapsedSidebar({ data }: { data: SidebarData }) {
         })}
       </div>
       <div className="shrink-0 border-t border-border py-3">
-        <Link href="/profile">
+        <Link href="/dashboard/profile">
           <Avatar size="sm">
             {data.user.image && <AvatarImage src={data.user.image} alt={data.user.name ?? "User"} />}
             <AvatarFallback>

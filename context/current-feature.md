@@ -1,13 +1,23 @@
-# Current Feature
+# Current Feature: Profile Page
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
-<!-- Define what success looks like -->
+- /profile route protected behind authentication
+- Profile header showing avatar (GitHub image or initials), name, email, and account creation date
+- Usage stats section with total items, total collections, and breakdown by item type
+- Change Password action (only for email/password users, not OAuth)
+- Delete Account action with confirmation dialog
+- Optimized backend queries (single query where possible)
+- Edge cases handled: no name (fallback to email), no avatar (initials), empty stats (show 0)
 
 ## Notes
-<!-- Additional context, constraints, or details -->
+- Follow existing component and API patterns
+- Keep logic modular (service layer in src/lib/db/)
+- Do NOT modify unrelated modules or introduce global state
+- Implement only required API endpoints, UI components, and minimal logic
+- No extra features, no redesign, no unnecessary abstractions
 
 ## History
 
