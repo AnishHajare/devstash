@@ -1,23 +1,13 @@
-# Current Feature: Profile Page
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- /profile route protected behind authentication
-- Profile header showing avatar (GitHub image or initials), name, email, and account creation date
-- Usage stats section with total items, total collections, and breakdown by item type
-- Change Password action (only for email/password users, not OAuth)
-- Delete Account action with confirmation dialog
-- Optimized backend queries (single query where possible)
-- Edge cases handled: no name (fallback to email), no avatar (initials), empty stats (show 0)
+<!-- Define what success looks like -->
 
 ## Notes
-- Follow existing component and API patterns
-- Keep logic modular (service layer in src/lib/db/)
-- Do NOT modify unrelated modules or introduce global state
-- Implement only required API endpoints, UI components, and minimal logic
-- No extra features, no redesign, no unnecessary abstractions
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -39,3 +29,4 @@ In Progress
 - 2026-03-31: Completed Email Verification — verification email via Resend on registration, token generation and storage using VerificationToken model, /verify-email page with token validation, unverified users blocked from sign-in with clear error, resend verification option on sign-in page, expired/invalid token handling, GitHub OAuth users auto-verified.
 - 2026-03-31: Completed Email Verification Toggle — added REQUIRE_EMAIL_VERIFICATION env flag (defaults to true). When false, registration auto-verifies users, sign-in skips verification check, and register form redirects to sign-in instead of showing "check email" screen.
 - 2026-04-01: Completed Forgot Password — forgot password link on sign-in page, /forgot-password page with email form, /reset-password page with token validation and new password form, reuses VerificationToken model with "reset:" identifier prefix (no schema changes), 1-hour token expiry, password reset email via Resend, privacy-safe responses, OAuth-only users silently skipped.
+- 2026-04-01: Completed Profile Page — /dashboard/profile route inside dashboard shell with sidebar, account information card (avatar, email, member since), usage statistics with per-type breakdown, change password for credentials users (with toast), delete account with typed "DELETE" confirmation dialog, shared dashboard layout extracted, optimized parallel Prisma queries.
