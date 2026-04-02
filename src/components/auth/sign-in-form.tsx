@@ -36,29 +36,37 @@ export function SignInForm() {
     authError === "CredentialsSignin" && errorCode === "EMAIL_NOT_VERIFIED";
   const isRateLimited =
     authError === "CredentialsSignin" && errorCode === "TOO_MANY_ATTEMPTS";
+  const isAccountNotLinked = authError === "OAuthAccountNotLinked";
   const [error, setError] = useState(
     isUnverified
       ? ""
       : isRateLimited
         ? "Too many login attempts. Please try again in 15 minutes."
-        : authError === "CredentialsSignin"
-          ? "Invalid email or password"
-          : authError
-            ? "Something went wrong"
-            : ""
+        : isAccountNotLinked
+          ? "An account with this email already exists. Please sign in with your password first, then link GitHub from your profile."
+          : authError === "CredentialsSignin"
+            ? "Invalid email or password"
+            : authError
+              ? "Something went wrong"
+              : ""
   );
   const [loading, setLoading] = useState(false);
   const [showUnverified, setShowUnverified] = useState(isUnverified);
   const [resending, setResending] = useState(false);
   const registered = searchParams.get("registered");
+  const linked = searchParams.get("linked");
   const toastShown = useRef(false);
 
   useEffect(() => {
-    if (registered === "true" && !toastShown.current) {
+    if (toastShown.current) return;
+    if (registered === "true") {
       toastShown.current = true;
       toast.success("Account created! Check your email to verify.");
+    } else if (linked === "true") {
+      toastShown.current = true;
+      toast.success("GitHub account linked successfully!");
     }
-  }, [registered]);
+  }, [registered, linked]);
 
   async function handleResendVerification() {
     if (!email) {

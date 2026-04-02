@@ -15,8 +15,10 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Calendar, FolderOpen, Layers, Mail } from "lucide-react";
+import { getLinkedAccounts } from "@/lib/db/accounts";
 import { ChangePasswordSection } from "./change-password";
 import { DeleteAccountSection } from "./delete-account";
+import { LinkedAccountsSection } from "./linked-accounts";
 
 function getInitials(name: string | null, email: string | null): string {
   if (name) {
@@ -34,7 +36,10 @@ export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const { user, stats } = await getUserProfile(session.user.id);
+  const [{ user, stats }, linkedAccounts] = await Promise.all([
+    getUserProfile(session.user.id),
+    getLinkedAccounts(session.user.id),
+  ]);
 
   const joinDate = new Date(user.createdAt).toLocaleDateString("en-US", {
     month: "long",
@@ -103,6 +108,10 @@ export default async function ProfilePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {user.hasPassword && <ChangePasswordSection />}
+          <LinkedAccountsSection
+            linkedProviders={linkedAccounts.map((a) => a.provider)}
+            hasPassword={user.hasPassword}
+          />
           <DeleteAccountSection />
         </CardContent>
       </Card>
