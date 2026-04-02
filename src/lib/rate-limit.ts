@@ -30,6 +30,7 @@ export const resetTokenLimiter = createLimiter(5, "15 m");
 export const emailLimiter = createLimiter(3, "15 m");
 export const changePasswordLimiter = createLimiter(5, "15 m");
 export const deleteAccountLimiter = createLimiter(3, "1 h");
+export const linkAccountLimiter = createLimiter(5, "15 m");
 
 // ─── Helpers ───────────────────────────────────────────────
 
