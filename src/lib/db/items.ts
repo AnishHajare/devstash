@@ -137,6 +137,38 @@ export type SidebarUser = {
 };
 
 /**
+ * Fetch items filtered by type name for a user.
+ */
+export async function getItemsByType(
+  userId: string,
+  typeName: string
+): Promise<ItemWithType[]> {
+  const items = await prisma.item.findMany({
+    where: {
+      userId,
+      itemType: { name: { equals: typeName, mode: "insensitive" } },
+    },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      itemType: { select: { id: true, name: true, icon: true, color: true } },
+      tags: { select: { id: true, name: true } },
+    },
+  });
+
+  return items.map(serializeItem);
+}
+
+/**
+ * Fetch a single item type by name.
+ */
+export async function getItemTypeByName(typeName: string) {
+  return prisma.itemType.findFirst({
+    where: { name: { equals: typeName, mode: "insensitive" }, isSystem: true },
+    select: { id: true, name: true, icon: true, color: true },
+  });
+}
+
+/**
  * Fetch minimal user info for the sidebar.
  */
 export async function getSidebarUser(userId: string): Promise<SidebarUser> {
