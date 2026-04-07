@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { typeNameToSlug } from "@/lib/item-type-slug";
 import type { ItemTypeWithCount, SidebarUser } from "@/lib/db/items";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 
@@ -56,7 +57,7 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
             return (
               <Link
                 key={type.id}
-                href={`/items/${type.name.toLowerCase()}s`}
+                href={`/items/${typeNameToSlug(type.name)}`}
                 className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {Icon && (
@@ -191,9 +192,9 @@ function CollapsedSidebar({ data }: { data: SidebarData }) {
           return (
             <Link
               key={type.id}
-              href={`/items/${type.name.toLowerCase()}s`}
+              href={`/items/${typeNameToSlug(type.name)}`}
               className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              title={type.name + "s"}
+              title={typeNameToSlug(type.name)}
             >
               {Icon && <Icon className="h-4 w-4" style={{ color: type.color }} />}
             </Link>
