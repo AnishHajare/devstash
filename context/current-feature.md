@@ -1,20 +1,13 @@
-# Current Feature: Items List View
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- Create dynamic route `/items/[type]` (e.g., `/items/snippets`, `/items/notes`)
-- Fetch and display items filtered by type using real Prisma queries
-- Render a responsive grid of ItemCard components (two columns on medium and up)
-- Each card has a left border colored by item type
-- Follow existing codebase patterns
+<!-- Define what success looks like -->
 
 ## Notes
-- URL pattern already used by sidebar links: `/items/snippets`, `/items/prompts`, etc.
-- Item type color is available from the DB via `itemType.color`
-- Reuse existing DB query patterns from `src/lib/db/items.ts` and `src/lib/db/collections.ts`
-- Cards should follow the same left-color-strip + hover-tint style used on dashboard cards
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -38,3 +31,4 @@ In Progress
 - 2026-04-01: Completed Forgot Password — forgot password link on sign-in page, /forgot-password page with email form, /reset-password page with token validation and new password form, reuses VerificationToken model with "reset:" identifier prefix (no schema changes), 1-hour token expiry, password reset email via Resend, privacy-safe responses, OAuth-only users silently skipped.
 - 2026-04-01: Completed Profile Page — /dashboard/profile route inside dashboard shell with sidebar, account information card (avatar, email, member since), usage statistics with per-type breakdown, change password for credentials users (with toast), delete account with typed "DELETE" confirmation dialog, shared dashboard layout extracted, optimized parallel Prisma queries.
 - 2026-04-01: Completed Rate Limiting — Upstash Redis with sliding window algorithm via @upstash/ratelimit, 7 pre-configured limiters protecting all auth and profile endpoints (login, register, forgot-password, reset-password, resend-verification, change-password, delete-account), fail-open design, IP/email/userId composite keys, 429 responses with Retry-After headers, frontend forms display human-readable retry times.
+- 2026-04-07: Completed Items List View — dynamic /items/[type] route with shared DashboardShell layout, ItemCard grid (two columns md+) with left color strip and hover tint, getItemsByType/getItemTypeByName DB queries (case-insensitive), canonical src/lib/item-type-slug.ts with typeNameToSlug/typeSlugToName used by all type-name/URL conversions.
