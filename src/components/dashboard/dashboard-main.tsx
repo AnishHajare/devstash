@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   Star,
@@ -95,7 +96,7 @@ export function DashboardMain({
             <Pin className="h-3.5 w-3.5 text-muted-foreground" />
             <h2 className="text-sm font-semibold">Pinned</h2>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             {pinnedItems.map((item) => (
               <ItemRow key={item.id} item={item} />
             ))}
@@ -108,7 +109,7 @@ export function DashboardMain({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold">Recent Items</h2>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-2">
           {recentItems.map((item) => (
             <ItemRow key={item.id} item={item} />
           ))}
@@ -147,23 +148,28 @@ function CollectionCard({
 }: {
   collection: CollectionWithMeta;
 }) {
-  // Border color from the most-used content type
+  const [hovered, setHovered] = useState(false);
   const dominantColor = collection.types[0]?.color;
 
   return (
     <Link
       href={`/collections/${collection.id}`}
-      className="group relative rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50"
+      className="group relative rounded-lg border border-border bg-card p-4 transition-colors duration-200"
       style={{
-        borderColor: dominantColor
-          ? `${dominantColor}40`
-          : undefined,
+        borderLeftColor: dominantColor,
+        borderLeftWidth: dominantColor ? "3px" : undefined,
+        backgroundColor: hovered && dominantColor ? `${dominantColor}12` : undefined,
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-medium">
+            <span
+              className="truncate text-sm font-medium transition-colors duration-200"
+              style={{ color: hovered && dominantColor ? dominantColor : undefined }}
+            >
               {collection.name}
             </span>
             {collection.isFavorite && (
@@ -209,27 +215,40 @@ function CollectionCard({
 // ── Item Row ────────────────────────────────────────────────
 
 function ItemRow({ item }: { item: ItemWithType }) {
+  const [hovered, setHovered] = useState(false);
   const Icon = iconMap[item.itemType.icon];
+  const color = item.itemType.color;
 
   return (
-    <div className="group flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-muted/50">
+    <div
+      className="group flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors duration-200"
+      style={{
+        borderLeftColor: color,
+        borderLeftWidth: "3px",
+        backgroundColor: hovered && color ? `${color}12` : undefined,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {/* Type icon */}
       <div
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
-        style={{ backgroundColor: `${item.itemType.color}15` }}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors duration-200"
+        style={{ backgroundColor: hovered ? `${color}25` : `${color}15` }}
       >
         {Icon && (
-          <Icon
-            className="h-4 w-4"
-            style={{ color: item.itemType.color }}
-          />
+          <Icon className="h-4 w-4" style={{ color }} />
         )}
       </div>
 
       {/* Info */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="truncate text-sm font-medium">{item.title}</span>
+          <span
+            className="truncate text-sm font-medium transition-colors duration-200"
+            style={{ color: hovered && color ? color : undefined }}
+          >
+            {item.title}
+          </span>
           {item.isPinned && (
             <Pin className="h-3 w-3 shrink-0 text-muted-foreground" />
           )}
