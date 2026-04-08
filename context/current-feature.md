@@ -1,27 +1,13 @@
-# Current Feature: Item Drawer — Edit Mode
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- Edit button in item drawer action bar toggles inline edit mode (same drawer, no navigation)
-- In edit mode, action bar is replaced with Save and Cancel buttons
-- Editable fields: title (required), description, tags (comma-separated input)
-- Type-specific fields: content textarea (snippet/prompt/command/note), language (snippet/command), URL (link)
-- Non-editable in edit mode: item type, collections, created/updated dates
-- Save persists changes via `updateItem` server action, returns to view mode, refreshes drawer data
-- Cancel discards changes and returns to view mode without saving
-- Toast on save success or error
-- Save button disabled when title is empty
-- `router.refresh()` after save so underlying card list reflects changes
+<!-- Define what success looks like -->
 
 ## Notes
-- Server action: `updateItem(itemId, data)` in `src/actions/items.ts` — returns `{ success, data, error }`
-- Zod validation in server action (source of truth): title non-empty, description/content/url/language nullable strings, tags array of trimmed non-empty strings
-- DB query: `updateItem` in `src/lib/db/items.ts` — disconnect all existing tags, connect-or-create new ones, returns updated `ItemDetail`
-- No form library — use controlled inputs with local state
-- Content textarea is plain text (no code editor yet)
-- Ownership validated in server action via `auth()` session
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -48,3 +34,4 @@ In Progress
 - 2026-04-07: Completed Items List View — dynamic /items/[type] route with shared DashboardShell layout, ItemCard grid (two columns md+) with left color strip and hover tint, getItemsByType/getItemTypeByName DB queries (case-insensitive), canonical src/lib/item-type-slug.ts with typeNameToSlug/typeSlugToName used by all type-name/URL conversions.
 - 2026-04-08: Items list grid updated to three columns on large screens (lg+), two on md, one on mobile. Single Tailwind class addition (lg:grid-cols-3) in /items/[type]/page.tsx.
 - 2026-04-08: Completed Item Drawer — right-side shadcn Sheet opens on ItemCard/ItemRow click with full item details fetched via /api/items/[id]. Action bar with favorite toggle (yellow when active), pin toggle, clipboard copy, edit (coming soon), and delete. Works on dashboard and /items/[type] pages. ItemsGrid client wrapper owns drawer state for items pages. Type and language shown as pill badges in drawer header.
+- 2026-04-08: Completed Item Drawer Edit Mode — edit button toggles inline edit mode within the same drawer. Action bar swaps to colour-accented Save/Cancel. Editable fields: title, description, content (snippet/prompt/command/note), URL (link), language (snippet/command), tags (comma-separated). Edit inputs match view-mode font size and dimensions exactly — no layout shift on toggle. Code content capped at max-h-[260px] scrollable in view mode; edit textarea starts at same height with resize-y. updateItem server action (src/actions/items.ts) with Zod validation and ownership check; updateItem DB query in src/lib/db/items.ts disconnects all tags then connect-or-creates. 13 unit tests added.
