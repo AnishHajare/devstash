@@ -5,13 +5,20 @@ import { Pin, Star } from "lucide-react";
 import { iconMap } from "@/lib/icon-map";
 import type { ItemWithType } from "@/lib/db/items";
 
-export function ItemCard({ item }: { item: ItemWithType }) {
+export function ItemCard({
+  item,
+  onOpen,
+}: {
+  item: ItemWithType;
+  onOpen?: (id: string) => void;
+}) {
   const [hovered, setHovered] = useState(false);
   const Icon = iconMap[item.itemType.icon];
   const color = item.itemType.color;
 
   return (
     <div
+      onClick={() => onOpen?.(item.id)}
       className="group flex flex-col gap-2 rounded-lg border border-border bg-card p-4 transition-colors duration-200 cursor-pointer"
       style={{
         borderLeftColor: color,

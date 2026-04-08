@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { ItemCard } from "@/components/items/item-card";
+import { ItemsGrid } from "@/components/items/items-grid";
 import { getItemsByType, getItemTypeByName } from "@/lib/db/items";
 import { typeSlugToName } from "@/lib/item-type-slug";
 import { iconMap } from "@/lib/icon-map";
@@ -63,11 +63,7 @@ export default async function ItemsTypePage({
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
-        </div>
+        <ItemsGrid items={items} />
       )}
     </div>
   );
