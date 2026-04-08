@@ -1,13 +1,18 @@
-# Current Feature
+# Current Feature: Items List — Three Column Layout
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
-<!-- Define what success looks like -->
+- Items grid on `/items/[type]` shows **3 columns on large screens** (lg+) instead of 2
+- Remains **2 columns on medium screens** (md)
+- Remains **1 column on small/mobile screens**
+- No visual regressions to card appearance, color strip, or hover tint
 
 ## Notes
-<!-- Additional context, constraints, or details -->
+- Grid is in `src/app/items/[type]/page.tsx` (or the ItemCard grid container component)
+- Currently uses `grid-cols-1 md:grid-cols-2` — change to `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
+- Tailwind v4 — no config file, class-based breakpoints only
 
 ## History
 
