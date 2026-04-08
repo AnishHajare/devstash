@@ -1,18 +1,13 @@
-# Current Feature: Items List — Three Column Layout
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- Items grid on `/items/[type]` shows **3 columns on large screens** (lg+) instead of 2
-- Remains **2 columns on medium screens** (md)
-- Remains **1 column on small/mobile screens**
-- No visual regressions to card appearance, color strip, or hover tint
+<!-- Define what success looks like -->
 
 ## Notes
-- Grid is in `src/app/items/[type]/page.tsx` (or the ItemCard grid container component)
-- Currently uses `grid-cols-1 md:grid-cols-2` — change to `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
-- Tailwind v4 — no config file, class-based breakpoints only
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -37,3 +32,4 @@ In Progress
 - 2026-04-01: Completed Profile Page — /dashboard/profile route inside dashboard shell with sidebar, account information card (avatar, email, member since), usage statistics with per-type breakdown, change password for credentials users (with toast), delete account with typed "DELETE" confirmation dialog, shared dashboard layout extracted, optimized parallel Prisma queries.
 - 2026-04-01: Completed Rate Limiting — Upstash Redis with sliding window algorithm via @upstash/ratelimit, 7 pre-configured limiters protecting all auth and profile endpoints (login, register, forgot-password, reset-password, resend-verification, change-password, delete-account), fail-open design, IP/email/userId composite keys, 429 responses with Retry-After headers, frontend forms display human-readable retry times.
 - 2026-04-07: Completed Items List View — dynamic /items/[type] route with shared DashboardShell layout, ItemCard grid (two columns md+) with left color strip and hover tint, getItemsByType/getItemTypeByName DB queries (case-insensitive), canonical src/lib/item-type-slug.ts with typeNameToSlug/typeSlugToName used by all type-name/URL conversions.
+- 2026-04-08: Items list grid updated to three columns on large screens (lg+), two on md, one on mobile. Single Tailwind class addition (lg:grid-cols-3) in /items/[type]/page.tsx.
