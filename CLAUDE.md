@@ -14,13 +14,15 @@ Read the following to get the full context of the project:
 ## Commands
 
 ```bash
-npm run dev      # start dev server
-npm run build    # production build
-npm run start    # start production server
-npm run lint     # run ESLint
+npm run dev        # start dev server
+npm run build      # production build
+npm run start      # start production server
+npm run lint       # run ESLint
+npm test           # run unit tests (single run)
+npm run test:watch # run unit tests in watch mode
 ```
 
-There is no test runner configured.
+**Testing scope:** Vitest is configured for server utilities and actions only (`src/lib/`, `src/app/api/`). No component tests. Test files use `*.test.ts` extension. Never hit real DB — mock Prisma with `vi.mock('@/lib/prisma')`.
 
 ## Neon MCP
 

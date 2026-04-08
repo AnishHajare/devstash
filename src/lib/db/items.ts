@@ -236,6 +236,69 @@ export async function getItemDetail(
   };
 }
 
+export type UpdateItemInput = {
+  title: string;
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+};
+
+/**
+ * Update an item and replace its tags.
+ */
+export async function updateItem(
+  id: string,
+  userId: string,
+  data: UpdateItemInput
+): Promise<ItemDetail | null> {
+  const item = await prisma.item.update({
+    where: { id, userId },
+    data: {
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      tags: {
+        set: [],
+        connectOrCreate: data.tags.map((name) => ({
+          where: { name },
+          create: { name },
+        })),
+      },
+    },
+    include: {
+      itemType: { select: { id: true, name: true, icon: true, color: true } },
+      tags: { select: { id: true, name: true } },
+      collections: {
+        select: { collection: { select: { id: true, name: true } } },
+      },
+    },
+  });
+
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    contentType: item.contentType,
+    content: item.content,
+    url: item.url,
+    language: item.language,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+    tags: item.tags,
+    collections: item.collections.map((ic) => ic.collection),
+    itemType: item.itemType,
+  };
+}
+
 /**
  * Fetch minimal user info for the sidebar.
  */
