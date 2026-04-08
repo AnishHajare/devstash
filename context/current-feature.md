@@ -1,21 +1,13 @@
-# Current Feature: Item Drawer
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- Clicking an ItemCard opens a right-side slide-in Sheet (shadcn) with that item's full details
-- Works on both `/dashboard` and `/items/[type]` pages
-- Action bar with Favorite (star, yellow when active), Pin, Copy, Edit (pencil), and Delete (trash, right-aligned)
-- Client wrapper component manages drawer state (pages remain server components)
-- Drawer fetches full item data on click via `/api/items/[id]` — shows skeleton while loading
-- No page navigation — feels snappy
+<!-- Define what success looks like -->
 
 ## Notes
-- Card data already fetched by server component; full detail (content, collections, language, etc.) fetched on click
-- Query function lives in `lib/db/items.ts`, API route calls it with auth check
-- Content/editor area is out of scope for now — just drawer details display and action bar
-- Reference design: `context/screenshots/dashboard-ui-drawer.png`
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -41,3 +33,4 @@ In Progress
 - 2026-04-01: Completed Rate Limiting — Upstash Redis with sliding window algorithm via @upstash/ratelimit, 7 pre-configured limiters protecting all auth and profile endpoints (login, register, forgot-password, reset-password, resend-verification, change-password, delete-account), fail-open design, IP/email/userId composite keys, 429 responses with Retry-After headers, frontend forms display human-readable retry times.
 - 2026-04-07: Completed Items List View — dynamic /items/[type] route with shared DashboardShell layout, ItemCard grid (two columns md+) with left color strip and hover tint, getItemsByType/getItemTypeByName DB queries (case-insensitive), canonical src/lib/item-type-slug.ts with typeNameToSlug/typeSlugToName used by all type-name/URL conversions.
 - 2026-04-08: Items list grid updated to three columns on large screens (lg+), two on md, one on mobile. Single Tailwind class addition (lg:grid-cols-3) in /items/[type]/page.tsx.
+- 2026-04-08: Completed Item Drawer — right-side shadcn Sheet opens on ItemCard/ItemRow click with full item details fetched via /api/items/[id]. Action bar with favorite toggle (yellow when active), pin toggle, clipboard copy, edit (coming soon), and delete. Works on dashboard and /items/[type] pages. ItemsGrid client wrapper owns drawer state for items pages. Type and language shown as pill badges in drawer header.
