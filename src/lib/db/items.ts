@@ -168,6 +168,74 @@ export async function getItemTypeByName(typeName: string) {
   });
 }
 
+export type ItemDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  contentType: string;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  isFavorite: boolean;
+  isPinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+  tags: { id: string; name: string }[];
+  collections: { id: string; name: string }[];
+  itemType: {
+    id: string;
+    name: string;
+    icon: string;
+    color: string;
+  };
+};
+
+/**
+ * Fetch full item detail for the drawer.
+ */
+export async function getItemDetail(
+  id: string,
+  userId: string
+): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id, userId },
+    include: {
+      itemType: { select: { id: true, name: true, icon: true, color: true } },
+      tags: { select: { id: true, name: true } },
+      collections: {
+        select: {
+          collection: { select: { id: true, name: true } },
+        },
+      },
+    },
+  });
+
+  if (!item) return null;
+
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    contentType: item.contentType,
+    content: item.content,
+    url: item.url,
+    language: item.language,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+    tags: item.tags,
+    collections: item.collections.map((ic) => ic.collection),
+    itemType: item.itemType,
+  };
+}
+
 /**
  * Fetch minimal user info for the sidebar.
  */

@@ -11,6 +11,7 @@ import {
   Heart,
 } from "lucide-react";
 import { iconMap } from "@/lib/icon-map";
+import { ItemDrawer } from "@/components/items/item-drawer";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 import type { ItemWithType } from "@/lib/db/items";
 
@@ -37,6 +38,14 @@ export function DashboardMain({
   recentItems,
   itemStats,
 }: DashboardMainProps) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  function openDrawer(id: string) {
+    setActiveId(id);
+    setDrawerOpen(true);
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -98,7 +107,7 @@ export function DashboardMain({
           </div>
           <div className="space-y-2">
             {pinnedItems.map((item) => (
-              <ItemRow key={item.id} item={item} />
+              <ItemRow key={item.id} item={item} onOpen={openDrawer} />
             ))}
           </div>
         </section>
@@ -111,10 +120,12 @@ export function DashboardMain({
         </div>
         <div className="space-y-2">
           {recentItems.map((item) => (
-            <ItemRow key={item.id} item={item} />
+            <ItemRow key={item.id} item={item} onOpen={openDrawer} />
           ))}
         </div>
       </section>
+
+      <ItemDrawer itemId={activeId} open={drawerOpen} onOpenChange={setDrawerOpen} />
     </div>
   );
 }
@@ -214,14 +225,21 @@ function CollectionCard({
 
 // ── Item Row ────────────────────────────────────────────────
 
-function ItemRow({ item }: { item: ItemWithType }) {
+function ItemRow({
+  item,
+  onOpen,
+}: {
+  item: ItemWithType;
+  onOpen?: (id: string) => void;
+}) {
   const [hovered, setHovered] = useState(false);
   const Icon = iconMap[item.itemType.icon];
   const color = item.itemType.color;
 
   return (
     <div
-      className="group flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors duration-200"
+      onClick={() => onOpen?.(item.id)}
+      className="group flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors duration-200 cursor-pointer"
       style={{
         borderLeftColor: color,
         borderLeftWidth: "3px",
