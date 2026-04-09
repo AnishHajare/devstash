@@ -300,6 +300,19 @@ export async function updateItem(
 }
 
 /**
+ * Delete an item by id, scoped to the owning user.
+ * Returns true if deleted, false if not found or not owned.
+ */
+export async function deleteItem(id: string, userId: string): Promise<boolean> {
+  try {
+    await prisma.item.delete({ where: { id, userId } });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Fetch minimal user info for the sidebar.
  */
 export async function getSidebarUser(userId: string): Promise<SidebarUser> {

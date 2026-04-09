@@ -22,8 +22,18 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { iconMap } from "@/lib/icon-map";
-import { updateItem } from "@/actions/items";
+import { updateItem, deleteItem as deleteItemAction } from "@/actions/items";
 import type { ItemDetail } from "@/lib/db/items";
 
 type ItemDrawerProps = {
@@ -63,6 +73,8 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editState, setEditState] = useState<EditState | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!itemId || !open) return;
@@ -157,10 +169,17 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  async function deleteItem() {
+  async function confirmDelete() {
     if (!item) return;
-    await fetch(`/api/items/${item.id}`, { method: "DELETE" });
-    toast.success("Item deleted");
+    setDeleting(true);
+    const result = await deleteItemAction(item.id);
+    setDeleting(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setDeleteConfirmOpen(false);
+    toast.success(`"${item.title}" deleted`);
     onOpenChange(false);
     router.refresh();
   }
@@ -177,6 +196,29 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
   const showUrl = typeName === "link";
 
   return (
+    <>
+    <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete item?</AlertDialogTitle>
+          <AlertDialogDescription>
+            <strong className="text-foreground">&quot;{item?.title}&quot;</strong> will be
+            permanently deleted. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={confirmDelete}
+            disabled={deleting}
+            className="bg-destructive text-white hover:bg-destructive/90"
+          >
+            {deleting ? "Deleting…" : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
@@ -322,7 +364,7 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                   <div className="flex-1" />
 
                   <ActionBtn
-                    onClick={deleteItem}
+                    onClick={() => setDeleteConfirmOpen(true)}
                     label="Delete item"
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
@@ -514,6 +556,7 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
         )}
       </SheetContent>
     </Sheet>
+    </>
   );
 }
 

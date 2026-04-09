@@ -1,13 +1,22 @@
-# Current Feature
+# Current Feature: Delete Item
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
-<!-- Define what success looks like -->
+- Clicking the delete button in the item drawer opens a shadcn `AlertDialog` confirmation
+- Confirmation dialog shows the item title and warns that the action is irreversible
+- On confirm, the item is deleted via a server action with ownership check
+- On success, a toast notification confirms deletion and the drawer closes
+- The item disappears from the list without a full page reload (optimistic or revalidation)
 
 ## Notes
-<!-- Additional context, constraints, or details -->
+- Reuse the existing `deleteItem` action pattern (or create one in `src/actions/items.ts`) with Zod validation and ownership check
+- Add a `deleteItem` DB query in `src/lib/db/items.ts`
+- Use shadcn `AlertDialog` component (install if not already present)
+- Use `sonner` toast (already used in the codebase for edit save feedback)
+- The delete button already exists in the item drawer action bar — wire it up
+- After deletion, close the drawer and trigger a list refresh (revalidatePath or client-side state removal)
 
 ## History
 
