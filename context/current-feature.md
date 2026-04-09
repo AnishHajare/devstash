@@ -1,22 +1,13 @@
-# Current Feature: Delete Item
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- Clicking the delete button in the item drawer opens a shadcn `AlertDialog` confirmation
-- Confirmation dialog shows the item title and warns that the action is irreversible
-- On confirm, the item is deleted via a server action with ownership check
-- On success, a toast notification confirms deletion and the drawer closes
-- The item disappears from the list without a full page reload (optimistic or revalidation)
+<!-- Define what success looks like -->
 
 ## Notes
-- Reuse the existing `deleteItem` action pattern (or create one in `src/actions/items.ts`) with Zod validation and ownership check
-- Add a `deleteItem` DB query in `src/lib/db/items.ts`
-- Use shadcn `AlertDialog` component (install if not already present)
-- Use `sonner` toast (already used in the codebase for edit save feedback)
-- The delete button already exists in the item drawer action bar — wire it up
-- After deletion, close the drawer and trigger a list refresh (revalidatePath or client-side state removal)
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -44,3 +35,4 @@ In Progress
 - 2026-04-08: Items list grid updated to three columns on large screens (lg+), two on md, one on mobile. Single Tailwind class addition (lg:grid-cols-3) in /items/[type]/page.tsx.
 - 2026-04-08: Completed Item Drawer — right-side shadcn Sheet opens on ItemCard/ItemRow click with full item details fetched via /api/items/[id]. Action bar with favorite toggle (yellow when active), pin toggle, clipboard copy, edit (coming soon), and delete. Works on dashboard and /items/[type] pages. ItemsGrid client wrapper owns drawer state for items pages. Type and language shown as pill badges in drawer header.
 - 2026-04-08: Completed Item Drawer Edit Mode — edit button toggles inline edit mode within the same drawer. Action bar swaps to colour-accented Save/Cancel. Editable fields: title, description, content (snippet/prompt/command/note), URL (link), language (snippet/command), tags (comma-separated). Edit inputs match view-mode font size and dimensions exactly — no layout shift on toggle. Code content capped at max-h-[260px] scrollable in view mode; edit textarea starts at same height with resize-y. updateItem server action (src/actions/items.ts) with Zod validation and ownership check; updateItem DB query in src/lib/db/items.ts disconnects all tags then connect-or-creates. 13 unit tests added.
+- 2026-04-08: Completed Delete Item — trash button in item drawer opens shadcn AlertDialog showing item title with irreversibility warning. On confirm, deleteItem server action (src/actions/items.ts) deletes with ownership check via deleteItem DB fn (src/lib/db/items.ts). Toast shows ""{title}" deleted" on success, drawer closes, page refreshes. 5 unit tests added.
