@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { updateItem, deleteItem } from "./items";
+import { createItem, updateItem, deleteItem } from "./items";
 
 // ── Mocks ────────────────────────────────────────────────────
 
@@ -8,16 +8,33 @@ vi.mock("@/auth", () => ({
 }));
 
 vi.mock("@/lib/db/items", () => ({
+  createItem: vi.fn(),
   updateItem: vi.fn(),
   deleteItem: vi.fn(),
 }));
 
 import { auth } from "@/auth";
-import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem } from "@/lib/db/items";
+import {
+  createItem as dbCreateItem,
+  updateItem as dbUpdateItem,
+  deleteItem as dbDeleteItem,
+} from "@/lib/db/items";
 
 const mockAuth = vi.mocked(auth);
+const mockDbCreateItem = vi.mocked(dbCreateItem);
 const mockDbUpdateItem = vi.mocked(dbUpdateItem);
 const mockDbDeleteItem = vi.mocked(dbDeleteItem);
+
+const validCreatePayload = {
+  typeId: "type-1",
+  typeName: "snippet",
+  contentType: "text" as const,
+  title: "My Snippet",
+  description: "A description",
+  content: "console.log('hello')",
+  language: "TypeScript",
+  tags: ["react", "hooks"],
+};
 
 const validPayload = {
   title: "My Snippet",
@@ -32,7 +49,160 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// ── Auth ─────────────────────────────────────────────────────
+// ── createItem — auth ────────────────────────────────────────
+
+describe("createItem action — auth", () => {
+  it("returns error when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await createItem(validCreatePayload);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Not authenticated");
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("returns error when session has no user id", async () => {
+    mockAuth.mockResolvedValue({ user: {} } as never);
+    const result = await createItem(validCreatePayload);
+    expect(result.success).toBe(false);
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+});
+
+// ── createItem — validation ──────────────────────────────────
+
+describe("createItem action — validation", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
+  });
+
+  it("returns error when title is empty", async () => {
+    const result = await createItem({ ...validCreatePayload, title: "" });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Title is required");
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("returns error when content is missing for snippet", async () => {
+    const result = await createItem({ ...validCreatePayload, content: "" });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Content is required");
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("returns error when URL is missing for link type", async () => {
+    const result = await createItem({
+      ...validCreatePayload,
+      typeName: "link",
+      contentType: "url",
+      content: undefined,
+      url: "",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("URL is required");
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("returns error when URL is invalid for link type", async () => {
+    const result = await createItem({
+      ...validCreatePayload,
+      typeName: "link",
+      contentType: "url",
+      content: undefined,
+      url: "not-a-url",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Invalid URL");
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+});
+
+// ── createItem — DB ──────────────────────────────────────────
+
+describe("createItem action — DB", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
+  });
+
+  it("returns error when db throws", async () => {
+    mockDbCreateItem.mockRejectedValue(new Error("DB error"));
+    const result = await createItem(validCreatePayload);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Failed to create item");
+  });
+});
+
+// ── createItem — success ─────────────────────────────────────
+
+describe("createItem action — success", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
+  });
+
+  it("calls db with correct arguments and returns created item", async () => {
+    const createdItem = { id: "item-new", title: "My Snippet" };
+    mockDbCreateItem.mockResolvedValue(createdItem as never);
+
+    const result = await createItem(validCreatePayload);
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).toEqual(createdItem);
+
+    expect(mockDbCreateItem).toHaveBeenCalledWith({
+      title: "My Snippet",
+      description: "A description",
+      contentType: "text",
+      content: "console.log('hello')",
+      url: null,
+      language: "TypeScript",
+      tags: ["react", "hooks"],
+      itemTypeId: "type-1",
+      userId: "user-1",
+    });
+  });
+
+  it("creates link with URL and null content", async () => {
+    mockDbCreateItem.mockResolvedValue({ id: "item-link" } as never);
+
+    const result = await createItem({
+      typeId: "type-link",
+      typeName: "link",
+      contentType: "url",
+      title: "My Link",
+      url: "https://example.com",
+      tags: [],
+    });
+
+    expect(result.success).toBe(true);
+    expect(mockDbCreateItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentType: "url",
+        url: "https://example.com",
+        content: null,
+        language: null,
+      })
+    );
+  });
+
+  it("strips language for non-language types (prompt)", async () => {
+    mockDbCreateItem.mockResolvedValue({ id: "item-prompt" } as never);
+
+    await createItem({
+      typeId: "type-prompt",
+      typeName: "prompt",
+      contentType: "text",
+      title: "My Prompt",
+      content: "You are a helpful assistant.",
+      language: "english",
+      tags: [],
+    });
+
+    expect(mockDbCreateItem).toHaveBeenCalledWith(
+      expect.objectContaining({ language: null })
+    );
+  });
+});
+
+// ── updateItem — auth ─────────────────────────────────────────
 
 describe("updateItem action — auth", () => {
   it("returns error when not authenticated", async () => {

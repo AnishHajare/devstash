@@ -236,6 +236,69 @@ export async function getItemDetail(
   };
 }
 
+export type CreateItemInput = {
+  title: string;
+  description: string | null;
+  contentType: string;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+  itemTypeId: string;
+  userId: string;
+};
+
+/**
+ * Create a new item with optional tags.
+ */
+export async function createItem(data: CreateItemInput): Promise<ItemDetail> {
+  const item = await prisma.item.create({
+    data: {
+      title: data.title,
+      description: data.description,
+      contentType: data.contentType,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      userId: data.userId,
+      itemTypeId: data.itemTypeId,
+      tags: {
+        connectOrCreate: data.tags.map((name) => ({
+          where: { name },
+          create: { name },
+        })),
+      },
+    },
+    include: {
+      itemType: { select: { id: true, name: true, icon: true, color: true } },
+      tags: { select: { id: true, name: true } },
+      collections: {
+        select: { collection: { select: { id: true, name: true } } },
+      },
+    },
+  });
+
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    contentType: item.contentType,
+    content: item.content,
+    url: item.url,
+    language: item.language,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+    tags: item.tags,
+    collections: item.collections.map((ic) => ic.collection),
+    itemType: item.itemType,
+  };
+}
+
 export type UpdateItemInput = {
   title: string;
   description: string | null;
