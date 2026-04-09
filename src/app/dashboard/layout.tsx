@@ -3,7 +3,8 @@ import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { Plus, Search } from "lucide-react";
+import { NewItemDialog } from "@/components/items/new-item-dialog";
+import { Search } from "lucide-react";
 import {
   getCollectionsForUser,
 } from "@/lib/db/collections";
@@ -56,10 +57,7 @@ export default async function DashboardLayout({
           <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
             New Collection
           </Button>
-          <Button size="sm" className="h-8 text-xs gap-1.5">
-            <Plus className="h-3.5 w-3.5" />
-            New Item
-          </Button>
+          <NewItemDialog itemTypes={itemTypes} />
         </div>
       </header>
 
