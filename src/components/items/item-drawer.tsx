@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+
+const CodeEditor = dynamic(
+  () => import("@/components/items/code-editor").then((m) => m.CodeEditor),
+  { ssr: false }
+);
 import {
   Star,
   Pin,
@@ -394,15 +400,24 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                   {showContent && (
                     <section>
                       <SectionLabel>Content</SectionLabel>
-                      <EditTextarea
-                        value={editState.content}
-                        onChange={field("content")}
-                        placeholder="Content…"
-                        mono
-                        resizable
-                        accentColor={item.itemType.color}
-                        className="px-4 py-3 text-xs leading-relaxed min-h-[260px]"
-                      />
+                      {showLanguage ? (
+                        <CodeEditor
+                          value={editState.content}
+                          onChange={(val) =>
+                            setEditState((prev) => prev && { ...prev, content: val })
+                          }
+                          language={editState.language || undefined}
+                          accentColor={item.itemType.color}
+                        />
+                      ) : (
+                        <EditTextarea
+                          value={editState.content}
+                          onChange={field("content")}
+                          placeholder="Content…"
+                          accentColor={item.itemType.color}
+                          className="px-4 py-3 text-xs leading-relaxed min-h-[260px]"
+                        />
+                      )}
                     </section>
                   )}
 
@@ -487,9 +502,17 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                   {item.content && (
                     <section>
                       <SectionLabel>Content</SectionLabel>
-                      <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono leading-relaxed whitespace-pre overflow-x-auto max-h-[260px] overflow-y-auto">
-                        {item.content}
-                      </pre>
+                      {showLanguage ? (
+                        <CodeEditor
+                          value={item.content}
+                          language={item.language ?? undefined}
+                          readOnly
+                        />
+                      ) : (
+                        <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono leading-relaxed whitespace-pre overflow-x-auto max-h-[260px] overflow-y-auto">
+                          {item.content}
+                        </pre>
+                      )}
                     </section>
                   )}
 
