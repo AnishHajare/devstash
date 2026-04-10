@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+
+const CodeEditor = dynamic(
+  () => import("@/components/items/code-editor").then((m) => m.CodeEditor),
+  { ssr: false }
+);
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -198,20 +204,23 @@ export function NewItemDialog({ itemTypes }: Props) {
               <Label htmlFor="ni-content">
                 Content <span className="text-destructive">*</span>
               </Label>
-              <textarea
-                id="ni-content"
-                value={form.content}
-                onChange={set("content")}
-                placeholder={
-                  typeName === "snippet" || typeName === "command"
-                    ? "Paste your code or command here..."
-                    : "Enter content..."
-                }
-                required
-                className={`w-full min-h-[120px] resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${
-                  isMonoContent ? "font-mono" : ""
-                }`}
-              />
+              {isMonoContent ? (
+                <CodeEditor
+                  value={form.content}
+                  onChange={(val) => setForm((prev) => ({ ...prev, content: val }))}
+                  language={form.language || undefined}
+                  accentColor={selectedType.color}
+                />
+              ) : (
+                <textarea
+                  id="ni-content"
+                  value={form.content}
+                  onChange={set("content")}
+                  placeholder="Enter content..."
+                  required
+                  className="w-full min-h-[120px] resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              )}
             </div>
           )}
 
