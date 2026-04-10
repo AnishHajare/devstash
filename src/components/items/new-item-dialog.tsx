@@ -8,6 +8,7 @@ const CodeEditor = dynamic(
   () => import("@/components/items/code-editor").then((m) => m.CodeEditor),
   { ssr: false }
 );
+import { MarkdownEditor } from "@/components/items/markdown-editor";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ type Props = {
 
 const TEXT_TYPES = ["snippet", "prompt", "command", "note"];
 const LANGUAGE_TYPES = ["snippet", "command"];
+const MARKDOWN_TYPES = ["note", "prompt"];
 const EXCLUDED_TYPES = ["file", "image"];
 
 function getContentType(typeName: string): "text" | "url" {
@@ -120,6 +122,7 @@ export function NewItemDialog({ itemTypes }: Props) {
   const showLanguage = LANGUAGE_TYPES.includes(typeName);
   const showUrl = typeName === "link";
   const isMonoContent = LANGUAGE_TYPES.includes(typeName);
+  const isMarkdownContent = MARKDOWN_TYPES.includes(typeName);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -210,6 +213,13 @@ export function NewItemDialog({ itemTypes }: Props) {
                   onChange={(val) => setForm((prev) => ({ ...prev, content: val }))}
                   language={form.language || undefined}
                   accentColor={selectedType.color}
+                />
+              ) : isMarkdownContent ? (
+                <MarkdownEditor
+                  value={form.content}
+                  onChange={(val) => setForm((prev) => ({ ...prev, content: val }))}
+                  accentColor={selectedType.color}
+                  placeholder="Write markdown..."
                 />
               ) : (
                 <textarea

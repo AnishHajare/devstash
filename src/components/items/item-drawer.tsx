@@ -8,6 +8,7 @@ const CodeEditor = dynamic(
   () => import("@/components/items/code-editor").then((m) => m.CodeEditor),
   { ssr: false }
 );
+import { MarkdownEditor, MarkdownView } from "@/components/items/markdown-editor";
 import {
   Star,
   Pin,
@@ -59,6 +60,7 @@ type EditState = {
 
 const TEXT_CONTENT_TYPES = ["snippet", "prompt", "command", "note"];
 const LANGUAGE_TYPES = ["snippet", "command"];
+const MARKDOWN_TYPES = ["note", "prompt"];
 
 function itemToEditState(item: ItemDetail): EditState {
   return {
@@ -199,6 +201,7 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
   const typeName = item?.itemType.name.toLowerCase() ?? "";
   const showContent = TEXT_CONTENT_TYPES.includes(typeName);
   const showLanguage = LANGUAGE_TYPES.includes(typeName);
+  const showMarkdown = MARKDOWN_TYPES.includes(typeName);
   const showUrl = typeName === "link";
 
   return (
@@ -409,6 +412,14 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                           language={editState.language || undefined}
                           accentColor={item.itemType.color}
                         />
+                      ) : showMarkdown ? (
+                        <MarkdownEditor
+                          value={editState.content}
+                          onChange={(val) =>
+                            setEditState((prev) => prev && { ...prev, content: val })
+                          }
+                          accentColor={item.itemType.color}
+                        />
                       ) : (
                         <EditTextarea
                           value={editState.content}
@@ -508,6 +519,8 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                           language={item.language ?? undefined}
                           readOnly
                         />
+                      ) : showMarkdown ? (
+                        <MarkdownView content={item.content} />
                       ) : (
                         <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono leading-relaxed whitespace-pre overflow-x-auto max-h-[260px] overflow-y-auto">
                           {item.content}
