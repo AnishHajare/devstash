@@ -21,6 +21,8 @@ import {
   Check,
   X,
   Save,
+  Download,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -203,6 +205,8 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
   const showLanguage = LANGUAGE_TYPES.includes(typeName);
   const showMarkdown = MARKDOWN_TYPES.includes(typeName);
   const showUrl = typeName === "link";
+  const showFile = typeName === "file" || typeName === "image";
+  const downloadUrl = item?.fileUrl ? `/api/download/${item.fileUrl}` : null;
 
   return (
     <>
@@ -342,7 +346,6 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                       className="h-3.5 w-3.5"
                       style={item.isFavorite ? { fill: "#eab308", color: "#eab308" } : {}}
                     />
-                    <span className="text-xs">Favorite</span>
                   </ActionBtn>
 
                   <ActionBtn onClick={togglePin} label={item.isPinned ? "Unpin" : "Pin"}>
@@ -350,7 +353,6 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                       className="h-3.5 w-3.5"
                       style={item.isPinned ? { color: "#3b82f6" } : {}}
                     />
-                    <span className="text-xs">Pin</span>
                   </ActionBtn>
 
                   <ActionBtn onClick={copyContent} label="Copy content">
@@ -359,14 +361,23 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                     ) : (
                       <Copy className="h-3.5 w-3.5" />
                     )}
-                    <span className="text-xs">{copied ? "Copied" : "Copy"}</span>
                   </ActionBtn>
+
+                  {showFile && downloadUrl && (
+                    <a
+                      href={downloadUrl}
+                      download={item?.fileName ?? true}
+                      className="flex items-center justify-center rounded-md px-2.5 py-1.5 transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                      aria-label="Download file"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </a>
+                  )}
 
                   <div className="w-px h-4 bg-border mx-1" />
 
                   <ActionBtn onClick={startEditing} label="Edit item">
                     <Pencil className="h-3.5 w-3.5" />
-                    <span className="text-xs">Edit</span>
                   </ActionBtn>
 
                   {/* Push delete to the right */}
@@ -525,6 +536,46 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                         <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono leading-relaxed whitespace-pre overflow-x-auto max-h-[260px] overflow-y-auto">
                           {item.content}
                         </pre>
+                      )}
+                    </section>
+                  )}
+
+                  {/* File / Image */}
+                  {showFile && item.fileUrl && (
+                    <section>
+                      <SectionLabel>File</SectionLabel>
+                      {typeName === "image" ? (
+                        <div className="rounded-lg overflow-hidden border border-border bg-muted/20">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={downloadUrl!}
+                            alt={item.fileName ?? item.title}
+                            className="w-full max-h-64 object-contain"
+                          />
+                          {item.fileName && (
+                            <div className="flex items-center gap-2 px-3 py-2 border-t border-border">
+                              <span className="truncate text-xs text-muted-foreground flex-1">{item.fileName}</span>
+                              {item.fileSize != null && (
+                                <span className="text-xs text-muted-foreground shrink-0">{formatBytes(item.fileSize)}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
+                          <div
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+                            style={{ backgroundColor: `${item.itemType.color}20` }}
+                          >
+                            <FileText className="h-4 w-4" style={{ color: item.itemType.color }} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{item.fileName ?? "File"}</p>
+                            {item.fileSize != null && (
+                              <p className="text-xs text-muted-foreground">{formatBytes(item.fileSize)}</p>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </section>
                   )}
@@ -732,6 +783,12 @@ function DrawerSkeleton() {
       </div>
     </div>
   );
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function formatDate(iso: string) {

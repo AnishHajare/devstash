@@ -12,13 +12,16 @@ import type { ItemDetail } from "@/lib/db/items";
 const createItemSchema = z.object({
   typeId: z.string().min(1, "Type is required"),
   typeName: z.string().min(1),
-  contentType: z.enum(["text", "url"]),
+  contentType: z.enum(["text", "url", "file"]),
   title: z.string().trim().min(1, "Title is required"),
   description: z.string().optional(),
   content: z.string().optional(),
   url: z.string().optional(),
   language: z.string().optional(),
   tags: z.array(z.string().trim().min(1)).default([]),
+  fileKey: z.string().optional(),
+  fileName: z.string().optional(),
+  fileSize: z.number().optional(),
 });
 
 type CreateItemResult =
@@ -40,7 +43,7 @@ export async function createItem(formData: unknown): Promise<CreateItemResult> {
     return { success: false, error: first?.message ?? "Validation failed" };
   }
 
-  const { typeId, typeName, contentType, title, description, content, url, language, tags } =
+  const { typeId, typeName, contentType, title, description, content, url, language, tags, fileKey, fileName, fileSize } =
     parsed.data;
 
   if (contentType === "text" && TEXT_CONTENT_TYPES.includes(typeName)) {
@@ -60,6 +63,12 @@ export async function createItem(formData: unknown): Promise<CreateItemResult> {
     }
   }
 
+  if (contentType === "file") {
+    if (!fileKey?.trim()) {
+      return { success: false, error: "File upload is required" };
+    }
+  }
+
   try {
     const created = await dbCreateItem({
       title,
@@ -68,6 +77,9 @@ export async function createItem(formData: unknown): Promise<CreateItemResult> {
       content: contentType === "text" ? (content ?? null) : null,
       url: contentType === "url" ? (url ?? null) : null,
       language: LANGUAGE_TYPES.includes(typeName) ? (language?.trim() || null) : null,
+      fileUrl: contentType === "file" ? (fileKey ?? null) : null,
+      fileName: contentType === "file" ? (fileName ?? null) : null,
+      fileSize: contentType === "file" ? (fileSize ?? null) : null,
       tags,
       itemTypeId: typeId,
       userId: session.user.id,

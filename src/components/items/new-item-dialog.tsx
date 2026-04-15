@@ -9,6 +9,8 @@ const CodeEditor = dynamic(
   { ssr: false }
 );
 import { MarkdownEditor } from "@/components/items/markdown-editor";
+import { FileUpload } from "@/components/items/file-upload";
+import type { UploadedFile } from "@/components/items/file-upload";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,10 +38,12 @@ type Props = {
 const TEXT_TYPES = ["snippet", "prompt", "command", "note"];
 const LANGUAGE_TYPES = ["snippet", "command"];
 const MARKDOWN_TYPES = ["note", "prompt"];
-const EXCLUDED_TYPES = ["file", "image"];
+const FILE_TYPES = ["file", "image"];
 
-function getContentType(typeName: string): "text" | "url" {
-  return typeName === "link" ? "url" : "text";
+function getContentType(typeName: string): "text" | "url" | "file" {
+  if (typeName === "link") return "url";
+  if (FILE_TYPES.includes(typeName)) return "file";
+  return "text";
 }
 
 const EMPTY_FORM = {
@@ -53,15 +57,13 @@ const EMPTY_FORM = {
 
 export function NewItemDialog({ itemTypes }: Props) {
   const router = useRouter();
-  const visibleTypes = itemTypes.filter(
-    (t) => !EXCLUDED_TYPES.includes(t.name.toLowerCase())
-  );
 
-  const defaultType = visibleTypes.find((t) => t.name === "snippet") ?? visibleTypes[0];
+  const defaultType = itemTypes.find((t) => t.name === "snippet") ?? itemTypes[0];
 
   const [open, setOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<ItemType>(defaultType);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   function handleOpenChange(isOpen: boolean) {
@@ -69,12 +71,14 @@ export function NewItemDialog({ itemTypes }: Props) {
     if (!isOpen) {
       setSelectedType(defaultType);
       setForm(EMPTY_FORM);
+      setUploadedFile(null);
     }
   }
 
   function handleTypeSelect(type: ItemType) {
     setSelectedType(type);
     setForm((prev) => ({ ...prev, content: "", url: "", language: "" }));
+    setUploadedFile(null);
   }
 
   function set(field: keyof typeof EMPTY_FORM) {
@@ -82,7 +86,7 @@ export function NewItemDialog({ itemTypes }: Props) {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitting(true);
 
@@ -92,6 +96,12 @@ export function NewItemDialog({ itemTypes }: Props) {
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
+
+    if (contentType === "file" && !uploadedFile) {
+      toast.error("Please upload a file first");
+      setSubmitting(false);
+      return;
+    }
 
     const result = await createItem({
       typeId: selectedType.id,
@@ -103,6 +113,9 @@ export function NewItemDialog({ itemTypes }: Props) {
       url: form.url || undefined,
       language: form.language || undefined,
       tags,
+      fileKey: uploadedFile?.key,
+      fileName: uploadedFile?.fileName,
+      fileSize: uploadedFile?.fileSize,
     });
 
     setSubmitting(false);
@@ -123,6 +136,7 @@ export function NewItemDialog({ itemTypes }: Props) {
   const showUrl = typeName === "link";
   const isMonoContent = LANGUAGE_TYPES.includes(typeName);
   const isMarkdownContent = MARKDOWN_TYPES.includes(typeName);
+  const isFileType = FILE_TYPES.includes(typeName);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -144,7 +158,7 @@ export function NewItemDialog({ itemTypes }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type selector */}
           <div className="flex flex-wrap gap-2">
-            {visibleTypes.map((type) => {
+            {itemTypes.map((type) => {
               const Icon = iconMap[type.icon];
               const isActive = selectedType.id === type.id;
               return (
@@ -200,6 +214,22 @@ export function NewItemDialog({ itemTypes }: Props) {
               className="h-8 text-sm"
             />
           </div>
+
+          {/* File upload */}
+          {isFileType && (
+            <div className="space-y-1.5">
+              <Label>
+                File <span className="text-destructive">*</span>
+              </Label>
+              <FileUpload
+                itemType={typeName as "file" | "image"}
+                uploaded={uploadedFile}
+                onUpload={setUploadedFile}
+                onClear={() => setUploadedFile(null)}
+                accentColor={selectedType.color}
+              />
+            </div>
+          )}
 
           {/* Content */}
           {showContent && (

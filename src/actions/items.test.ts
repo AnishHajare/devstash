@@ -114,6 +114,32 @@ describe("createItem action — validation", () => {
     if (!result.success) expect(result.error).toBe("Invalid URL");
     expect(mockDbCreateItem).not.toHaveBeenCalled();
   });
+
+  it("returns error when file upload is missing for file type", async () => {
+    const result = await createItem({
+      ...validCreatePayload,
+      typeName: "file",
+      contentType: "file",
+      content: undefined,
+      fileKey: undefined,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("File upload is required");
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("returns error when file upload is missing for image type", async () => {
+    const result = await createItem({
+      ...validCreatePayload,
+      typeName: "image",
+      contentType: "file",
+      content: undefined,
+      fileKey: "",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("File upload is required");
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
 });
 
 // ── createItem — DB ──────────────────────────────────────────
@@ -154,6 +180,9 @@ describe("createItem action — success", () => {
       content: "console.log('hello')",
       url: null,
       language: "TypeScript",
+      fileUrl: null,
+      fileName: null,
+      fileSize: null,
       tags: ["react", "hooks"],
       itemTypeId: "type-1",
       userId: "user-1",
@@ -179,6 +208,33 @@ describe("createItem action — success", () => {
         url: "https://example.com",
         content: null,
         language: null,
+      })
+    );
+  });
+
+  it("creates file item with fileUrl, fileName, fileSize and null content", async () => {
+    mockDbCreateItem.mockResolvedValue({ id: "item-file" } as never);
+
+    const result = await createItem({
+      typeId: "type-file",
+      typeName: "file",
+      contentType: "file",
+      title: "My PDF",
+      fileKey: "user-1/uuid-report.pdf",
+      fileName: "report.pdf",
+      fileSize: 204800,
+      tags: [],
+    });
+
+    expect(result.success).toBe(true);
+    expect(mockDbCreateItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentType: "file",
+        fileUrl: "user-1/uuid-report.pdf",
+        fileName: "report.pdf",
+        fileSize: 204800,
+        content: null,
+        url: null,
       })
     );
   });

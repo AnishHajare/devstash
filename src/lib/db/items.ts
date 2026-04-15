@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { deleteFromR2 } from "@/lib/r2";
 
 export type ItemWithType = {
   id: string;
@@ -243,6 +244,9 @@ export type CreateItemInput = {
   content: string | null;
   url: string | null;
   language: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
   tags: string[];
   itemTypeId: string;
   userId: string;
@@ -260,6 +264,9 @@ export async function createItem(data: CreateItemInput): Promise<ItemDetail> {
       content: data.content,
       url: data.url,
       language: data.language,
+      fileUrl: data.fileUrl,
+      fileName: data.fileName,
+      fileSize: data.fileSize,
       userId: data.userId,
       itemTypeId: data.itemTypeId,
       tags: {
@@ -364,11 +371,21 @@ export async function updateItem(
 
 /**
  * Delete an item by id, scoped to the owning user.
+ * Also removes the R2 file if the item has one.
  * Returns true if deleted, false if not found or not owned.
  */
 export async function deleteItem(id: string, userId: string): Promise<boolean> {
   try {
-    await prisma.item.delete({ where: { id, userId } });
+    const item = await prisma.item.delete({
+      where: { id, userId },
+      select: { fileUrl: true },
+    });
+    if (item.fileUrl) {
+      await deleteFromR2(item.fileUrl).catch(() => {
+        // Best-effort: log but don't fail if R2 delete errors
+        console.error(`Failed to delete R2 object: ${item.fileUrl}`);
+      });
+    }
     return true;
   } catch {
     return false;
