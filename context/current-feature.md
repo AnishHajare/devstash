@@ -1,27 +1,19 @@
-# Current Feature: File Upload with Cloudflare R2
+# Current Feature: Image Gallery View
 
 ## Status
 In Progress
 
 ## Goals
-- Create upload API route for Cloudflare R2
-- Create FileUpload component with drag-and-drop and progress indicator
-- Update NewItemDialog to use FileUpload for file/image types
-- Delete files from R2 when items are deleted
-- Create download proxy API route to avoid CORS issues
-- Add download button in ItemDrawer for file types
-- Display image preview for images, file info for files in ItemDrawer
+- Create an image thumbnail card to replace the current item card for image types
+- Show an image grid/gallery with 3 columns
+- Display image thumbnail with 16:9 aspect ratio (`aspect-video`)
+- Use `object-cover` to fill the card (may crop edges)
+- Add subtle hover zoom effect (5% scale with 300ms transition)
 
 ## Notes
-- File constraints:
-  - Images: max 5 MB, extensions: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`
-  - Files: max 10 MB, extensions: `.pdf`, `.txt`, `.md`, `.json`, `.yaml`, `.yml`, `.xml`, `.csv`, `.toml`, `.ini`
-- MIME types per the spec (image/* and text/plain, application/pdf, etc.)
-- Use Cloudflare R2 (S3-compatible) for storage
-- DB fields already in schema: `fileUrl`, `fileName`, `fileSize` on Item model
-- contentType for file/image items is `"file"`
-- Stick to `src/lib/db/items.ts` for Prisma/DB functions
-- File and Image types are Pro-only system types
+- Image type uses `contentType: "file"` and stores URL in `fileUrl`
+- Only applies to the Image item type (not File)
+- Replace the regular `ItemCard` with a thumbnail-based card on the `/items/images` page
 
 ## History
 

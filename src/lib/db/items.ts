@@ -6,6 +6,12 @@ export type ItemWithType = {
   title: string;
   description: string | null;
   contentType: string;
+  content: string | null;
+  url: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  language: string | null;
   isFavorite: boolean;
   isPinned: boolean;
   createdAt: string;
