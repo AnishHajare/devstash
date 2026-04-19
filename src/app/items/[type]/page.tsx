@@ -63,7 +63,7 @@ export default async function ItemsTypePage({
           </p>
         </div>
       ) : (
-        <ItemsGrid items={items} />
+        <ItemsGrid items={items} isGallery={typeName.toLowerCase() === "image"} />
       )}
     </div>
   );
