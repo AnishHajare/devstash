@@ -6,13 +6,16 @@ import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { FileListRow } from "@/components/items/file-list-row";
 import { ItemDrawer } from "@/components/items/item-drawer";
 import type { ItemWithType } from "@/lib/db/items";
+import type { CollectionOption } from "@/lib/db/collections";
 
 export function ItemsGrid({
   items,
+  collections,
   isGallery = false,
   isFileList = false,
 }: {
   items: ItemWithType[];
+  collections: CollectionOption[];
   isGallery?: boolean;
   isFileList?: boolean;
 }) {
@@ -43,7 +46,12 @@ export function ItemsGrid({
           )}
         </div>
       )}
-      <ItemDrawer itemId={activeId} open={open} onOpenChange={setOpen} />
+      <ItemDrawer
+        itemId={activeId}
+        open={open}
+        onOpenChange={setOpen}
+        collections={collections}
+      />
     </>
   );
 }

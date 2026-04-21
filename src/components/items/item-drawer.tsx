@@ -8,6 +8,7 @@ const CodeEditor = dynamic(
   () => import("@/components/items/code-editor").then((m) => m.CodeEditor),
   { ssr: false }
 );
+import { CollectionMultiSelect } from "@/components/items/collection-multi-select";
 import { MarkdownEditor, MarkdownView } from "@/components/items/markdown-editor";
 import { formatBytes } from "@/lib/format-bytes";
 import {
@@ -50,11 +51,13 @@ import {
 import { iconMap } from "@/lib/icon-map";
 import { updateItem, deleteItem as deleteItemAction } from "@/actions/items";
 import type { ItemDetail } from "@/lib/db/items";
+import type { CollectionOption } from "@/lib/db/collections";
 
 type ItemDrawerProps = {
   itemId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  collections: CollectionOption[];
 };
 
 type EditState = {
@@ -64,6 +67,7 @@ type EditState = {
   url: string;
   language: string;
   tags: string;
+  collectionIds: string[];
 };
 
 
@@ -75,10 +79,16 @@ function itemToEditState(item: ItemDetail): EditState {
     url: item.url ?? "",
     language: item.language ?? "",
     tags: item.tags.map((t) => t.name).join(", "),
+    collectionIds: item.collections.map((collection) => collection.id),
   };
 }
 
-export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
+export function ItemDrawer({
+  itemId,
+  open,
+  onOpenChange,
+  collections,
+}: ItemDrawerProps) {
   const router = useRouter();
   const [item, setItem] = useState<ItemDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -91,16 +101,37 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
 
   useEffect(() => {
     if (!itemId || !open) return;
-    setItem(null);
-    setLoading(true);
-    setEditing(false);
-    setEditState(null);
 
-    fetch(`/api/items/${itemId}`)
-      .then((r) => r.json())
-      .then((data: ItemDetail) => setItem(data))
-      .catch(() => toast.error("Failed to load item"))
-      .finally(() => setLoading(false));
+    let cancelled = false;
+
+    async function loadItem() {
+      setLoading(true);
+      setItem(null);
+      setEditing(false);
+      setEditState(null);
+
+      try {
+        const response = await fetch(`/api/items/${itemId}`);
+        const data = (await response.json()) as ItemDetail;
+        if (!cancelled) {
+          setItem(data);
+        }
+      } catch {
+        if (!cancelled) {
+          toast.error("Failed to load item");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadItem();
+
+    return () => {
+      cancelled = true;
+    };
   }, [itemId, open]);
 
   function startEditing() {
@@ -130,6 +161,7 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
       url: editState.url || null,
       language: editState.language || null,
       tags,
+      collectionIds: editState.collectionIds,
     });
 
     setSaving(false);
@@ -409,13 +441,13 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
                   showLanguage={showLanguage}
                   showMarkdown={showMarkdown}
                   showUrl={showUrl}
+                  collections={collections}
                 />
               ) : (
                 <ItemViewBody
                   item={item}
                   showLanguage={showLanguage}
                   showMarkdown={showMarkdown}
-                  showUrl={showUrl}
                   showFile={showFile}
                   downloadUrl={downloadUrl}
                   typeName={typeName}
@@ -441,6 +473,7 @@ function ItemEditBody({
   showLanguage,
   showMarkdown,
   showUrl,
+  collections,
 }: {
   item: ItemDetail;
   editState: EditState;
@@ -450,6 +483,7 @@ function ItemEditBody({
   showLanguage: boolean;
   showMarkdown: boolean;
   showUrl: boolean;
+  collections: CollectionOption[];
 }) {
   return (
     <>
@@ -539,21 +573,15 @@ function ItemEditBody({
         <p className="mt-1.5 text-xs text-muted-foreground">Comma-separated</p>
       </section>
 
-      {/* Non-editable: collections + dates */}
-      {item.collections.length > 0 && (
-        <section>
-          <SectionLabel icon={<FolderOpen className="h-3 w-3" />}>
-            Collections
-          </SectionLabel>
-          <div className="flex flex-col gap-1">
-            {item.collections.map((col) => (
-              <span key={col.id} className="text-sm text-muted-foreground">
-                {col.name}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
+      <section>
+        <CollectionMultiSelect
+          collections={collections}
+          selectedIds={editState.collectionIds}
+          onChange={(collectionIds) =>
+            setEditState((prev) => prev && { ...prev, collectionIds })
+          }
+        />
+      </section>
 
       <section>
         <SectionLabel icon={<Calendar className="h-3 w-3" />}>Details</SectionLabel>
@@ -570,7 +598,6 @@ function ItemViewBody({
   item,
   showLanguage,
   showMarkdown,
-  showUrl,
   showFile,
   downloadUrl,
   typeName,
@@ -578,7 +605,6 @@ function ItemViewBody({
   item: ItemDetail;
   showLanguage: boolean;
   showMarkdown: boolean;
-  showUrl: boolean;
   showFile: boolean;
   downloadUrl: string | null;
   typeName: string;

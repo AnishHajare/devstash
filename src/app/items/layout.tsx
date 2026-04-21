@@ -5,7 +5,10 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { NewItemDialog } from "@/components/items/new-item-dialog";
 import { NewCollectionDialog } from "@/components/collections/new-collection-dialog";
 import { Search } from "lucide-react";
-import { getCollectionsForUser } from "@/lib/db/collections";
+import {
+  getCollectionsForUser,
+  getCollectionOptionsForUser,
+} from "@/lib/db/collections";
 import { getItemTypesWithCounts, getSidebarUser } from "@/lib/db/items";
 
 export default async function ItemsLayout({
@@ -18,9 +21,10 @@ export default async function ItemsLayout({
 
   const userId = session.user.id;
 
-  const [itemTypes, collections, sidebarUser] = await Promise.all([
+  const [itemTypes, collections, collectionOptions, sidebarUser] = await Promise.all([
     getItemTypesWithCounts(userId),
     getCollectionsForUser(userId),
+    getCollectionOptionsForUser(userId),
     getSidebarUser(userId),
   ]);
 
@@ -50,7 +54,7 @@ export default async function ItemsLayout({
 
         <div className="ml-auto flex items-center gap-2">
           <NewCollectionDialog />
-          <NewItemDialog itemTypes={itemTypes} />
+          <NewItemDialog itemTypes={itemTypes} collections={collectionOptions} />
         </div>
       </header>
 

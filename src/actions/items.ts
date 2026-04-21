@@ -20,6 +20,7 @@ const createItemSchema = z.object({
   url: z.string().optional(),
   language: z.string().optional(),
   tags: z.array(z.string().trim().min(1)).default([]),
+  collectionIds: z.array(z.string().trim().min(1)).default([]),
   fileKey: z.string().optional(),
   fileName: z.string().optional(),
   fileSize: z.number().optional(),
@@ -42,7 +43,7 @@ export async function createItem(formData: unknown): Promise<CreateItemResult> {
     return { success: false, error: first?.message ?? "Validation failed" };
   }
 
-  const { typeId, typeName, contentType, title, description, content, url, language, tags, fileKey, fileName, fileSize } =
+  const { typeId, typeName, contentType, title, description, content, url, language, tags, collectionIds, fileKey, fileName, fileSize } =
     parsed.data;
 
   if (contentType === "text" && TEXT_CONTENT_TYPES.includes(typeName)) {
@@ -80,6 +81,7 @@ export async function createItem(formData: unknown): Promise<CreateItemResult> {
       fileName: contentType === "file" ? (fileName ?? null) : null,
       fileSize: contentType === "file" ? (fileSize ?? null) : null,
       tags,
+      collectionIds,
       itemTypeId: typeId,
       userId: session.user.id,
     });
@@ -97,6 +99,7 @@ const updateItemSchema = z.object({
   url: z.string().url("Invalid URL").nullable().optional(),
   language: z.string().nullable().optional(),
   tags: z.array(z.string().trim().min(1)).default([]),
+  collectionIds: z.array(z.string().trim().min(1)).default([]),
 });
 
 type UpdateItemResult =
@@ -118,7 +121,7 @@ export async function updateItem(
     return { success: false, error: first?.message ?? "Validation failed" };
   }
 
-  const { title, description, content, url, language, tags } = parsed.data;
+  const { title, description, content, url, language, tags, collectionIds } = parsed.data;
 
   try {
     const updated = await dbUpdateItem(itemId, session.user.id, {
@@ -128,6 +131,7 @@ export async function updateItem(
       url: url ?? null,
       language: language ?? null,
       tags,
+      collectionIds,
     });
 
     if (!updated) {

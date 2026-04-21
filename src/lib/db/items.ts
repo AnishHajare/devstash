@@ -79,6 +79,31 @@ function toItemDetail(item: PrismaItemDetail): ItemDetail {
   };
 }
 
+async function getOwnedCollectionIds(
+  userId: string,
+  collectionIds: string[]
+): Promise<string[]> {
+  const uniqueCollectionIds = [...new Set(collectionIds)];
+
+  if (uniqueCollectionIds.length === 0) {
+    return [];
+  }
+
+  const collections = await prisma.collection.findMany({
+    where: {
+      userId,
+      id: { in: uniqueCollectionIds },
+    },
+    select: { id: true },
+  });
+
+  if (collections.length !== uniqueCollectionIds.length) {
+    throw new Error("Invalid collection selection");
+  }
+
+  return collections.map((collection) => collection.id);
+}
+
 /**
  * Fetch pinned items for a user.
  */
@@ -278,6 +303,7 @@ export type CreateItemInput = {
   fileName: string | null;
   fileSize: number | null;
   tags: string[];
+  collectionIds: string[];
   itemTypeId: string;
   userId: string;
 };
@@ -286,6 +312,8 @@ export type CreateItemInput = {
  * Create a new item with optional tags.
  */
 export async function createItem(data: CreateItemInput): Promise<ItemDetail> {
+  const collectionIds = await getOwnedCollectionIds(data.userId, data.collectionIds);
+
   const item = await prisma.item.create({
     data: {
       title: data.title,
@@ -303,6 +331,11 @@ export async function createItem(data: CreateItemInput): Promise<ItemDetail> {
         connectOrCreate: data.tags.map((name) => ({
           where: { name },
           create: { name },
+        })),
+      },
+      collections: {
+        create: collectionIds.map((collectionId) => ({
+          collection: { connect: { id: collectionId } },
         })),
       },
     },
@@ -325,6 +358,7 @@ export type UpdateItemInput = {
   url: string | null;
   language: string | null;
   tags: string[];
+  collectionIds: string[];
 };
 
 /**
@@ -335,6 +369,31 @@ export async function updateItem(
   userId: string,
   data: UpdateItemInput
 ): Promise<ItemDetail | null> {
+  const nextCollectionIds = await getOwnedCollectionIds(userId, data.collectionIds);
+
+  const existingItem = await prisma.item.findFirst({
+    where: { id, userId },
+    select: {
+      collections: {
+        select: { collectionId: true },
+      },
+    },
+  });
+
+  if (!existingItem) {
+    return null;
+  }
+
+  const existingCollectionIds = existingItem.collections.map(
+    (collection) => collection.collectionId
+  );
+  const collectionIdsToConnect = nextCollectionIds.filter(
+    (collectionId) => !existingCollectionIds.includes(collectionId)
+  );
+  const collectionIdsToDisconnect = existingCollectionIds.filter(
+    (collectionId) => !nextCollectionIds.includes(collectionId)
+  );
+
   const item = await prisma.item.update({
     where: { id, userId },
     data: {
@@ -349,6 +408,16 @@ export async function updateItem(
           where: { name },
           create: { name },
         })),
+      },
+      collections: {
+        create: collectionIdsToConnect.map((collectionId) => ({
+          collection: { connect: { id: collectionId } },
+        })),
+        deleteMany: {
+          collectionId: {
+            in: collectionIdsToDisconnect,
+          },
+        },
       },
     },
     include: {

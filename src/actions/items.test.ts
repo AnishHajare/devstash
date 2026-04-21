@@ -36,6 +36,7 @@ const validCreatePayload = {
   content: "console.log('hello')",
   language: "TypeScript",
   tags: ["react", "hooks"],
+  collectionIds: ["collection-1", "collection-2"],
 };
 
 const validPayload = {
@@ -45,6 +46,7 @@ const validPayload = {
   url: null,
   language: "TypeScript",
   tags: ["react", "hooks"],
+  collectionIds: ["collection-1", "collection-2"],
 };
 
 beforeEach(() => {
@@ -157,6 +159,22 @@ describe("createItem action — DB", () => {
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error).toBe("Failed to create item");
   });
+
+  it("returns error when db throws due to invalid collection ownership", async () => {
+    mockDbCreateItem.mockRejectedValue(new Error("Invalid collection selection"));
+    const result = await createItem(validCreatePayload);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Failed to create item");
+  });
+
+  it("defaults collectionIds to empty array when omitted", async () => {
+    mockDbCreateItem.mockResolvedValue({ id: "item-new" } as never);
+    const { collectionIds: _ids, ...payloadWithoutCollections } = validCreatePayload;
+    await createItem(payloadWithoutCollections);
+    expect(mockDbCreateItem).toHaveBeenCalledWith(
+      expect.objectContaining({ collectionIds: [] })
+    );
+  });
 });
 
 // ── createItem — success ─────────────────────────────────────
@@ -186,6 +204,7 @@ describe("createItem action — success", () => {
       fileName: null,
       fileSize: null,
       tags: ["react", "hooks"],
+      collectionIds: ["collection-1", "collection-2"],
       itemTypeId: "type-1",
       userId: "user-1",
     });
@@ -210,6 +229,7 @@ describe("createItem action — success", () => {
         url: "https://example.com",
         content: null,
         language: null,
+        collectionIds: [],
       })
     );
   });
@@ -237,6 +257,7 @@ describe("createItem action — success", () => {
         fileSize: 204800,
         content: null,
         url: null,
+        collectionIds: [],
       })
     );
   });
@@ -325,13 +346,23 @@ describe("updateItem action — Zod validation", () => {
 
   it("defaults tags to empty array when omitted", async () => {
     mockDbUpdateItem.mockResolvedValue({ id: "item-1" } as never);
-    const { tags: _tags, ...payloadWithoutTags } = validPayload;
+    const payloadWithoutTags = {
+      title: validPayload.title,
+      description: validPayload.description,
+      content: validPayload.content,
+      url: validPayload.url,
+      language: validPayload.language,
+      collectionIds: validPayload.collectionIds,
+    };
     const result = await updateItem("item-1", payloadWithoutTags);
     expect(result.success).toBe(true);
     expect(mockDbUpdateItem).toHaveBeenCalledWith(
       "item-1",
       "user-1",
-      expect.objectContaining({ tags: [] })
+      expect.objectContaining({
+        tags: [],
+        collectionIds: ["collection-1", "collection-2"],
+      })
     );
   });
 });
@@ -355,6 +386,24 @@ describe("updateItem action — DB", () => {
     const result = await updateItem("item-1", validPayload);
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error).toBe("Failed to update item");
+  });
+
+  it("returns error when db throws due to invalid collection ownership", async () => {
+    mockDbUpdateItem.mockRejectedValue(new Error("Invalid collection selection"));
+    const result = await updateItem("item-1", validPayload);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Failed to update item");
+  });
+
+  it("defaults collectionIds to empty array when omitted", async () => {
+    mockDbUpdateItem.mockResolvedValue({ id: "item-1" } as never);
+    const { collectionIds: _ids, ...payloadWithoutCollections } = validPayload;
+    await updateItem("item-1", payloadWithoutCollections);
+    expect(mockDbUpdateItem).toHaveBeenCalledWith(
+      "item-1",
+      "user-1",
+      expect.objectContaining({ collectionIds: [] })
+    );
   });
 });
 
@@ -381,6 +430,7 @@ describe("updateItem action — success", () => {
       url: null,
       language: "TypeScript",
       tags: ["react", "hooks"],
+      collectionIds: ["collection-1", "collection-2"],
     });
   });
 
@@ -403,6 +453,7 @@ describe("updateItem action — success", () => {
       url: null,
       language: null,
       tags: [],
+      collectionIds: [],
     });
     expect(mockDbUpdateItem).toHaveBeenCalledWith("item-1", "user-1", {
       title: "Minimal",
@@ -411,6 +462,7 @@ describe("updateItem action — success", () => {
       url: null,
       language: null,
       tags: [],
+      collectionIds: [],
     });
   });
 });
