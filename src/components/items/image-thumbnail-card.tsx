@@ -2,20 +2,26 @@
 
 import { Pin, Star, ImageIcon } from "lucide-react";
 import type { ItemWithType } from "@/lib/db/items";
+import { cn } from "@/lib/utils";
 
 export function ImageThumbnailCard({
   item,
   onOpen,
+  className,
 }: {
   item: ItemWithType;
   onOpen?: (id: string) => void;
+  className?: string;
 }) {
   const src = item.fileUrl ? `/api/download/${item.fileUrl}` : null;
 
   return (
     <div
       onClick={() => onOpen?.(item.id)}
-      className="group cursor-pointer overflow-hidden rounded-lg border border-border bg-card transition-colors duration-200 hover:border-border/80"
+      className={cn(
+        "group cursor-pointer overflow-hidden rounded-lg border border-border bg-card transition-colors duration-200 hover:border-border/80",
+        className
+      )}
     >
       {/* Thumbnail */}
       <div className="aspect-video w-full overflow-hidden bg-muted">
