@@ -13,6 +13,7 @@ import {
 import { iconMap } from "@/lib/icon-map";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { PRO_SYSTEM_TYPES } from "@/lib/item-type-constants";
 import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
@@ -53,7 +54,7 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
         <nav className="mt-1 space-y-0.5">
           {data.itemTypes.map((type) => {
             const Icon = iconMap[type.icon];
-            const isProType = type.isSystem && (type.name === "File" || type.name === "Image");
+            const isProType = type.isSystem && PRO_SYSTEM_TYPES.includes(type.name);
             return (
               <Link
                 key={type.id}

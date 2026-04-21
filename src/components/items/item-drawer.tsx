@@ -9,6 +9,12 @@ const CodeEditor = dynamic(
   { ssr: false }
 );
 import { MarkdownEditor, MarkdownView } from "@/components/items/markdown-editor";
+import { formatBytes } from "@/lib/format-bytes";
+import {
+  TEXT_CONTENT_TYPES,
+  LANGUAGE_TYPES,
+  MARKDOWN_TYPES,
+} from "@/lib/item-type-constants";
 import {
   Star,
   Pin,
@@ -60,9 +66,6 @@ type EditState = {
   tags: string;
 };
 
-const TEXT_CONTENT_TYPES = ["snippet", "prompt", "command", "note"];
-const LANGUAGE_TYPES = ["snippet", "command"];
-const MARKDOWN_TYPES = ["note", "prompt"];
 
 function itemToEditState(item: ItemDetail): EditState {
   return {
@@ -783,12 +786,6 @@ function DrawerSkeleton() {
       </div>
     </div>
   );
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function formatDate(iso: string) {
