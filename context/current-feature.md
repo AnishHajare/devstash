@@ -1,22 +1,11 @@
-# Current Feature: Add Item to Collections
+# Current Feature
 
 ## Status
-Completed
+Not Started
 
 ## Goals
 
-- Collection multi-select input in `NewItemDialog` — user picks zero or more collections at create time
-- Collection multi-select input in `ItemDrawer` edit mode — pre-populated with the item's current collections, changes are saved on update
-- `createItem` server action and DB function wired to connect selected collections on create
-- `updateItem` server action and DB function diff old vs new collection selection and connect/disconnect accordingly
-- UI uses an existing shadcn/ui component (checkbox popover or similar) — no new deps unless nothing suitable is installed
-
 ## Notes
-
-- Only add the selection UI to the two forms; do not change collection list/detail pages
-- Check installed shadcn components before pulling in anything new
-- Follow existing `{ success, data, error }` action pattern and Zod validation
-- Fetch the user's collections server-side and pass them as props (or load via a server action) — do not expose a new API route just for this
 
 ## History
 
