@@ -28,6 +28,11 @@ export type CollectionDetail = CollectionWithMeta & {
   items: ItemWithType[];
 };
 
+export type UpdateCollectionInput = {
+  name: string;
+  description: string | null;
+};
+
 type CollectionMetaSource = {
   id: string;
   name: string;
@@ -186,6 +191,70 @@ export async function createCollection(
     updatedAt: collection.updatedAt,
     types: [],
   };
+}
+
+/**
+ * Update a collection by id, scoped to the owning user.
+ */
+export async function updateCollection(
+  id: string,
+  userId: string,
+  data: UpdateCollectionInput
+): Promise<CollectionWithMeta | null> {
+  const existingCollection = await prisma.collection.findFirst({
+    where: { id, userId },
+    include: {
+      items: {
+        select: {
+          item: {
+            select: {
+              itemType: { select: { id: true, icon: true, color: true, name: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!existingCollection) {
+    return null;
+  }
+
+  const updatedCollection = await prisma.collection.update({
+    where: { id },
+    data: {
+      name: data.name,
+      description: data.description,
+    },
+    include: {
+      items: {
+        select: {
+          item: {
+            select: {
+              itemType: { select: { id: true, icon: true, color: true, name: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return toCollectionMeta(updatedCollection);
+}
+
+/**
+ * Delete a collection by id, scoped to the owning user.
+ * Item rows remain intact; only the collection and join rows are removed.
+ */
+export async function deleteCollection(
+  id: string,
+  userId: string
+): Promise<boolean> {
+  const result = await prisma.collection.deleteMany({
+    where: { id, userId },
+  });
+
+  return result.count > 0;
 }
 
 /**
