@@ -14,6 +14,7 @@ import {
   Star,
 } from "lucide-react";
 import type { ItemWithType } from "@/lib/db/items";
+import { formatBytes } from "@/lib/format-bytes";
 
 type FileCategory = "image" | "video" | "audio" | "archive" | "code" | "text" | "default";
 
@@ -57,12 +58,6 @@ const CATEGORY_COLOR: Record<FileCategory, string> = {
   default: "#6b7280",
 };
 
-function formatBytes(bytes: number | null): string {
-  if (bytes === null || bytes === 0) return "—";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {

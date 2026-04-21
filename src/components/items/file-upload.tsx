@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, X, FileText, Image as ImageIcon } from "lucide-react";
+import { formatBytes } from "@/lib/format-bytes";
 
 export type UploadedFile = {
   key: string;
@@ -22,11 +23,6 @@ const FILE_EXTS = [".pdf", ".txt", ".md", ".json", ".yaml", ".yml", ".xml", ".cs
 const IMAGE_MAX_MB = 5;
 const FILE_MAX_MB = 10;
 
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 export function FileUpload({ itemType, onUpload, onClear, uploaded, accentColor = "#6b7280" }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);

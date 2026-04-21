@@ -17,12 +17,10 @@ export default async function ItemsTypePage({
 
   const typeName = typeSlugToName(type);
 
-  const [itemType, items] = await Promise.all([
-    getItemTypeByName(typeName),
-    getItemsByType(session.user.id, typeName),
-  ]);
-
+  const itemType = await getItemTypeByName(typeName);
   if (!itemType) notFound();
+
+  const items = await getItemsByType(session.user.id, typeName);
 
   const Icon = iconMap[itemType.icon];
 

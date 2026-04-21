@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { marked } from "marked";
+import DOMPurify from "dompurify";
 import { Copy, Check } from "lucide-react";
 
 marked.setOptions({ gfm: true, breaks: false });
@@ -24,7 +25,7 @@ export function MarkdownEditor({
   const [tab, setTab] = useState<"write" | "preview">("write");
   const [copied, setCopied] = useState(false);
 
-  const html = useMemo(() => marked.parse(value) as string, [value]);
+  const html = useMemo(() => DOMPurify.sanitize(marked.parse(value) as string), [value]);
 
   async function handleCopy() {
     await navigator.clipboard.writeText(value);
@@ -145,7 +146,7 @@ export function MarkdownEditor({
 
 // Lightweight read-only markdown renderer — used in item drawer view mode
 export function MarkdownView({ content }: { content: string }) {
-  const html = useMemo(() => marked.parse(content) as string, [content]);
+  const html = useMemo(() => DOMPurify.sanitize(marked.parse(content) as string), [content]);
   return (
     <div
       className="markdown-preview rounded-md border border-border"

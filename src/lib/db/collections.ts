@@ -12,8 +12,14 @@ export type CollectionWithMeta = {
   types: { icon: string; color: string; name: string; count: number }[];
 };
 
+export type CollectionStats = {
+  totalCollections: number;
+  favoriteCollections: number;
+};
+
 /**
  * Fetch all collections for a user with item counts and type breakdown.
+ * Only selects the itemType fields needed — no full Item rows fetched.
  */
 export async function getCollectionsForUser(
   userId: string
@@ -23,9 +29,11 @@ export async function getCollectionsForUser(
     orderBy: { updatedAt: "desc" },
     include: {
       items: {
-        include: {
+        select: {
           item: {
-            include: { itemType: true },
+            select: {
+              itemType: { select: { id: true, icon: true, color: true, name: true } },
+            },
           },
         },
       },
@@ -33,7 +41,6 @@ export async function getCollectionsForUser(
   });
 
   return collections.map((col) => {
-    // Count items per type
     const typeCounts = new Map<
       string,
       { icon: string; color: string; name: string; count: number }
@@ -45,12 +52,7 @@ export async function getCollectionsForUser(
       if (existing) {
         existing.count++;
       } else {
-        typeCounts.set(t.id, {
-          icon: t.icon,
-          color: t.color,
-          name: t.name,
-          count: 1,
-        });
+        typeCounts.set(t.id, { icon: t.icon, color: t.color, name: t.name, count: 1 });
       }
     }
 
@@ -70,13 +72,14 @@ export async function getCollectionsForUser(
 }
 
 /**
- * Get collection stats for a user.
+ * Derive collection stats from an already-fetched collections array.
+ * Call this after getCollectionsForUser — avoids a second DB round-trip.
  */
-export async function getCollectionStats(userId: string) {
-  const [totalCollections, favoriteCollections] = await Promise.all([
-    prisma.collection.count({ where: { userId } }),
-    prisma.collection.count({ where: { userId, isFavorite: true } }),
-  ]);
-
-  return { totalCollections, favoriteCollections };
+export function deriveCollectionStats(
+  collections: CollectionWithMeta[]
+): CollectionStats {
+  return {
+    totalCollections: collections.length,
+    favoriteCollections: collections.filter((c) => c.isFavorite).length,
+  };
 }

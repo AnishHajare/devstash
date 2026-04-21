@@ -28,16 +28,17 @@ import {
 import { iconMap } from "@/lib/icon-map";
 import { createItem } from "@/actions/items";
 import type { ItemTypeWithCount } from "@/lib/db/items";
+import {
+  TEXT_CONTENT_TYPES as TEXT_TYPES,
+  LANGUAGE_TYPES,
+  MARKDOWN_TYPES,
+} from "@/lib/item-type-constants";
 
 type ItemType = Pick<ItemTypeWithCount, "id" | "name" | "icon" | "color">;
 
 type Props = {
   itemTypes: ItemType[];
 };
-
-const TEXT_TYPES = ["snippet", "prompt", "command", "note"];
-const LANGUAGE_TYPES = ["snippet", "command"];
-const MARKDOWN_TYPES = ["note", "prompt"];
 const FILE_TYPES = ["file", "image"];
 
 function getContentType(typeName: string): "text" | "url" | "file" {

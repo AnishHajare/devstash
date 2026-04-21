@@ -8,6 +8,7 @@ import {
   deleteItem as dbDeleteItem,
 } from "@/lib/db/items";
 import type { ItemDetail } from "@/lib/db/items";
+import { TEXT_CONTENT_TYPES, LANGUAGE_TYPES } from "@/lib/item-type-constants";
 
 const createItemSchema = z.object({
   typeId: z.string().min(1, "Type is required"),
@@ -28,8 +29,6 @@ type CreateItemResult =
   | { success: true; data: ItemDetail }
   | { success: false; error: string };
 
-const TEXT_CONTENT_TYPES = ["snippet", "prompt", "command", "note"];
-const LANGUAGE_TYPES = ["snippet", "command"];
 
 export async function createItem(formData: unknown): Promise<CreateItemResult> {
   const session = await auth();
