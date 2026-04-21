@@ -1,22 +1,11 @@
-# Current Feature: File List View
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Update `/items/files` to display as a single-column list (like Google Drive/Dropbox) instead of grid cards
-- Each row shows: file icon (by extension), file name, file size, upload date, download button
-- Row hover highlight
-- Click row opens ItemDrawer
-- Download button triggers direct download (stop propagation)
-- Responsive: stack info vertically on mobile
-
 ## Notes
-
-- Only affects the `/items/files` route — other item type pages remain unchanged
-- File icon should reflect the file extension (e.g., PDF, ZIP, TXT)
-- Download button should not open the drawer (stop event propagation)
 
 ## History
 
@@ -49,3 +38,4 @@ In Progress
 - 2026-04-10: Completed Code Editor (Monaco) — CodeEditor component (src/components/items/code-editor.tsx) using @monaco-editor/react with vs-dark theme. Header has macOS window dots (red/yellow/green), uppercase language label right-aligned before copy button, and copy-to-clipboard button. Fluid height driven by content up to 400px max, minimal 6px scrollbar. Replaces <pre> in item drawer view mode and EditTextarea in edit mode for snippet/command types. Replaces <textarea> in new item dialog for snippet/command. All other types (prompt, note, link) unchanged. Dynamic import with ssr: false in both integration points.
 - 2026-04-10: Completed Markdown Editor — MarkdownEditor component (src/components/items/markdown-editor.tsx) using marked@4 for GFM rendering. Tabbed Write/Preview interface with macOS dots header and copy button, fluid height up to 400px. MarkdownView (read-only renderer) used in item drawer view mode. Replaces plain textarea for note/prompt in NewItemDialog and ItemDrawer edit mode; replaces <pre> in ItemDrawer view mode. snippet/command types unchanged. Custom .markdown-preview CSS in globals.css for headings, code blocks, lists, blockquotes, tables, links.
 - 2026-04-15: Completed Image Gallery View — ImageThumbnailCard component (src/components/items/image-thumbnail-card.tsx) with aspect-video 16:9 thumbnail, object-cover, and 5% hover zoom over 300ms. ItemsGrid accepts isGallery prop to switch card and grid layout (grid-cols-2 md:grid-cols-3). /items/images page passes isGallery automatically via typeName check. Images served via /api/download proxy. Added fileUrl/fileName/fileSize/content/url/language to ItemWithType type. Added *.r2.dev to next/image remotePatterns.
+- 2026-04-21: Completed File List View — /items/files renders a single-column list via FileListRow component (src/components/items/file-list-row.tsx). Each row shows a colored extension icon (category-mapped: code=blue, text=gray, image=pink, archive=orange, video=purple, audio=green) with the extension label, item title, actual filename, file size, upload date, and a download button that stops propagation. ItemsGrid accepts isFileList prop. Hover uses hover:bg-muted for clear visibility.
