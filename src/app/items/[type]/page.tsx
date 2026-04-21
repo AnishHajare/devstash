@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ItemsGrid } from "@/components/items/items-grid";
+import { getCollectionOptionsForUser } from "@/lib/db/collections";
 import { getItemsByType, getItemTypeByName } from "@/lib/db/items";
 import { typeSlugToName } from "@/lib/item-type-slug";
 import { iconMap } from "@/lib/icon-map";
@@ -20,7 +21,10 @@ export default async function ItemsTypePage({
   const itemType = await getItemTypeByName(typeName);
   if (!itemType) notFound();
 
-  const items = await getItemsByType(session.user.id, typeName);
+  const [items, collectionOptions] = await Promise.all([
+    getItemsByType(session.user.id, typeName),
+    getCollectionOptionsForUser(session.user.id),
+  ]);
 
   const Icon = iconMap[itemType.icon];
 
@@ -63,6 +67,7 @@ export default async function ItemsTypePage({
       ) : (
         <ItemsGrid
           items={items}
+          collections={collectionOptions}
           isGallery={typeName.toLowerCase() === "image"}
           isFileList={typeName.toLowerCase() === "file"}
         />

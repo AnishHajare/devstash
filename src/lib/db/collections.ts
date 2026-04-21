@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
+export type CollectionOption = {
+  id: string;
+  name: string;
+};
+
 export type CollectionWithMeta = {
   id: string;
   name: string;
@@ -68,6 +73,22 @@ export async function getCollectionsForUser(
       updatedAt: col.updatedAt,
       types,
     };
+  });
+}
+
+/**
+ * Fetch lightweight collection options for selection UIs.
+ */
+export async function getCollectionOptionsForUser(
+  userId: string
+): Promise<CollectionOption[]> {
+  return prisma.collection.findMany({
+    where: { userId },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+    },
   });
 }
 

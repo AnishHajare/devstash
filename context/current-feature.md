@@ -1,11 +1,22 @@
-# Current Feature
+# Current Feature: Add Item to Collections
 
 ## Status
-Not Started
+Completed
 
 ## Goals
 
+- Collection multi-select input in `NewItemDialog` — user picks zero or more collections at create time
+- Collection multi-select input in `ItemDrawer` edit mode — pre-populated with the item's current collections, changes are saved on update
+- `createItem` server action and DB function wired to connect selected collections on create
+- `updateItem` server action and DB function diff old vs new collection selection and connect/disconnect accordingly
+- UI uses an existing shadcn/ui component (checkbox popover or similar) — no new deps unless nothing suitable is installed
+
 ## Notes
+
+- Only add the selection UI to the two forms; do not change collection list/detail pages
+- Check installed shadcn components before pulling in anything new
+- Follow existing `{ success, data, error }` action pattern and Zod validation
+- Fetch the user's collections server-side and pass them as props (or load via a server action) — do not expose a new API route just for this
 
 ## History
 
@@ -42,3 +53,4 @@ Not Started
 - 2026-04-21: Completed Audit Sweep — fixed markdown XSS with DOMPurify sanitization, reused the shared deleteItem path for API deletes so R2 cleanup is preserved, added Zod validation to registration, reduced collection over-fetching, derived dashboard collection stats without an extra query, extracted shared format/type constants, aligned pro-type detection to shared constants, added startup R2 env guards, and avoided invalid-slug item queries. Synced the DELETE route tests with the shared deleteItem flow.
 - 2026-04-21: Completed Code Extraction Refactor — extracted toItemDetail() helper in src/lib/db/items.ts eliminating 3 duplicate 20-line mapping blocks; extracted ItemViewBody and ItemEditBody local components from item-drawer.tsx reducing the scrollable body section from ~240 lines to ~15; extracted ContentField component from new-item-dialog.tsx; extracted SidebarCollectionLink component from sidebar-content.tsx replacing two repeated link patterns. No behaviour changes — build and all 45 tests pass.
 - 2026-04-21: Completed Collection Create — "New Collection" button in dashboard and items top bars opens a dialog with name (required) and description (optional) fields. createCollection server action in src/actions/collections.ts with Zod validation and auth check. createCollection DB function added to src/lib/db/collections.ts returning CollectionWithMeta with empty types/itemCount. NewCollectionDialog self-contained client component in src/components/collections/. Toast on success/failure, router.refresh() updates grid and sidebar stats. 6 unit tests added (51 total).
+- 2026-04-21: Completed Add Item to Collections — added a shared dropdown checkbox multi-select for collections in NewItemDialog and ItemDrawer edit mode, server-side collection option loading for dashboard/items surfaces, `createItem` and `updateItem` action validation for `collectionIds`, and DB-level collection ownership checks plus connect/disconnect syncing for `ItemCollection`. Updated item action tests and verified the touched files with ESLint.

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { iconMap } from "@/lib/icon-map";
 import { ItemDrawer } from "@/components/items/item-drawer";
-import type { CollectionWithMeta } from "@/lib/db/collections";
+import type { CollectionOption, CollectionWithMeta } from "@/lib/db/collections";
 import type { ItemWithType } from "@/lib/db/items";
 
 // ── Main component ──────────────────────────────────────────
@@ -29,6 +29,7 @@ type DashboardMainProps = {
     totalItems: number;
     favoriteItems: number;
   };
+  collectionOptions: CollectionOption[];
 };
 
 export function DashboardMain({
@@ -37,6 +38,7 @@ export function DashboardMain({
   pinnedItems,
   recentItems,
   itemStats,
+  collectionOptions,
 }: DashboardMainProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -125,7 +127,12 @@ export function DashboardMain({
         </div>
       </section>
 
-      <ItemDrawer itemId={activeId} open={drawerOpen} onOpenChange={setDrawerOpen} />
+      <ItemDrawer
+        itemId={activeId}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        collections={collectionOptions}
+      />
     </div>
   );
 }

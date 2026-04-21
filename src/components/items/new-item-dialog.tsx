@@ -10,6 +10,7 @@ const CodeEditor = dynamic(
 );
 import { MarkdownEditor } from "@/components/items/markdown-editor";
 import { FileUpload } from "@/components/items/file-upload";
+import { CollectionMultiSelect } from "@/components/items/collection-multi-select";
 import type { UploadedFile } from "@/components/items/file-upload";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ import {
 import { iconMap } from "@/lib/icon-map";
 import { createItem } from "@/actions/items";
 import type { ItemTypeWithCount } from "@/lib/db/items";
+import type { CollectionOption } from "@/lib/db/collections";
 import {
   TEXT_CONTENT_TYPES as TEXT_TYPES,
   LANGUAGE_TYPES,
@@ -88,6 +90,7 @@ function ContentField({
 
 type Props = {
   itemTypes: ItemType[];
+  collections: CollectionOption[];
 };
 const FILE_TYPES = ["file", "image"];
 
@@ -106,7 +109,7 @@ const EMPTY_FORM = {
   tags: "",
 };
 
-export function NewItemDialog({ itemTypes }: Props) {
+export function NewItemDialog({ itemTypes, collections }: Props) {
   const router = useRouter();
 
   const defaultType = itemTypes.find((t) => t.name === "snippet") ?? itemTypes[0];
@@ -114,6 +117,7 @@ export function NewItemDialog({ itemTypes }: Props) {
   const [open, setOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<ItemType>(defaultType);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [selectedCollectionIds, setSelectedCollectionIds] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -122,6 +126,7 @@ export function NewItemDialog({ itemTypes }: Props) {
     if (!isOpen) {
       setSelectedType(defaultType);
       setForm(EMPTY_FORM);
+      setSelectedCollectionIds([]);
       setUploadedFile(null);
     }
   }
@@ -164,6 +169,7 @@ export function NewItemDialog({ itemTypes }: Props) {
       url: form.url || undefined,
       language: form.language || undefined,
       tags,
+      collectionIds: selectedCollectionIds,
       fileKey: uploadedFile?.key,
       fileName: uploadedFile?.fileName,
       fileSize: uploadedFile?.fileSize,
@@ -338,6 +344,13 @@ export function NewItemDialog({ itemTypes }: Props) {
               className="h-8 text-sm"
             />
           </div>
+
+          <CollectionMultiSelect
+            collections={collections}
+            selectedIds={selectedCollectionIds}
+            onChange={setSelectedCollectionIds}
+            disabled={submitting}
+          />
 
           <DialogFooter>
             <Button
