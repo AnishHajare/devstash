@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { findMany, findFirst } = vi.hoisted(() => ({
+const { findMany, findFirst, update, deleteMany } = vi.hoisted(() => ({
   findMany: vi.fn(),
   findFirst: vi.fn(),
+  update: vi.fn(),
+  deleteMany: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -10,6 +12,8 @@ vi.mock("@/lib/prisma", () => ({
     collection: {
       findMany,
       findFirst,
+      update,
+      deleteMany,
     },
   },
 }));
@@ -21,6 +25,8 @@ vi.mock("@/lib/r2", () => ({
 import {
   getCollectionsForUser,
   getCollectionWithItems,
+  updateCollection,
+  deleteCollection,
 } from "@/lib/db/collections";
 
 describe("collections db helpers", () => {
@@ -205,6 +211,106 @@ describe("collections db helpers", () => {
           },
         ],
       });
+    });
+  });
+
+  describe("updateCollection", () => {
+    it("returns null when the collection does not exist for the user", async () => {
+      findFirst.mockResolvedValue(null);
+
+      await expect(
+        updateCollection("missing", "user-1", {
+          name: "Updated",
+          description: null,
+        })
+      ).resolves.toBeNull();
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it("updates the collection and preserves derived metadata", async () => {
+      findFirst.mockResolvedValue({
+        id: "col-1",
+        name: "React Patterns",
+        description: "Reusable examples",
+        isFavorite: false,
+        createdAt: new Date("2026-04-21T10:00:00.000Z"),
+        updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+        items: [],
+      });
+      update.mockResolvedValue({
+        id: "col-1",
+        name: "Updated Collection",
+        description: null,
+        isFavorite: false,
+        createdAt: new Date("2026-04-21T10:00:00.000Z"),
+        updatedAt: new Date("2026-04-22T11:00:00.000Z"),
+        items: [
+          {
+            item: {
+              itemType: {
+                id: "type-snippet",
+                name: "Snippet",
+                icon: "Code",
+                color: "#3b82f6",
+              },
+            },
+          },
+        ],
+      });
+
+      const result = await updateCollection("col-1", "user-1", {
+        name: "Updated Collection",
+        description: null,
+      });
+
+      expect(findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "col-1", userId: "user-1" },
+        })
+      );
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "col-1" },
+          data: {
+            name: "Updated Collection",
+            description: null,
+          },
+        })
+      );
+      expect(result).toEqual({
+        id: "col-1",
+        name: "Updated Collection",
+        description: null,
+        isFavorite: false,
+        itemCount: 1,
+        createdAt: new Date("2026-04-21T10:00:00.000Z"),
+        updatedAt: new Date("2026-04-22T11:00:00.000Z"),
+        types: [
+          {
+            name: "Snippet",
+            icon: "Code",
+            color: "#3b82f6",
+            count: 1,
+          },
+        ],
+      });
+    });
+  });
+
+  describe("deleteCollection", () => {
+    it("returns true when a collection is deleted for the user", async () => {
+      deleteMany.mockResolvedValue({ count: 1 });
+
+      await expect(deleteCollection("col-1", "user-1")).resolves.toBe(true);
+      expect(deleteMany).toHaveBeenCalledWith({
+        where: { id: "col-1", userId: "user-1" },
+      });
+    });
+
+    it("returns false when the collection does not exist for the user", async () => {
+      deleteMany.mockResolvedValue({ count: 0 });
+
+      await expect(deleteCollection("missing", "user-1")).resolves.toBe(false);
     });
   });
 });

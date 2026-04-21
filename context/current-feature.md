@@ -1,11 +1,28 @@
-# Current Feature
+# Current Feature: Collection Actions (Edit, Delete, Favorite)
 
 ## Status
-Not Started
+Complete
 
 ## Goals
 
+- Add Edit, Delete, and Favorite buttons to `/collections/[id]` detail page header
+  - Favorite: icon/button only, no functionality yet
+  - Edit: opens a modal to edit collection name and description
+  - Delete: opens a confirmation dialog; removes items from collection (does NOT delete items)
+- On `CollectionCard` (used on `/collections` and dashboard), the 3-dots icon opens a dropdown with Edit, Delete, and Favorite options
+- Clicking anywhere else on the card navigates to the collection detail page `/collections/[id]`
+- Edit and Delete actions work the same as on the detail page
+- Favorite option in dropdown: icon/button only for now
+
 ## Notes
+
+- Items must NOT be deleted when a collection is deleted or items are removed — only the `ItemCollection` join records are removed
+- Deleting a collection: removes the collection and its `ItemCollection` links, items remain intact
+- Edit action updates `name` and `description` via existing `updateCollection` server action (or a new one if needed)
+- Delete action calls a `deleteCollection` server action
+- Reuse `shadcn/ui` Dialog for edit modal and AlertDialog for delete confirmation
+- CollectionCard must become a client component (or wrap with one) to handle the 3-dots dropdown and card-level navigation click
+- Keep the card click → navigation separate from the dropdown click (stop propagation on dropdown trigger)
 
 ## History
 
@@ -44,3 +61,4 @@ Not Started
 - 2026-04-21: Completed Collection Create — "New Collection" button in dashboard and items top bars opens a dialog with name (required) and description (optional) fields. createCollection server action in src/actions/collections.ts with Zod validation and auth check. createCollection DB function added to src/lib/db/collections.ts returning CollectionWithMeta with empty types/itemCount. NewCollectionDialog self-contained client component in src/components/collections/. Toast on success/failure, router.refresh() updates grid and sidebar stats. 6 unit tests added (51 total).
 - 2026-04-21: Completed Add Item to Collections — added a shared dropdown checkbox multi-select for collections in NewItemDialog and ItemDrawer edit mode, server-side collection option loading for dashboard/items surfaces, `createItem` and `updateItem` action validation for `collectionIds`, and DB-level collection ownership checks plus connect/disconnect syncing for `ItemCollection`. Updated item action tests and verified the touched files with ESLint.
 - 2026-04-22: Completed Collections Pages — added `/collections` and `/collections/[id]` using the shared dashboard shell and existing collection/item cards, extracted reusable `CollectionCard`, added `getCollectionWithItems` Prisma query for collection metadata plus owned items, and covered the new collection DB mapping with 3 unit tests (58 total).
+- 2026-04-22: Completed Collection Actions (Edit, Delete, Favorite UI) — added shared collection action controls for detail and card surfaces, edit dialog plus delete confirmation wired to new update/delete collection server actions, preserved items when deleting collections, and expanded collection action/DB test coverage.
