@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pin, Star } from "lucide-react";
+import { Pin, Star, Copy, Check } from "lucide-react";
 import { iconMap } from "@/lib/icon-map";
 import type { ItemWithType } from "@/lib/db/items";
 
@@ -13,8 +13,18 @@ export function ItemCard({
   onOpen?: (id: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
+  const [copied, setCopied] = useState(false);
   const Icon = iconMap[item.itemType.icon];
   const color = item.itemType.color;
+
+  function handleCopy(e: React.MouseEvent) {
+    e.stopPropagation();
+    const text = item.url ?? item.content ?? "";
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
 
   return (
     <div
@@ -83,6 +93,21 @@ export function ItemCard({
           ))}
         </div>
       )}
+
+      {/* Bottom row: copy button */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleCopy}
+          className="flex h-6 w-6 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
+          title="Copy to clipboard"
+        >
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-green-500" />
+          ) : (
+            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </button>
+      </div>
     </div>
   );
 }
