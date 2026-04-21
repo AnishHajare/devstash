@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type MockedFunction } from "vitest";
 import { GET, PATCH, DELETE } from "./route";
 
 // ── Mocks ────────────────────────────────────────────────────
@@ -24,7 +24,9 @@ import { auth } from "@/auth";
 import { getItemDetail, deleteItem } from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
-const mockAuth = vi.mocked(auth);
+type TestSession = { user?: { id?: string } } | null;
+
+const mockAuth = auth as unknown as MockedFunction<() => Promise<TestSession>>;
 const mockGetItemDetail = vi.mocked(getItemDetail);
 const mockDeleteItem = vi.mocked(deleteItem);
 const mockUpdateMany = vi.mocked(prisma.item.updateMany);

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { NewItemDialog } from "@/components/items/new-item-dialog";
+import { NewCollectionDialog } from "@/components/collections/new-collection-dialog";
 import { Search } from "lucide-react";
 import { getCollectionsForUser } from "@/lib/db/collections";
 import { getItemTypesWithCounts, getSidebarUser } from "@/lib/db/items";
@@ -49,9 +49,7 @@ export default async function ItemsLayout({
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-            New Collection
-          </Button>
+          <NewCollectionDialog />
           <NewItemDialog itemTypes={itemTypes} />
         </div>
       </header>

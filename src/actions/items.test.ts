@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type MockedFunction } from "vitest";
 import { createItem, updateItem, deleteItem } from "./items";
 
 // ── Mocks ────────────────────────────────────────────────────
@@ -20,7 +20,9 @@ import {
   deleteItem as dbDeleteItem,
 } from "@/lib/db/items";
 
-const mockAuth = vi.mocked(auth);
+type TestSession = { user?: { id?: string } } | null;
+
+const mockAuth = auth as unknown as MockedFunction<() => Promise<TestSession>>;
 const mockDbCreateItem = vi.mocked(dbCreateItem);
 const mockDbUpdateItem = vi.mocked(dbUpdateItem);
 const mockDbDeleteItem = vi.mocked(dbDeleteItem);
