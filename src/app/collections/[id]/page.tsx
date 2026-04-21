@@ -26,6 +26,12 @@ export default async function CollectionDetailPage({
   if (!collection) notFound();
 
   const dominantColor = collection.types[0]?.color;
+  const standardItems = collection.items.filter(
+    (item) => item.itemType.name.toLowerCase() !== "image"
+  );
+  const imageItems = collection.items.filter(
+    (item) => item.itemType.name.toLowerCase() === "image"
+  );
 
   return (
     <div className="space-y-6">
@@ -98,13 +104,6 @@ export default async function CollectionDetailPage({
       </section>
 
       <section className="space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold">Items</h2>
-          <p className="text-sm text-muted-foreground">
-            Every item currently assigned to this collection.
-          </p>
-        </div>
-
         {collection.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
             <FolderOpen className="mb-3 h-8 w-8 text-muted-foreground/40" />
@@ -116,7 +115,29 @@ export default async function CollectionDetailPage({
             </p>
           </div>
         ) : (
-          <ItemsGrid items={collection.items} collections={collectionOptions} />
+          <div className="space-y-8">
+            {standardItems.length > 0 && (
+              <div>
+                <ItemsGrid items={standardItems} collections={collectionOptions} />
+              </div>
+            )}
+
+            {imageItems.length > 0 && (
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-sm font-medium text-foreground">Images</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Visual references and screenshots in this collection.
+                  </p>
+                </div>
+                <ItemsGrid
+                  items={imageItems}
+                  collections={collectionOptions}
+                  isGallery
+                />
+              </div>
+            )}
+          </div>
         )}
       </section>
     </div>
