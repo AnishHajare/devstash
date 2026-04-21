@@ -36,6 +36,56 @@ import {
 
 type ItemType = Pick<ItemTypeWithCount, "id" | "name" | "icon" | "color">;
 
+function ContentField({
+  value,
+  language,
+  isMonoContent,
+  isMarkdownContent,
+  accentColor,
+  onChangeText,
+  onChangeValue,
+}: {
+  value: string;
+  language: string;
+  isMonoContent: boolean;
+  isMarkdownContent: boolean;
+  accentColor: string;
+  onChangeText: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onChangeValue: (val: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor="ni-content">
+        Content <span className="text-destructive">*</span>
+      </Label>
+      {isMonoContent ? (
+        <CodeEditor
+          value={value}
+          onChange={onChangeValue}
+          language={language || undefined}
+          accentColor={accentColor}
+        />
+      ) : isMarkdownContent ? (
+        <MarkdownEditor
+          value={value}
+          onChange={onChangeValue}
+          accentColor={accentColor}
+          placeholder="Write markdown..."
+        />
+      ) : (
+        <textarea
+          id="ni-content"
+          value={value}
+          onChange={onChangeText}
+          placeholder="Enter content..."
+          required
+          className="w-full min-h-[120px] resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        />
+      )}
+    </div>
+  );
+}
+
 type Props = {
   itemTypes: ItemType[];
 };
@@ -234,35 +284,15 @@ export function NewItemDialog({ itemTypes }: Props) {
 
           {/* Content */}
           {showContent && (
-            <div className="space-y-1.5">
-              <Label htmlFor="ni-content">
-                Content <span className="text-destructive">*</span>
-              </Label>
-              {isMonoContent ? (
-                <CodeEditor
-                  value={form.content}
-                  onChange={(val) => setForm((prev) => ({ ...prev, content: val }))}
-                  language={form.language || undefined}
-                  accentColor={selectedType.color}
-                />
-              ) : isMarkdownContent ? (
-                <MarkdownEditor
-                  value={form.content}
-                  onChange={(val) => setForm((prev) => ({ ...prev, content: val }))}
-                  accentColor={selectedType.color}
-                  placeholder="Write markdown..."
-                />
-              ) : (
-                <textarea
-                  id="ni-content"
-                  value={form.content}
-                  onChange={set("content")}
-                  placeholder="Enter content..."
-                  required
-                  className="w-full min-h-[120px] resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              )}
-            </div>
+            <ContentField
+              value={form.content}
+              language={form.language}
+              isMonoContent={isMonoContent}
+              isMarkdownContent={isMarkdownContent}
+              accentColor={selectedType.color}
+              onChangeText={set("content")}
+              onChangeValue={(val) => setForm((prev) => ({ ...prev, content: val }))}
+            />
           )}
 
           {/* URL */}

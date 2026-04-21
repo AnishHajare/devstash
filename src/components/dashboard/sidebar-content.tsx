@@ -92,17 +92,13 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
           >
             <nav className="space-y-0.5">
               {favoriteCollections.map((col) => (
-                <Link
+                <SidebarCollectionLink
                   key={col.id}
-                  href={`/collections/${col.id}`}
-                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                >
-                  <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-500 text-yellow-500" />
-                  <span className="truncate">{col.name}</span>
-                  <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
-                    {col.itemCount}
-                  </span>
-                </Link>
+                  id={col.id}
+                  name={col.name}
+                  itemCount={col.itemCount}
+                  icon={<Star className="h-3.5 w-3.5 shrink-0 fill-yellow-500 text-yellow-500" />}
+                />
               ))}
             </nav>
           </CollapsibleSection>
@@ -118,24 +114,22 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
             {recentCollections.map((col) => {
               const dominantColor = col.types[0]?.color;
               return (
-                <Link
+                <SidebarCollectionLink
                   key={col.id}
-                  href={`/collections/${col.id}`}
-                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                >
-                  {dominantColor ? (
-                    <Circle
-                      className="h-3 w-3 shrink-0"
-                      style={{ color: dominantColor, fill: dominantColor }}
-                    />
-                  ) : (
-                    <FolderOpen className="h-3.5 w-3.5 shrink-0" />
-                  )}
-                  <span className="truncate">{col.name}</span>
-                  <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
-                    {col.itemCount}
-                  </span>
-                </Link>
+                  id={col.id}
+                  name={col.name}
+                  itemCount={col.itemCount}
+                  icon={
+                    dominantColor ? (
+                      <Circle
+                        className="h-3 w-3 shrink-0"
+                        style={{ color: dominantColor, fill: dominantColor }}
+                      />
+                    ) : (
+                      <FolderOpen className="h-3.5 w-3.5 shrink-0" />
+                    )
+                  }
+                />
               );
             })}
           </nav>
@@ -213,6 +207,31 @@ function CollapsedSidebar({ data }: { data: SidebarData }) {
         </Link>
       </div>
     </div>
+  );
+}
+
+function SidebarCollectionLink({
+  id,
+  name,
+  itemCount,
+  icon,
+}: {
+  id: string;
+  name: string;
+  itemCount: number;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={`/collections/${id}`}
+      className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+    >
+      {icon}
+      <span className="truncate">{name}</span>
+      <span className="ml-auto text-xs tabular-nums text-muted-foreground/60">
+        {itemCount}
+      </span>
+    </Link>
   );
 }
 

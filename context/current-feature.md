@@ -1,23 +1,19 @@
 # Current Feature
 
 ## Status
-Complete
+Completed
 
 ## Goals
-Fix all audit findings from code-scan except dead mock-data.ts file:
+Refactor large code blocks into separate functions, components, and utilities to improve readability and reduce repetition.
 
-- **Critical**: XSS in markdown-editor.tsx — sanitize marked output with DOMPurify
-- **High**: R2 orphan on delete — fix API route DELETE to call deleteItem (with R2 cleanup) instead of raw prisma.item.deleteMany
-- **High**: No input validation on registration — add Zod schema: email format, password min 8 chars, field length limits
-- **High**: Over-fetch in getCollectionsForUser — select only itemType fields instead of full Item rows
-- **Medium**: getCollectionStats redundant DB call — derive stats from already-fetched collections array in dashboard page
-- **Medium**: formatBytes duplicated in 3 files — extract to src/lib/format-bytes.ts
-- **Medium**: Type classification arrays duplicated in 3 files — extract to src/lib/item-type-constants.ts
-- **Medium**: Pro type detection hardcodes "File"/"Image" strings — use shared constant
-- **Low**: R2 client uses `!` non-null assertions — add startup env guard
-- **Low**: getItemTypeByName + getItemsByType fire in parallel on invalid slugs — check slug validity first
+Targets:
+1. `src/lib/db/items.ts` — extract `toItemDetail()` helper to replace 3 duplicate mapping blocks
+2. `src/components/items/item-drawer.tsx` — extract `ItemViewBody` and `ItemEditBody` local components
+3. `src/components/items/new-item-dialog.tsx` — extract `ContentField` local component
+4. `src/components/dashboard/sidebar-content.tsx` — extract `SidebarCollectionLink` local component
 
 ## Notes
+No behaviour changes — pure structural cleanup. All logic stays identical.
 
 ## History
 
@@ -52,3 +48,4 @@ Fix all audit findings from code-scan except dead mock-data.ts file:
 - 2026-04-15: Completed Image Gallery View — ImageThumbnailCard component (src/components/items/image-thumbnail-card.tsx) with aspect-video 16:9 thumbnail, object-cover, and 5% hover zoom over 300ms. ItemsGrid accepts isGallery prop to switch card and grid layout (grid-cols-2 md:grid-cols-3). /items/images page passes isGallery automatically via typeName check. Images served via /api/download proxy. Added fileUrl/fileName/fileSize/content/url/language to ItemWithType type. Added *.r2.dev to next/image remotePatterns.
 - 2026-04-21: Completed File List View — /items/files renders a single-column list via FileListRow component (src/components/items/file-list-row.tsx). Each row shows a colored extension icon (category-mapped: code=blue, text=gray, image=pink, archive=orange, video=purple, audio=green) with the extension label, item title, actual filename, file size, upload date, and a download button that stops propagation. ItemsGrid accepts isFileList prop. Hover uses hover:bg-muted for clear visibility.
 - 2026-04-21: Completed Audit Sweep — fixed markdown XSS with DOMPurify sanitization, reused the shared deleteItem path for API deletes so R2 cleanup is preserved, added Zod validation to registration, reduced collection over-fetching, derived dashboard collection stats without an extra query, extracted shared format/type constants, aligned pro-type detection to shared constants, added startup R2 env guards, and avoided invalid-slug item queries. Synced the DELETE route tests with the shared deleteItem flow.
+- 2026-04-21: Completed Code Extraction Refactor — extracted toItemDetail() helper in src/lib/db/items.ts eliminating 3 duplicate 20-line mapping blocks; extracted ItemViewBody and ItemEditBody local components from item-drawer.tsx reducing the scrollable body section from ~240 lines to ~15; extracted ContentField component from new-item-dialog.tsx; extracted SidebarCollectionLink component from sidebar-content.tsx replacing two repeated link patterns. No behaviour changes — build and all 45 tests pass.

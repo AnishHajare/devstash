@@ -400,252 +400,317 @@ export function ItemDrawer({ itemId, open, onOpenChange }: ItemDrawerProps) {
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
               {editing && editState ? (
-                <>
-                  {/* Description */}
-                  <section>
-                    <SectionLabel>Description</SectionLabel>
-                    <EditTextarea
-                      value={editState.description}
-                      onChange={field("description")}
-                      placeholder="Optional description…"
-                      accentColor={item.itemType.color}
-                      className="px-3 py-2.5 text-sm leading-relaxed min-h-[72px]"
-                    />
-                  </section>
-
-                  {/* Content */}
-                  {showContent && (
-                    <section>
-                      <SectionLabel>Content</SectionLabel>
-                      {showLanguage ? (
-                        <CodeEditor
-                          value={editState.content}
-                          onChange={(val) =>
-                            setEditState((prev) => prev && { ...prev, content: val })
-                          }
-                          language={editState.language || undefined}
-                          accentColor={item.itemType.color}
-                        />
-                      ) : showMarkdown ? (
-                        <MarkdownEditor
-                          value={editState.content}
-                          onChange={(val) =>
-                            setEditState((prev) => prev && { ...prev, content: val })
-                          }
-                          accentColor={item.itemType.color}
-                        />
-                      ) : (
-                        <EditTextarea
-                          value={editState.content}
-                          onChange={field("content")}
-                          placeholder="Content…"
-                          accentColor={item.itemType.color}
-                          className="px-4 py-3 text-xs leading-relaxed min-h-[260px]"
-                        />
-                      )}
-                    </section>
-                  )}
-
-                  {/* URL */}
-                  {showUrl && (
-                    <section>
-                      <SectionLabel>URL</SectionLabel>
-                      <EditInput
-                        type="url"
-                        value={editState.url}
-                        onChange={field("url")}
-                        placeholder="https://…"
-                        accentColor={item.itemType.color}
-                      />
-                    </section>
-                  )}
-
-                  {/* Language */}
-                  {showLanguage && (
-                    <section>
-                      <SectionLabel>Language</SectionLabel>
-                      <EditInput
-                        type="text"
-                        value={editState.language}
-                        onChange={field("language")}
-                        placeholder="e.g. TypeScript"
-                        accentColor={item.itemType.color}
-                      />
-                    </section>
-                  )}
-
-                  {/* Tags */}
-                  <section>
-                    <SectionLabel icon={<Tag className="h-3 w-3" />}>Tags</SectionLabel>
-                    <EditInput
-                      type="text"
-                      value={editState.tags}
-                      onChange={field("tags")}
-                      placeholder="react, hooks, typescript"
-                      accentColor={item.itemType.color}
-                    />
-                    <p className="mt-1.5 text-xs text-muted-foreground">Comma-separated</p>
-                  </section>
-
-                  {/* Non-editable: collections + dates */}
-                  {item.collections.length > 0 && (
-                    <section>
-                      <SectionLabel icon={<FolderOpen className="h-3 w-3" />}>
-                        Collections
-                      </SectionLabel>
-                      <div className="flex flex-col gap-1">
-                        {item.collections.map((col) => (
-                          <span key={col.id} className="text-sm text-muted-foreground">
-                            {col.name}
-                          </span>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-
-                  <section>
-                    <SectionLabel icon={<Calendar className="h-3 w-3" />}>Details</SectionLabel>
-                    <div className="flex flex-col gap-1">
-                      <DetailRow label="Created" value={formatDate(item.createdAt)} />
-                      <DetailRow label="Updated" value={formatDate(item.updatedAt)} />
-                    </div>
-                  </section>
-                </>
+                <ItemEditBody
+                  item={item}
+                  editState={editState}
+                  field={field}
+                  setEditState={setEditState}
+                  showContent={showContent}
+                  showLanguage={showLanguage}
+                  showMarkdown={showMarkdown}
+                  showUrl={showUrl}
+                />
               ) : (
-                <>
-                  {/* Description */}
-                  {item.description && (
-                    <section>
-                      <SectionLabel>Description</SectionLabel>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {item.description}
-                      </p>
-                    </section>
-                  )}
-
-                  {/* Content */}
-                  {item.content && (
-                    <section>
-                      <SectionLabel>Content</SectionLabel>
-                      {showLanguage ? (
-                        <CodeEditor
-                          value={item.content}
-                          language={item.language ?? undefined}
-                          readOnly
-                        />
-                      ) : showMarkdown ? (
-                        <MarkdownView content={item.content} />
-                      ) : (
-                        <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono leading-relaxed whitespace-pre overflow-x-auto max-h-[260px] overflow-y-auto">
-                          {item.content}
-                        </pre>
-                      )}
-                    </section>
-                  )}
-
-                  {/* File / Image */}
-                  {showFile && item.fileUrl && (
-                    <section>
-                      <SectionLabel>File</SectionLabel>
-                      {typeName === "image" ? (
-                        <div className="rounded-lg overflow-hidden border border-border bg-muted/20">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={downloadUrl!}
-                            alt={item.fileName ?? item.title}
-                            className="w-full max-h-64 object-contain"
-                          />
-                          {item.fileName && (
-                            <div className="flex items-center gap-2 px-3 py-2 border-t border-border">
-                              <span className="truncate text-xs text-muted-foreground flex-1">{item.fileName}</span>
-                              {item.fileSize != null && (
-                                <span className="text-xs text-muted-foreground shrink-0">{formatBytes(item.fileSize)}</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
-                          <div
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-                            style={{ backgroundColor: `${item.itemType.color}20` }}
-                          >
-                            <FileText className="h-4 w-4" style={{ color: item.itemType.color }} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">{item.fileName ?? "File"}</p>
-                            {item.fileSize != null && (
-                              <p className="text-xs text-muted-foreground">{formatBytes(item.fileSize)}</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </section>
-                  )}
-
-                  {/* URL */}
-                  {item.url && (
-                    <section>
-                      <SectionLabel>URL</SectionLabel>
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-400 hover:underline break-all"
-                      >
-                        {item.url}
-                      </a>
-                    </section>
-                  )}
-
-                  {/* Tags */}
-                  {item.tags.length > 0 && (
-                    <section>
-                      <SectionLabel icon={<Tag className="h-3 w-3" />}>Tags</SectionLabel>
-                      <div className="flex flex-wrap gap-1.5">
-                        {item.tags.map((tag) => (
-                          <span
-                            key={tag.id}
-                            className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"
-                          >
-                            {tag.name}
-                          </span>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-
-                  {/* Collections */}
-                  {item.collections.length > 0 && (
-                    <section>
-                      <SectionLabel icon={<FolderOpen className="h-3 w-3" />}>
-                        Collections
-                      </SectionLabel>
-                      <div className="flex flex-col gap-1">
-                        {item.collections.map((col) => (
-                          <span key={col.id} className="text-sm text-muted-foreground">
-                            {col.name}
-                          </span>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-
-                  {/* Details */}
-                  <section>
-                    <SectionLabel icon={<Calendar className="h-3 w-3" />}>Details</SectionLabel>
-                    <div className="flex flex-col gap-1">
-                      <DetailRow label="Created" value={formatDate(item.createdAt)} />
-                      <DetailRow label="Updated" value={formatDate(item.updatedAt)} />
-                    </div>
-                  </section>
-                </>
+                <ItemViewBody
+                  item={item}
+                  showLanguage={showLanguage}
+                  showMarkdown={showMarkdown}
+                  showUrl={showUrl}
+                  showFile={showFile}
+                  downloadUrl={downloadUrl}
+                  typeName={typeName}
+                />
               )}
             </div>
           </>
         )}
       </SheetContent>
     </Sheet>
+    </>
+  );
+}
+
+// ── Item body panels ─────────────────────────────────────────
+
+function ItemEditBody({
+  item,
+  editState,
+  field,
+  setEditState,
+  showContent,
+  showLanguage,
+  showMarkdown,
+  showUrl,
+}: {
+  item: ItemDetail;
+  editState: EditState;
+  field: (key: keyof EditState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  setEditState: React.Dispatch<React.SetStateAction<EditState | null>>;
+  showContent: boolean;
+  showLanguage: boolean;
+  showMarkdown: boolean;
+  showUrl: boolean;
+}) {
+  return (
+    <>
+      {/* Description */}
+      <section>
+        <SectionLabel>Description</SectionLabel>
+        <EditTextarea
+          value={editState.description}
+          onChange={field("description")}
+          placeholder="Optional description…"
+          accentColor={item.itemType.color}
+          className="px-3 py-2.5 text-sm leading-relaxed min-h-[72px]"
+        />
+      </section>
+
+      {/* Content */}
+      {showContent && (
+        <section>
+          <SectionLabel>Content</SectionLabel>
+          {showLanguage ? (
+            <CodeEditor
+              value={editState.content}
+              onChange={(val) =>
+                setEditState((prev) => prev && { ...prev, content: val })
+              }
+              language={editState.language || undefined}
+              accentColor={item.itemType.color}
+            />
+          ) : showMarkdown ? (
+            <MarkdownEditor
+              value={editState.content}
+              onChange={(val) =>
+                setEditState((prev) => prev && { ...prev, content: val })
+              }
+              accentColor={item.itemType.color}
+            />
+          ) : (
+            <EditTextarea
+              value={editState.content}
+              onChange={field("content")}
+              placeholder="Content…"
+              accentColor={item.itemType.color}
+              className="px-4 py-3 text-xs leading-relaxed min-h-[260px]"
+            />
+          )}
+        </section>
+      )}
+
+      {/* URL */}
+      {showUrl && (
+        <section>
+          <SectionLabel>URL</SectionLabel>
+          <EditInput
+            type="url"
+            value={editState.url}
+            onChange={field("url")}
+            placeholder="https://…"
+            accentColor={item.itemType.color}
+          />
+        </section>
+      )}
+
+      {/* Language */}
+      {showLanguage && (
+        <section>
+          <SectionLabel>Language</SectionLabel>
+          <EditInput
+            type="text"
+            value={editState.language}
+            onChange={field("language")}
+            placeholder="e.g. TypeScript"
+            accentColor={item.itemType.color}
+          />
+        </section>
+      )}
+
+      {/* Tags */}
+      <section>
+        <SectionLabel icon={<Tag className="h-3 w-3" />}>Tags</SectionLabel>
+        <EditInput
+          type="text"
+          value={editState.tags}
+          onChange={field("tags")}
+          placeholder="react, hooks, typescript"
+          accentColor={item.itemType.color}
+        />
+        <p className="mt-1.5 text-xs text-muted-foreground">Comma-separated</p>
+      </section>
+
+      {/* Non-editable: collections + dates */}
+      {item.collections.length > 0 && (
+        <section>
+          <SectionLabel icon={<FolderOpen className="h-3 w-3" />}>
+            Collections
+          </SectionLabel>
+          <div className="flex flex-col gap-1">
+            {item.collections.map((col) => (
+              <span key={col.id} className="text-sm text-muted-foreground">
+                {col.name}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section>
+        <SectionLabel icon={<Calendar className="h-3 w-3" />}>Details</SectionLabel>
+        <div className="flex flex-col gap-1">
+          <DetailRow label="Created" value={formatDate(item.createdAt)} />
+          <DetailRow label="Updated" value={formatDate(item.updatedAt)} />
+        </div>
+      </section>
+    </>
+  );
+}
+
+function ItemViewBody({
+  item,
+  showLanguage,
+  showMarkdown,
+  showUrl,
+  showFile,
+  downloadUrl,
+  typeName,
+}: {
+  item: ItemDetail;
+  showLanguage: boolean;
+  showMarkdown: boolean;
+  showUrl: boolean;
+  showFile: boolean;
+  downloadUrl: string | null;
+  typeName: string;
+}) {
+  return (
+    <>
+      {/* Description */}
+      {item.description && (
+        <section>
+          <SectionLabel>Description</SectionLabel>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {item.description}
+          </p>
+        </section>
+      )}
+
+      {/* Content */}
+      {item.content && (
+        <section>
+          <SectionLabel>Content</SectionLabel>
+          {showLanguage ? (
+            <CodeEditor
+              value={item.content}
+              language={item.language ?? undefined}
+              readOnly
+            />
+          ) : showMarkdown ? (
+            <MarkdownView content={item.content} />
+          ) : (
+            <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono leading-relaxed whitespace-pre overflow-x-auto max-h-[260px] overflow-y-auto">
+              {item.content}
+            </pre>
+          )}
+        </section>
+      )}
+
+      {/* File / Image */}
+      {showFile && item.fileUrl && (
+        <section>
+          <SectionLabel>File</SectionLabel>
+          {typeName === "image" ? (
+            <div className="rounded-lg overflow-hidden border border-border bg-muted/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={downloadUrl!}
+                alt={item.fileName ?? item.title}
+                className="w-full max-h-64 object-contain"
+              />
+              {item.fileName && (
+                <div className="flex items-center gap-2 px-3 py-2 border-t border-border">
+                  <span className="truncate text-xs text-muted-foreground flex-1">{item.fileName}</span>
+                  {item.fileSize != null && (
+                    <span className="text-xs text-muted-foreground shrink-0">{formatBytes(item.fileSize)}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+                style={{ backgroundColor: `${item.itemType.color}20` }}
+              >
+                <FileText className="h-4 w-4" style={{ color: item.itemType.color }} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{item.fileName ?? "File"}</p>
+                {item.fileSize != null && (
+                  <p className="text-xs text-muted-foreground">{formatBytes(item.fileSize)}</p>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* URL */}
+      {item.url && (
+        <section>
+          <SectionLabel>URL</SectionLabel>
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-400 hover:underline break-all"
+          >
+            {item.url}
+          </a>
+        </section>
+      )}
+
+      {/* Tags */}
+      {item.tags.length > 0 && (
+        <section>
+          <SectionLabel icon={<Tag className="h-3 w-3" />}>Tags</SectionLabel>
+          <div className="flex flex-wrap gap-1.5">
+            {item.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Collections */}
+      {item.collections.length > 0 && (
+        <section>
+          <SectionLabel icon={<FolderOpen className="h-3 w-3" />}>
+            Collections
+          </SectionLabel>
+          <div className="flex flex-col gap-1">
+            {item.collections.map((col) => (
+              <span key={col.id} className="text-sm text-muted-foreground">
+                {col.name}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Details */}
+      <section>
+        <SectionLabel icon={<Calendar className="h-3 w-3" />}>Details</SectionLabel>
+        <div className="flex flex-col gap-1">
+          <DetailRow label="Created" value={formatDate(item.createdAt)} />
+          <DetailRow label="Updated" value={formatDate(item.updatedAt)} />
+        </div>
+      </section>
     </>
   );
 }
