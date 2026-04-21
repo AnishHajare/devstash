@@ -1,19 +1,11 @@
 # Current Feature
 
 ## Status
-Completed
+Not Started
 
 ## Goals
-Refactor large code blocks into separate functions, components, and utilities to improve readability and reduce repetition.
-
-Targets:
-1. `src/lib/db/items.ts` — extract `toItemDetail()` helper to replace 3 duplicate mapping blocks
-2. `src/components/items/item-drawer.tsx` — extract `ItemViewBody` and `ItemEditBody` local components
-3. `src/components/items/new-item-dialog.tsx` — extract `ContentField` local component
-4. `src/components/dashboard/sidebar-content.tsx` — extract `SidebarCollectionLink` local component
 
 ## Notes
-No behaviour changes — pure structural cleanup. All logic stays identical.
 
 ## History
 
