@@ -9,25 +9,25 @@ vi.mock("@/auth", () => ({
 
 vi.mock("@/lib/db/items", () => ({
   getItemDetail: vi.fn(),
+  deleteItem: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     item: {
       updateMany: vi.fn(),
-      deleteMany: vi.fn(),
     },
   },
 }));
 
 import { auth } from "@/auth";
-import { getItemDetail } from "@/lib/db/items";
+import { getItemDetail, deleteItem } from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
 const mockAuth = vi.mocked(auth);
 const mockGetItemDetail = vi.mocked(getItemDetail);
+const mockDeleteItem = vi.mocked(deleteItem);
 const mockUpdateMany = vi.mocked(prisma.item.updateMany);
-const mockDeleteMany = vi.mocked(prisma.item.deleteMany);
 
 function makeParams(id: string) {
   return { params: Promise.resolve({ id }) };
@@ -139,19 +139,17 @@ describe("DELETE /api/items/[id]", () => {
 
   it("returns 404 when no rows deleted", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
-    mockDeleteMany.mockResolvedValue({ count: 0 });
+    mockDeleteItem.mockResolvedValue(false);
     const res = await DELETE(makeRequest(), makeParams("missing"));
     expect(res.status).toBe(404);
   });
 
   it("deletes item scoped to user and returns success", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
-    mockDeleteMany.mockResolvedValue({ count: 1 });
+    mockDeleteItem.mockResolvedValue(true);
     const res = await DELETE(makeRequest(), makeParams("item-1"));
     expect(res.status).toBe(200);
-    expect(mockDeleteMany).toHaveBeenCalledWith({
-      where: { id: "item-1", userId: "user-1" },
-    });
+    expect(mockDeleteItem).toHaveBeenCalledWith("item-1", "user-1");
     const body = await res.json();
     expect(body.success).toBe(true);
   });

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getItemDetail } from "@/lib/db/items";
+import { getItemDetail, deleteItem } from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -53,12 +53,9 @@ export async function DELETE(_req: Request, { params }: RouteContext) {
   }
 
   const { id } = await params;
+  const ok = await deleteItem(id, session.user.id);
 
-  const deleted = await prisma.item.deleteMany({
-    where: { id, userId: session.user.id },
-  });
-
-  if (deleted.count === 0) {
+  if (!ok) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
