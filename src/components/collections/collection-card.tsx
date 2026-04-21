@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { MoreHorizontal, Star } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star } from "lucide-react";
+import { CollectionActions } from "@/components/collections/collection-actions";
 import { iconMap } from "@/lib/icon-map";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 
@@ -11,17 +12,34 @@ export function CollectionCard({
 }: {
   collection: CollectionWithMeta;
 }) {
+  const router = useRouter();
   const [hovered, setHovered] = useState(false);
   const dominantColor = collection.types[0]?.color;
 
+  function openCollection() {
+    router.push(`/collections/${collection.id}`);
+  }
+
   return (
-    <Link
-      href={`/collections/${collection.id}`}
+    <article
+      role="link"
+      tabIndex={0}
       className="group relative rounded-lg border border-border bg-card p-4 transition-colors duration-200"
       style={{
         borderLeftColor: dominantColor,
         borderLeftWidth: dominantColor ? "3px" : undefined,
         backgroundColor: hovered && dominantColor ? `${dominantColor}12` : undefined,
+      }}
+      onClick={openCollection}
+      onKeyDown={(event) => {
+        if (event.defaultPrevented || event.target !== event.currentTarget) {
+          return;
+        }
+
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openCollection();
+        }
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -43,13 +61,11 @@ export function CollectionCard({
             {collection.itemCount} {collection.itemCount === 1 ? "item" : "items"}
           </p>
         </div>
-        <button
-          aria-label="Collection options"
-          className="shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
-          onClick={(event) => event.preventDefault()}
-        >
-          <MoreHorizontal className="h-3.5 w-3.5" />
-        </button>
+        <CollectionActions
+          key={`${collection.id}-${collection.updatedAt.toISOString()}`}
+          collection={collection}
+          variant="card"
+        />
       </div>
       {collection.description && (
         <p className="mt-2 text-xs text-muted-foreground line-clamp-1">
@@ -70,6 +86,6 @@ export function CollectionCard({
           })}
         </div>
       )}
-    </Link>
+    </article>
   );
 }

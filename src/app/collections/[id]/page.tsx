@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { FolderOpen, Star } from "lucide-react";
 import { auth } from "@/auth";
+import { CollectionActions } from "@/components/collections/collection-actions";
 import { ItemsGrid } from "@/components/items/items-grid";
 import {
   getCollectionOptionsForUser,
@@ -72,12 +73,19 @@ export default async function CollectionDetailPage({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:w-auto">
-            <MetadataCard label="Items" value={collection.itemCount.toString()} />
-            <MetadataCard
-              label="Types"
-              value={collection.types.length.toString()}
+          <div className="flex flex-col items-stretch gap-3 sm:items-end">
+            <CollectionActions
+              key={`${collection.id}-${collection.updatedAt.toISOString()}`}
+              collection={collection}
+              variant="detail"
             />
+            <div className="grid grid-cols-2 gap-3 sm:w-auto">
+              <MetadataCard label="Items" value={collection.itemCount.toString()} />
+              <MetadataCard
+                label="Types"
+                value={collection.types.length.toString()}
+              />
+            </div>
           </div>
         </div>
 
