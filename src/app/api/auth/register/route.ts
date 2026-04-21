@@ -1,8 +1,21 @@
 import { hash } from "bcryptjs";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { createVerificationToken } from "@/lib/auth/verification";
 import { sendVerificationEmail } from "@/lib/email";
 import { checkRateLimit, getClientIp, rateLimitKey, registrationLimiter } from "@/lib/rate-limit";
+
+const registerSchema = z
+  .object({
+    name: z.string().min(1, "Name is required").max(100),
+    email: z.string().email("Invalid email address").max(255),
+    password: z.string().min(8, "Password must be at least 8 characters").max(128),
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
@@ -10,21 +23,14 @@ export async function POST(request: Request) {
   if (rateCheck instanceof Response) return rateCheck;
 
   const body = await request.json();
-  const { name, email, password, confirmPassword } = body;
+  const parsed = registerSchema.safeParse(body);
 
-  if (!name || !email || !password || !confirmPassword) {
-    return Response.json(
-      { error: "All fields are required" },
-      { status: 400 }
-    );
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Invalid input";
+    return Response.json({ error: message }, { status: 400 });
   }
 
-  if (password !== confirmPassword) {
-    return Response.json(
-      { error: "Passwords do not match" },
-      { status: 400 }
-    );
-  }
+  const { name, email, password } = parsed.data;
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
