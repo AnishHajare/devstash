@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, type MockedFunction } from "vitest";
-import { createCollection } from "./collections";
+import {
+  createCollection,
+  updateCollection,
+  deleteCollection,
+} from "./collections";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -7,15 +11,23 @@ vi.mock("@/auth", () => ({
 
 vi.mock("@/lib/db/collections", () => ({
   createCollection: vi.fn(),
+  updateCollection: vi.fn(),
+  deleteCollection: vi.fn(),
 }));
 
 import { auth } from "@/auth";
-import { createCollection as dbCreateCollection } from "@/lib/db/collections";
+import {
+  createCollection as dbCreateCollection,
+  updateCollection as dbUpdateCollection,
+  deleteCollection as dbDeleteCollection,
+} from "@/lib/db/collections";
 
 type TestSession = { user?: { id?: string } } | null;
 
 const mockAuth = auth as unknown as MockedFunction<() => Promise<TestSession>>;
 const mockDbCreate = vi.mocked(dbCreateCollection);
+const mockDbUpdate = vi.mocked(dbUpdateCollection);
+const mockDbDelete = vi.mocked(dbDeleteCollection);
 
 const mockSession = { user: { id: "user-1" } };
 
@@ -103,6 +115,122 @@ describe("createCollection", () => {
     expect(result).toEqual({
       success: false,
       error: "Failed to create collection",
+    });
+  });
+});
+
+describe("updateCollection", () => {
+  it("returns error when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await updateCollection("col-1", { name: "Updated" });
+
+    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(mockDbUpdate).not.toHaveBeenCalled();
+  });
+
+  it("returns validation error when name is blank", async () => {
+    mockAuth.mockResolvedValue(mockSession);
+
+    const result = await updateCollection("col-1", { name: "   " });
+
+    expect(result).toEqual({ success: false, error: "Name is required" });
+    expect(mockDbUpdate).not.toHaveBeenCalled();
+  });
+
+  it("updates a collection successfully", async () => {
+    mockAuth.mockResolvedValue(mockSession);
+    mockDbUpdate.mockResolvedValue({
+      ...mockCollection,
+      name: "Updated Collection",
+      description: null,
+    });
+
+    const result = await updateCollection("col-1", {
+      name: "Updated Collection",
+      description: null,
+    });
+
+    expect(mockDbUpdate).toHaveBeenCalledWith("col-1", "user-1", {
+      name: "Updated Collection",
+      description: null,
+    });
+    expect(result).toEqual({
+      success: true,
+      data: {
+        ...mockCollection,
+        name: "Updated Collection",
+        description: null,
+      },
+    });
+  });
+
+  it("returns not found when the collection is missing", async () => {
+    mockAuth.mockResolvedValue(mockSession);
+    mockDbUpdate.mockResolvedValue(null);
+
+    const result = await updateCollection("missing", { name: "Updated" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Collection not found",
+    });
+  });
+
+  it("returns error when DB throws", async () => {
+    mockAuth.mockResolvedValue(mockSession);
+    mockDbUpdate.mockRejectedValue(new Error("DB failed"));
+
+    const result = await updateCollection("col-1", { name: "Updated" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Failed to update collection",
+    });
+  });
+});
+
+describe("deleteCollection", () => {
+  it("returns error when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await deleteCollection("col-1");
+
+    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(mockDbDelete).not.toHaveBeenCalled();
+  });
+
+  it("deletes a collection successfully", async () => {
+    mockAuth.mockResolvedValue(mockSession);
+    mockDbDelete.mockResolvedValue(true);
+
+    const result = await deleteCollection("col-1");
+
+    expect(mockDbDelete).toHaveBeenCalledWith("col-1", "user-1");
+    expect(result).toEqual({ success: true });
+  });
+
+  it("returns not found when the collection does not exist", async () => {
+    mockAuth.mockResolvedValue(mockSession);
+    mockDbDelete.mockResolvedValue(false);
+
+    const result = await deleteCollection("missing");
+
+    expect(result).toEqual({
+      success: false,
+      error: "Collection not found",
+    });
+  });
+
+  it("returns error when DB throws", async () => {
+    mockAuth.mockResolvedValue(mockSession);
+    mockDbDelete.mockRejectedValue(new Error("DB failed"));
+
+    const result = await deleteCollection("col-1");
+
+    expect(result).toEqual({
+      success: false,
+      error: "Failed to delete collection",
     });
   });
 });
