@@ -1,11 +1,23 @@
-# Current Feature
+# Current Feature: Collections Pages
 
 ## Status
-Not Started
+Complete
 
 ## Goals
 
+- Create `/collections` page listing all user collections using existing collection cards
+- Create `/collections/[id]` page showing items in a specific collection using existing item cards
+- Link "View all collections" in the sidebar to `/collections`
+- Link all collection cards on the dashboard to `/collections/[id]`
+
 ## Notes
+
+- Reuse existing `CollectionCard` component for the collections grid on `/collections`
+- Reuse existing `ItemCard`/`ItemsGrid` components for the items view on `/collections/[id]`
+- The `/collections/[id]` page should show collection metadata (name, description, item count) plus an items grid
+- Use the shared `DashboardShell` layout (sidebar + topbar) for both pages
+- Item drawer should work on the collection detail page (same as `/items/[type]`)
+- Fetch data with Prisma in server components; no mock data
 
 ## History
 
@@ -43,3 +55,4 @@ Not Started
 - 2026-04-21: Completed Code Extraction Refactor — extracted toItemDetail() helper in src/lib/db/items.ts eliminating 3 duplicate 20-line mapping blocks; extracted ItemViewBody and ItemEditBody local components from item-drawer.tsx reducing the scrollable body section from ~240 lines to ~15; extracted ContentField component from new-item-dialog.tsx; extracted SidebarCollectionLink component from sidebar-content.tsx replacing two repeated link patterns. No behaviour changes — build and all 45 tests pass.
 - 2026-04-21: Completed Collection Create — "New Collection" button in dashboard and items top bars opens a dialog with name (required) and description (optional) fields. createCollection server action in src/actions/collections.ts with Zod validation and auth check. createCollection DB function added to src/lib/db/collections.ts returning CollectionWithMeta with empty types/itemCount. NewCollectionDialog self-contained client component in src/components/collections/. Toast on success/failure, router.refresh() updates grid and sidebar stats. 6 unit tests added (51 total).
 - 2026-04-21: Completed Add Item to Collections — added a shared dropdown checkbox multi-select for collections in NewItemDialog and ItemDrawer edit mode, server-side collection option loading for dashboard/items surfaces, `createItem` and `updateItem` action validation for `collectionIds`, and DB-level collection ownership checks plus connect/disconnect syncing for `ItemCollection`. Updated item action tests and verified the touched files with ESLint.
+- 2026-04-22: Completed Collections Pages — added `/collections` and `/collections/[id]` using the shared dashboard shell and existing collection/item cards, extracted reusable `CollectionCard`, added `getCollectionWithItems` Prisma query for collection metadata plus owned items, and covered the new collection DB mapping with 3 unit tests (58 total).

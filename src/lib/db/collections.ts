@@ -1,3 +1,5 @@
+import type { ItemWithType } from "@/lib/db/items";
+import { serializeItem } from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
 export type CollectionOption = {
@@ -22,6 +24,56 @@ export type CollectionStats = {
   favoriteCollections: number;
 };
 
+export type CollectionDetail = CollectionWithMeta & {
+  items: ItemWithType[];
+};
+
+type CollectionMetaSource = {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  items: {
+    item: {
+      itemType: { id: string; icon: string; color: string; name: string };
+    };
+  }[];
+};
+
+function toCollectionMeta(collection: CollectionMetaSource): CollectionWithMeta {
+  const typeCounts = new Map<
+    string,
+    { icon: string; color: string; name: string; count: number }
+  >();
+
+  for (const { item } of collection.items) {
+    const existing = typeCounts.get(item.itemType.id);
+    if (existing) {
+      existing.count++;
+    } else {
+      typeCounts.set(item.itemType.id, {
+        icon: item.itemType.icon,
+        color: item.itemType.color,
+        name: item.itemType.name,
+        count: 1,
+      });
+    }
+  }
+
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isFavorite: collection.isFavorite,
+    itemCount: collection.items.length,
+    createdAt: collection.createdAt,
+    updatedAt: collection.updatedAt,
+    types: [...typeCounts.values()].sort((a, b) => b.count - a.count),
+  };
+}
+
 /**
  * Fetch all collections for a user with item counts and type breakdown.
  * Only selects the itemType fields needed — no full Item rows fetched.
@@ -45,35 +97,52 @@ export async function getCollectionsForUser(
     },
   });
 
-  return collections.map((col) => {
-    const typeCounts = new Map<
-      string,
-      { icon: string; color: string; name: string; count: number }
-    >();
+  return collections.map(toCollectionMeta);
+}
 
-    for (const ic of col.items) {
-      const t = ic.item.itemType;
-      const existing = typeCounts.get(t.id);
-      if (existing) {
-        existing.count++;
-      } else {
-        typeCounts.set(t.id, { icon: t.icon, color: t.color, name: t.name, count: 1 });
-      }
-    }
-
-    const types = [...typeCounts.values()].sort((a, b) => b.count - a.count);
-
-    return {
-      id: col.id,
-      name: col.name,
-      description: col.description,
-      isFavorite: col.isFavorite,
-      itemCount: col.items.length,
-      createdAt: col.createdAt,
-      updatedAt: col.updatedAt,
-      types,
-    };
+/**
+ * Fetch a single collection with all items for a user.
+ */
+export async function getCollectionWithItems(
+  userId: string,
+  collectionId: string
+): Promise<CollectionDetail | null> {
+  const collection = await prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      userId,
+    },
+    include: {
+      items: {
+        orderBy: {
+          item: {
+            updatedAt: "desc",
+          },
+        },
+        select: {
+          item: {
+            include: {
+              itemType: {
+                select: { id: true, name: true, icon: true, color: true },
+              },
+              tags: {
+                select: { id: true, name: true },
+              },
+            },
+          },
+        },
+      },
+    },
   });
+
+  if (!collection) {
+    return null;
+  }
+
+  return {
+    ...toCollectionMeta(collection),
+    items: collection.items.map(({ item }) => serializeItem(item)),
+  };
 }
 
 /**
