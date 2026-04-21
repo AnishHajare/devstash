@@ -72,6 +72,33 @@ export async function getCollectionsForUser(
 }
 
 /**
+ * Create a new collection for a user.
+ */
+export async function createCollection(
+  userId: string,
+  data: { name: string; description?: string }
+): Promise<CollectionWithMeta> {
+  const collection = await prisma.collection.create({
+    data: {
+      name: data.name,
+      description: data.description ?? null,
+      userId,
+    },
+  });
+
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isFavorite: collection.isFavorite,
+    itemCount: 0,
+    createdAt: collection.createdAt,
+    updatedAt: collection.updatedAt,
+    types: [],
+  };
+}
+
+/**
  * Derive collection stats from an already-fetched collections array.
  * Call this after getCollectionsForUser — avoids a second DB round-trip.
  */
