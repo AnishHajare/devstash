@@ -37,6 +37,48 @@ function serializeItem(item: {
   } as ItemWithType;
 }
 
+type PrismaItemDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  contentType: string;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  isFavorite: boolean;
+  isPinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  tags: { id: string; name: string }[];
+  collections: { collection: { id: string; name: string } }[];
+  itemType: { id: string; name: string; icon: string; color: string };
+};
+
+function toItemDetail(item: PrismaItemDetail): ItemDetail {
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    contentType: item.contentType,
+    content: item.content,
+    url: item.url,
+    language: item.language,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+    tags: item.tags,
+    collections: item.collections.map((ic) => ic.collection),
+    itemType: item.itemType,
+  };
+}
+
 /**
  * Fetch pinned items for a user.
  */
@@ -222,25 +264,7 @@ export async function getItemDetail(
 
   if (!item) return null;
 
-  return {
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    contentType: item.contentType,
-    content: item.content,
-    url: item.url,
-    language: item.language,
-    fileUrl: item.fileUrl,
-    fileName: item.fileName,
-    fileSize: item.fileSize,
-    isFavorite: item.isFavorite,
-    isPinned: item.isPinned,
-    createdAt: item.createdAt.toISOString(),
-    updatedAt: item.updatedAt.toISOString(),
-    tags: item.tags,
-    collections: item.collections.map((ic) => ic.collection),
-    itemType: item.itemType,
-  };
+  return toItemDetail(item);
 }
 
 export type CreateItemInput = {
@@ -291,25 +315,7 @@ export async function createItem(data: CreateItemInput): Promise<ItemDetail> {
     },
   });
 
-  return {
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    contentType: item.contentType,
-    content: item.content,
-    url: item.url,
-    language: item.language,
-    fileUrl: item.fileUrl,
-    fileName: item.fileName,
-    fileSize: item.fileSize,
-    isFavorite: item.isFavorite,
-    isPinned: item.isPinned,
-    createdAt: item.createdAt.toISOString(),
-    updatedAt: item.updatedAt.toISOString(),
-    tags: item.tags,
-    collections: item.collections.map((ic) => ic.collection),
-    itemType: item.itemType,
-  };
+  return toItemDetail(item);
 }
 
 export type UpdateItemInput = {
@@ -354,25 +360,7 @@ export async function updateItem(
     },
   });
 
-  return {
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    contentType: item.contentType,
-    content: item.content,
-    url: item.url,
-    language: item.language,
-    fileUrl: item.fileUrl,
-    fileName: item.fileName,
-    fileSize: item.fileSize,
-    isFavorite: item.isFavorite,
-    isPinned: item.isPinned,
-    createdAt: item.createdAt.toISOString(),
-    updatedAt: item.updatedAt.toISOString(),
-    tags: item.tags,
-    collections: item.collections.map((ic) => ic.collection),
-    itemType: item.itemType,
-  };
+  return toItemDetail(item);
 }
 
 /**
