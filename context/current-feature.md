@@ -1,28 +1,11 @@
-# Current Feature: Collection Actions (Edit, Delete, Favorite)
+# Current Feature
 
 ## Status
-Complete
+Not Started
 
 ## Goals
 
-- Add Edit, Delete, and Favorite buttons to `/collections/[id]` detail page header
-  - Favorite: icon/button only, no functionality yet
-  - Edit: opens a modal to edit collection name and description
-  - Delete: opens a confirmation dialog; removes items from collection (does NOT delete items)
-- On `CollectionCard` (used on `/collections` and dashboard), the 3-dots icon opens a dropdown with Edit, Delete, and Favorite options
-- Clicking anywhere else on the card navigates to the collection detail page `/collections/[id]`
-- Edit and Delete actions work the same as on the detail page
-- Favorite option in dropdown: icon/button only for now
-
 ## Notes
-
-- Items must NOT be deleted when a collection is deleted or items are removed — only the `ItemCollection` join records are removed
-- Deleting a collection: removes the collection and its `ItemCollection` links, items remain intact
-- Edit action updates `name` and `description` via existing `updateCollection` server action (or a new one if needed)
-- Delete action calls a `deleteCollection` server action
-- Reuse `shadcn/ui` Dialog for edit modal and AlertDialog for delete confirmation
-- CollectionCard must become a client component (or wrap with one) to handle the 3-dots dropdown and card-level navigation click
-- Keep the card click → navigation separate from the dropdown click (stop propagation on dropdown trigger)
 
 ## History
 
