@@ -25,7 +25,7 @@ export type ItemWithType = {
   };
 };
 
-function serializeItem(item: {
+export function serializeItem(item: {
   createdAt: Date;
   updatedAt: Date;
   [key: string]: unknown;
