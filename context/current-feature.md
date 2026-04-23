@@ -1,32 +1,11 @@
-# Current Feature: Favorites Page
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Add star icon button (always outline) to `DashboardTopBar` linking to `/favorites`
-- Wire the disabled Favorite button in `CollectionActions` — add `toggleFavoriteCollection` DB fn + server action
-- Add `getFavoriteItems(userId)` and `getFavoriteCollections(userId)` DB queries
-- Create protected `/favorites` route (layout + page) following the existing layout pattern
-- Build `FavoritesContent` client component — compact, VS Code/terminal-style list (no cards)
-- Each item row: type icon (colored) · title · type badge · date — monospace, dense
-- Each collection row: folder icon · name · item count · date
-- Separate sections for items and collections with counts
-- Inline star toggle button on each row to unfavorite directly from the list
-- Click item → opens `ItemDrawer`, click collection → navigates to `/collections/[id]`
-- Empty state per section and global empty state when nothing is a favorite
-- Sort both sections by `updatedAt desc` (no `favoriteAt` column needed)
-
 ## Notes
-
-- `isFavorite` already exists on both `Item` and `Collection` DB models — no schema migration needed
-- `CollectionActions` Favorite button is currently `disabled` on both `card` and `detail` variants — this is the first thing to fix
-- Item favorite toggle already works via `PATCH /api/items/[id]` — reuse the same approach for collections
-- `updatedAt` is used for sort order; toggling favorite bumps `updatedAt` naturally, so recently starred items surface at top
-- TopBar star icon: always outline, no active/filled state when on `/favorites` (avoids making TopBar a client component)
-- `/favorites` layout follows the exact same pattern as `dashboard/`, `items/`, `collections/`, `settings/` layouts
-- UI style: monospace or semi-monospace font, minimal padding, high density, subtle hover states, no cards or heavy borders
 
 ## History
 
@@ -70,3 +49,4 @@ In Progress
 - 2026-04-23: Completed Pagination — URL-driven `?page=N` pagination on `/items/[type]`, `/collections`, and `/collections/[id]`. `PaginationControls` component renders numbered page links plus prev/next buttons (greyed and non-clickable at boundaries, hidden when only one page). `getPaginatedItemsByType`, `getPaginatedCollectionsForUser`, and updated `getCollectionWithItems` use `skip`/`take` with parallel `count` queries — only one page of rows fetched per request. `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`. Out-of-range `?page` values redirect to the last valid page. Self-hosted Inter and JetBrains Mono fonts via `@fontsource-variable` (replaces `next/font/google`, eliminating the Google Fonts network dependency at build time). 5 new tests added.
 - 2026-04-23: Completed Settings Page — new protected `/settings` route using the dashboard shell. Account section shows identity info and linked OAuth providers with unlink support. Security section holds the Change Password flow. Danger Zone holds the Delete Account flow. Profile page is now read-only (identity + usage stats only) with an "Open Settings" button. "Settings" link added to the sidebar user avatar dropdown. Components extracted to `src/components/account/` (AccountDetailsCard, ChangePasswordSection, DeleteAccountSection, LinkedAccountsSection). 10 new tests added (accounts db helpers, profile db helpers, auth-provider-summary, protected-routes utility) — 98 total.
 - 2026-04-23: Completed Editor Preferences Settings — Editor Preferences section added to /settings with font size (12|14|16|18), tab size (2|4), word wrap, minimap, and theme (vs-dark, monokai, github-dark) controls. Preferences persist to editorPreferences JSON column on User (Prisma migration). Auto-save on change with 400ms debounce, Saving.../Saved/error inline status bar, and toast on success/failure. EditorPreferencesProvider context wraps all 4 dashboard layouts; CodeEditor reads from context and applies EDITOR_THEME_CHROME for theme-accurate container/header colours. Shared editorPreferencesSchema used for Zod validation in server action and client-side safeParse on select change. 11 unit tests added (normalizer, Monaco options builder, DB helpers, server action auth/validation/persistence/error — 109 total).
+- 2026-04-24: Completed Favorites Page — /favorites route (protected layout + page) with compact VS Code-style list view. Star icon added to TopBar. getFavoriteItems and getFavoriteCollections DB queries. toggleFavoriteCollection DB fn and server action. CollectionActions favorite button wired (both card and detail variants). FavoritesContent client component with separate Items/Collections sections, inline unfavorite toggle, per-section empty states, and global empty state. Sort by updatedAt desc. 15 unit tests added (124 total).
