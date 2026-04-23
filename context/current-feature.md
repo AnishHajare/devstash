@@ -1,43 +1,11 @@
-# Current Feature: Editor Preferences Settings
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Add Editor Preferences section to the Settings page
-- Font size dropdown
-- Tab size dropdown
-- Word wrap toggle (default: on)
-- Minimap toggle (default: off)
-- Theme dropdown: vs-dark, monokai, github-dark (default: vs-dark)
-- Auto-save on change (no save button), with success toast on each save
-- Settings persist to `editorPreferences` JSON column on the User model (migration required)
-- Apply settings live to the Monaco editor component via `EditorPreferencesContext`
-- Load saved preferences on initial Settings page render and on editor boot so refreshes keep the last saved values
-- Existing users with `null` / missing `editorPreferences` fall back to the default preferences object without errors
-- Auto-save shows clear failure feedback and preserves the unsaved local value so the user can retry by changing the field again
-- Restrict saved values to explicit options: font size `12 | 14 | 16 | 18`, tab size `2 | 4`, theme `vs-dark | monokai | github-dark`
-- Use a shared, typed `EditorPreferences` shape for defaults, validation, DB reads, and Monaco mapping
-- Add tests covering default normalization, server action validation/auth, DB persistence wiring, and Monaco preference application
-
 ## Notes
-
-- Store preferences as a JSON column `editorPreferences` on the `User` model
-- Create and run a Prisma migration — never use `db push`
-- Create a server action to update preferences
-- Create `EditorPreferencesContext` so client components (Monaco editor) can read/subscribe to preferences
-- Apply context values to all Monaco editor instances (CodeEditor component)
-- Default preferences object:
-  - `fontSize: 12`
-  - `tabSize: 2`
-  - `wordWrap: true`
-  - `minimap: false`
-  - `theme: "vs-dark"`
-- Settings page should render current saved values, not just defaults
-- Server-side reads must normalize partial / invalid JSON to safe defaults before sending to the client
-- Autosave UX should show `Saving...`, success toast on completion, and error toast if persistence fails
-- Revalidate the Settings page after saving so future server renders stay in sync
 
 ## History
 
@@ -80,3 +48,4 @@ In Progress
 - 2026-04-23: Completed Global Search / Command Palette — Cmd+K / Ctrl+K opens a shadcn cmdk Dialog with fuzzy search across all items and collections. Grouped results (Items / Collections) with type icons and item counts. Selecting an item opens the ItemDrawer; selecting a collection navigates to /collections/[id]. TopBar search trigger shows ⌘K hint. Client-side fuzzy scoring (exact match ranked first, character-scatter fallback). getSearchableItems DB query (lean select, server-side preview truncation at 140 chars). DashboardTopBar extracted from all 3 layouts. 8 unit tests added (79 total).
 - 2026-04-23: Completed Pagination — URL-driven `?page=N` pagination on `/items/[type]`, `/collections`, and `/collections/[id]`. `PaginationControls` component renders numbered page links plus prev/next buttons (greyed and non-clickable at boundaries, hidden when only one page). `getPaginatedItemsByType`, `getPaginatedCollectionsForUser`, and updated `getCollectionWithItems` use `skip`/`take` with parallel `count` queries — only one page of rows fetched per request. `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`. Out-of-range `?page` values redirect to the last valid page. Self-hosted Inter and JetBrains Mono fonts via `@fontsource-variable` (replaces `next/font/google`, eliminating the Google Fonts network dependency at build time). 5 new tests added.
 - 2026-04-23: Completed Settings Page — new protected `/settings` route using the dashboard shell. Account section shows identity info and linked OAuth providers with unlink support. Security section holds the Change Password flow. Danger Zone holds the Delete Account flow. Profile page is now read-only (identity + usage stats only) with an "Open Settings" button. "Settings" link added to the sidebar user avatar dropdown. Components extracted to `src/components/account/` (AccountDetailsCard, ChangePasswordSection, DeleteAccountSection, LinkedAccountsSection). 10 new tests added (accounts db helpers, profile db helpers, auth-provider-summary, protected-routes utility) — 98 total.
+- 2026-04-23: Completed Editor Preferences Settings — Editor Preferences section added to /settings with font size (12|14|16|18), tab size (2|4), word wrap, minimap, and theme (vs-dark, monokai, github-dark) controls. Preferences persist to editorPreferences JSON column on User (Prisma migration). Auto-save on change with 400ms debounce, Saving.../Saved/error inline status bar, and toast on success/failure. EditorPreferencesProvider context wraps all 4 dashboard layouts; CodeEditor reads from context and applies EDITOR_THEME_CHROME for theme-accurate container/header colours. Shared editorPreferencesSchema used for Zod validation in server action and client-side safeParse on select change. 11 unit tests added (normalizer, Monaco options builder, DB helpers, server action auth/validation/persistence/error — 109 total).
