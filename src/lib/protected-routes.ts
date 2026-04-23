@@ -1,4 +1,4 @@
-const PROTECTED_PATH_PREFIXES = ["/dashboard", "/settings"];
+const PROTECTED_PATH_PREFIXES = ["/dashboard", "/settings", "/favorites"];
 
 export function isProtectedPath(pathname: string) {
   return PROTECTED_PATH_PREFIXES.some(

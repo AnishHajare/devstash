@@ -7,6 +7,8 @@ describe("protected routes", () => {
     expect(isProtectedPath("/dashboard/profile")).toBe(true);
     expect(isProtectedPath("/settings")).toBe(true);
     expect(isProtectedPath("/settings/security")).toBe(true);
+    expect(isProtectedPath("/favorites")).toBe(true);
+    expect(isProtectedPath("/favorites/archive")).toBe(true);
   });
 
   it("leaves public auth paths unprotected", () => {
