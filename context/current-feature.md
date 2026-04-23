@@ -1,11 +1,29 @@
-# Current Feature
+# Current Feature: Pinned Items + Fix Item Favorite Pattern
 
 ## Status
-Not Started
+Complete
 
 ## Goals
 
+- Create `toggleItemPin` server action in `src/actions/items.ts` (auth + ownership + `{ success, error }` return)
+- Create `toggleItemFavorite` server action in `src/actions/items.ts` (same pattern — fixes weak raw-fetch in drawer)
+- Add `toggleItemPin` and `toggleItemFavorite` DB-layer functions in `src/lib/db/items.ts` with ownership checks
+- Rewrite `togglePin` in `ItemDrawer` to use server action with toast (success + error) and optimistic rollback on failure
+- Rewrite `toggleFavorite` in `ItemDrawer` to use server action with toast (success + error) and optimistic rollback on failure
+- Pass `active={item.isPinned}` to Pin `ActionBtn` (remove hardcoded inline color style, match star pattern)
+- Update `getPaginatedItemsByType` orderBy to `[{ isPinned: 'desc' }, { updatedAt: 'desc' }]` so pinned items surface first in `/items/[type]` listings
+- Update `getCollectionWithItems` orderBy with the same compound sort so pinned items surface first in `/collections/[id]`
+- Unit tests for both new server actions (auth guard, not-found, success, DB error paths)
+- Unit tests for both new DB-layer functions
+
 ## Notes
+
+- **Do not** add a click handler to the Pin icon on `ItemCard` or `ItemRow` — it stays a static indicator per spec
+- The drawer is the sole toggle surface for both pin and favorite
+- The `toggleFavorite` raw-fetch pattern was identified as a pre-existing weakness; this feature is the right time to fix it alongside pin so both toggles are consistent
+- Follow the `toggleFavoriteCollection` pattern exactly: DB fn → server action → caller checks `result.success` → toast + rollback
+- Pin icon on `ActionBtn` should turn blue (`#3b82f6`) when active, same way star turns yellow — driven by the `active` prop, not hardcoded inline style
+- Scope of "sort pinned to top": `/items/[type]` (`getPaginatedItemsByType`) and `/collections/[id]` (`getCollectionWithItems`) — dashboard pinned section already shows only pinned items so no change needed there
 
 ## History
 

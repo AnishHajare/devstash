@@ -6,6 +6,8 @@ import {
   createItem as dbCreateItem,
   updateItem as dbUpdateItem,
   deleteItem as dbDeleteItem,
+  toggleItemPin as dbToggleItemPin,
+  toggleItemFavorite as dbToggleItemFavorite,
 } from "@/lib/db/items";
 import type { ItemDetail } from "@/lib/db/items";
 import { TEXT_CONTENT_TYPES, LANGUAGE_TYPES } from "@/lib/item-type-constants";
@@ -139,6 +141,50 @@ export async function updateItem(
     }
 
     return { success: true, data: updated };
+  } catch {
+    return { success: false, error: "Failed to update item" };
+  }
+}
+
+type ToggleItemPinResult = { success: true } | { success: false; error: string };
+
+export async function toggleItemPin(
+  itemId: string,
+  isPinned: boolean
+): Promise<ToggleItemPinResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    const updated = await dbToggleItemPin(itemId, session.user.id, isPinned);
+    if (!updated) {
+      return { success: false, error: "Item not found" };
+    }
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to update item" };
+  }
+}
+
+type ToggleItemFavoriteResult = { success: true } | { success: false; error: string };
+
+export async function toggleItemFavorite(
+  itemId: string,
+  isFavorite: boolean
+): Promise<ToggleItemFavoriteResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    const updated = await dbToggleItemFavorite(itemId, session.user.id, isFavorite);
+    if (!updated) {
+      return { success: false, error: "Item not found" };
+    }
+    return { success: true };
   } catch {
     return { success: false, error: "Failed to update item" };
   }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type MockedFunction } from "vitest";
-import { createItem, updateItem, deleteItem } from "./items";
+import { createItem, updateItem, deleteItem, toggleItemPin, toggleItemFavorite } from "./items";
 
 // ── Mocks ────────────────────────────────────────────────────
 
@@ -11,6 +11,8 @@ vi.mock("@/lib/db/items", () => ({
   createItem: vi.fn(),
   updateItem: vi.fn(),
   deleteItem: vi.fn(),
+  toggleItemPin: vi.fn(),
+  toggleItemFavorite: vi.fn(),
 }));
 
 import { auth } from "@/auth";
@@ -18,6 +20,8 @@ import {
   createItem as dbCreateItem,
   updateItem as dbUpdateItem,
   deleteItem as dbDeleteItem,
+  toggleItemPin as dbToggleItemPin,
+  toggleItemFavorite as dbToggleItemFavorite,
 } from "@/lib/db/items";
 
 type TestSession = { user?: { id?: string } } | null;
@@ -26,6 +30,8 @@ const mockAuth = auth as unknown as MockedFunction<() => Promise<TestSession>>;
 const mockDbCreateItem = vi.mocked(dbCreateItem);
 const mockDbUpdateItem = vi.mocked(dbUpdateItem);
 const mockDbDeleteItem = vi.mocked(dbDeleteItem);
+const mockDbToggleItemPin = vi.mocked(dbToggleItemPin);
+const mockDbToggleItemFavorite = vi.mocked(dbToggleItemFavorite);
 
 const validCreatePayload = {
   typeId: "type-1",
@@ -516,5 +522,123 @@ describe("deleteItem action — success", () => {
     const result = await deleteItem("item-1");
     expect(result.success).toBe(true);
     expect(mockDbDeleteItem).toHaveBeenCalledWith("item-1", "user-1");
+  });
+});
+
+// ── toggleItemPin action ──────────────────────────────────────
+
+describe("toggleItemPin action — auth", () => {
+  it("returns error when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await toggleItemPin("item-1", true);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Not authenticated");
+    expect(mockDbToggleItemPin).not.toHaveBeenCalled();
+  });
+
+  it("returns error when session has no user id", async () => {
+    mockAuth.mockResolvedValue({ user: {} } as never);
+    const result = await toggleItemPin("item-1", true);
+    expect(result.success).toBe(false);
+    expect(mockDbToggleItemPin).not.toHaveBeenCalled();
+  });
+});
+
+describe("toggleItemPin action — DB", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
+  });
+
+  it("returns error when item not found (db returns false)", async () => {
+    mockDbToggleItemPin.mockResolvedValue(false);
+    const result = await toggleItemPin("missing", true);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Item not found");
+  });
+
+  it("returns error when db throws", async () => {
+    mockDbToggleItemPin.mockRejectedValue(new Error("DB error"));
+    const result = await toggleItemPin("item-1", true);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Failed to update item");
+  });
+});
+
+describe("toggleItemPin action — success", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
+  });
+
+  it("calls db with item id, user id, and isPinned true", async () => {
+    mockDbToggleItemPin.mockResolvedValue(true);
+    const result = await toggleItemPin("item-1", true);
+    expect(result.success).toBe(true);
+    expect(mockDbToggleItemPin).toHaveBeenCalledWith("item-1", "user-1", true);
+  });
+
+  it("calls db with isPinned false to unpin", async () => {
+    mockDbToggleItemPin.mockResolvedValue(true);
+    const result = await toggleItemPin("item-1", false);
+    expect(result.success).toBe(true);
+    expect(mockDbToggleItemPin).toHaveBeenCalledWith("item-1", "user-1", false);
+  });
+});
+
+// ── toggleItemFavorite action ─────────────────────────────────
+
+describe("toggleItemFavorite action — auth", () => {
+  it("returns error when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await toggleItemFavorite("item-1", true);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Not authenticated");
+    expect(mockDbToggleItemFavorite).not.toHaveBeenCalled();
+  });
+
+  it("returns error when session has no user id", async () => {
+    mockAuth.mockResolvedValue({ user: {} } as never);
+    const result = await toggleItemFavorite("item-1", true);
+    expect(result.success).toBe(false);
+    expect(mockDbToggleItemFavorite).not.toHaveBeenCalled();
+  });
+});
+
+describe("toggleItemFavorite action — DB", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
+  });
+
+  it("returns error when item not found (db returns false)", async () => {
+    mockDbToggleItemFavorite.mockResolvedValue(false);
+    const result = await toggleItemFavorite("missing", true);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Item not found");
+  });
+
+  it("returns error when db throws", async () => {
+    mockDbToggleItemFavorite.mockRejectedValue(new Error("DB error"));
+    const result = await toggleItemFavorite("item-1", true);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe("Failed to update item");
+  });
+});
+
+describe("toggleItemFavorite action — success", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } } as never);
+  });
+
+  it("calls db with item id, user id, and isFavorite true", async () => {
+    mockDbToggleItemFavorite.mockResolvedValue(true);
+    const result = await toggleItemFavorite("item-1", true);
+    expect(result.success).toBe(true);
+    expect(mockDbToggleItemFavorite).toHaveBeenCalledWith("item-1", "user-1", true);
+  });
+
+  it("calls db with isFavorite false to unfavorite", async () => {
+    mockDbToggleItemFavorite.mockResolvedValue(true);
+    const result = await toggleItemFavorite("item-1", false);
+    expect(result.success).toBe(true);
+    expect(mockDbToggleItemFavorite).toHaveBeenCalledWith("item-1", "user-1", false);
   });
 });
