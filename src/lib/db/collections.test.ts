@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const {
   collectionFindMany,
   collectionFindFirst,
+  collectionCount,
   update,
   deleteMany,
   itemCount,
@@ -10,6 +11,7 @@ const {
 } = vi.hoisted(() => ({
   collectionFindMany: vi.fn(),
   collectionFindFirst: vi.fn(),
+  collectionCount: vi.fn(),
   update: vi.fn(),
   deleteMany: vi.fn(),
   itemCount: vi.fn(),
@@ -21,6 +23,7 @@ vi.mock("@/lib/prisma", () => ({
     collection: {
       findMany: collectionFindMany,
       findFirst: collectionFindFirst,
+      count: collectionCount,
       update,
       deleteMany,
     },
@@ -37,6 +40,7 @@ vi.mock("@/lib/r2", () => ({
 
 import {
   getCollectionsForUser,
+  getPaginatedCollectionsForUser,
   getCollectionWithItems,
   updateCollection,
   deleteCollection,
@@ -125,6 +129,84 @@ describe("collections db helpers", () => {
           ],
         },
       ]);
+    });
+  });
+
+  describe("getPaginatedCollectionsForUser", () => {
+    it("fetches one collection page with skip/take and a matching count query", async () => {
+      collectionFindMany.mockResolvedValue([
+        {
+          id: "col-1",
+          name: "React Patterns",
+          description: "Reusable examples",
+          isFavorite: false,
+          createdAt: new Date("2026-04-21T10:00:00.000Z"),
+          updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+          items: [
+            {
+              item: {
+                itemType: {
+                  id: "type-snippet",
+                  name: "Snippet",
+                  icon: "Code",
+                  color: "#3b82f6",
+                },
+              },
+            },
+          ],
+        },
+      ]);
+      collectionCount.mockResolvedValue(22);
+
+      const result = await getPaginatedCollectionsForUser("user-1", {
+        skip: 21,
+        take: 21,
+      });
+
+      expect(collectionFindMany).toHaveBeenCalledWith({
+        where: { userId: "user-1" },
+        orderBy: { updatedAt: "desc" },
+        skip: 21,
+        take: 21,
+        include: {
+          items: {
+            select: {
+              item: {
+                select: {
+                  itemType: {
+                    select: { id: true, icon: true, color: true, name: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      expect(collectionCount).toHaveBeenCalledWith({
+        where: { userId: "user-1" },
+      });
+      expect(result).toEqual({
+        totalCount: 22,
+        collections: [
+          {
+            id: "col-1",
+            name: "React Patterns",
+            description: "Reusable examples",
+            isFavorite: false,
+            itemCount: 1,
+            createdAt: new Date("2026-04-21T10:00:00.000Z"),
+            updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+            types: [
+              {
+                name: "Snippet",
+                icon: "Code",
+                color: "#3b82f6",
+                count: 1,
+              },
+            ],
+          },
+        ],
+      });
     });
   });
 

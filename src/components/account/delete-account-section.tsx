@@ -36,7 +36,9 @@ export function DeleteAccountSection() {
       if (res.status === 429) {
         const data = await res.json();
         const minutes = Math.ceil(data.retryAfter / 60);
-        setError(`Too many attempts. Try again in ${minutes} minute${minutes > 1 ? "s" : ""}.`);
+        setError(
+          `Too many attempts. Try again in ${minutes} minute${minutes > 1 ? "s" : ""}.`
+        );
         return;
       }
 
@@ -53,7 +55,16 @@ export function DeleteAccountSection() {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm">
+        <p className="font-medium text-red-600 dark:text-red-400">
+          Delete this workspace account
+        </p>
+        <p className="mt-1 text-muted-foreground">
+          This permanently removes your profile, items, collections, and tags.
+        </p>
+      </div>
+
       <AlertDialog
         onOpenChange={(open) => {
           if (!open) {
@@ -65,8 +76,8 @@ export function DeleteAccountSection() {
         <AlertDialogTrigger
           render={
             <Button
-              variant="outline"
-              className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:border-red-500/50"
+              variant="destructive"
+              className="w-full justify-start gap-2 sm:w-auto"
             />
           }
         >
@@ -102,7 +113,7 @@ export function DeleteAccountSection() {
               onClick={handleDelete}
               disabled={loading || confirmation !== "DELETE"}
             >
-              {loading ? "Deleting…" : "Delete Account"}
+              {loading ? "Deleting..." : "Delete Account"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -9,6 +9,7 @@ import {
   LogOut,
   ChevronRight,
   Circle,
+  Settings,
 } from "lucide-react";
 import { iconMap } from "@/lib/icon-map";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -166,6 +167,10 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
           <DropdownMenuContent side="top" align="start" className="w-48">
             <DropdownMenuItem render={<Link href="/dashboard/profile" />}>
               Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href="/settings" />}>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => signOut({ redirectTo: "/sign-in" })}>
               <LogOut className="mr-2 h-4 w-4" />
