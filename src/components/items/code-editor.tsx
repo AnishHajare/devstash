@@ -1,8 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Editor, { type OnMount } from "@monaco-editor/react";
+import Editor, { type BeforeMount, type OnMount } from "@monaco-editor/react";
 import { Copy, Check } from "lucide-react";
+import { useEditorPreferences } from "@/components/editor/editor-preferences-provider";
+import {
+  buildMonacoEditorOptions,
+  EDITOR_THEME_CHROME,
+} from "@/lib/editor-preferences";
 
 type CodeEditorProps = {
   value: string;
@@ -23,6 +28,8 @@ export function CodeEditor({
   readOnly = false,
   accentColor,
 }: CodeEditorProps) {
+  const { preferences } = useEditorPreferences();
+  const themeChrome = EDITOR_THEME_CHROME[preferences.theme];
   const [copied, setCopied] = useState(false);
   const [editorHeight, setEditorHeight] = useState(MIN_HEIGHT);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,16 +66,59 @@ export function CodeEditor({
     }
   };
 
+  const handleBeforeMount: BeforeMount = (monaco) => {
+    monaco.editor.defineTheme("monokai", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "comment", foreground: "75715e" },
+        { token: "string", foreground: "e6db74" },
+        { token: "number", foreground: "ae81ff" },
+        { token: "keyword", foreground: "f92672" },
+        { token: "type", foreground: "66d9ef" },
+      ],
+      colors: {
+        "editor.background": "#272822",
+        "editor.foreground": "#f8f8f2",
+        "editorLineNumber.foreground": "#6f6f68",
+        "editorLineNumber.activeForeground": "#f8f8f2",
+        "editor.selectionBackground": "#49483e",
+      },
+    });
+
+    monaco.editor.defineTheme("github-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "comment", foreground: "8b949e" },
+        { token: "string", foreground: "a5d6ff" },
+        { token: "number", foreground: "79c0ff" },
+        { token: "keyword", foreground: "ff7b72" },
+        { token: "type", foreground: "ffa657" },
+      ],
+      colors: {
+        "editor.background": "#0d1117",
+        "editor.foreground": "#c9d1d9",
+        "editorLineNumber.foreground": "#6e7681",
+        "editorLineNumber.activeForeground": "#c9d1d9",
+        "editor.selectionBackground": "#264f78",
+      },
+    });
+  };
+
   return (
     <div
       ref={containerRef}
       className="rounded-md border border-border overflow-hidden transition-all duration-150"
-      style={{ backgroundColor: "#1e1e1e" }}
+      style={{ backgroundColor: themeChrome.editorBg }}
     >
       {/* Header */}
       <div
         className="flex items-center h-8 px-3 border-b"
-        style={{ backgroundColor: "#252526", borderColor: "#3e3e42" }}
+        style={{
+          backgroundColor: themeChrome.headerBg,
+          borderColor: themeChrome.headerBorder,
+        }}
       >
         {/* macOS dots */}
         <div className="flex items-center gap-1.5 shrink-0">
@@ -110,33 +160,12 @@ export function CodeEditor({
         <Editor
           value={value}
           language={language || "plaintext"}
-          theme="vs-dark"
+          theme={preferences.theme}
           height={editorHeight}
+          beforeMount={handleBeforeMount}
           onMount={handleMount}
           onChange={(val) => onChange?.(val ?? "")}
-          options={{
-            readOnly,
-            minimap: { enabled: false },
-            fontSize: 12,
-            lineHeight: 20,
-            fontFamily:
-              'var(--font-geist-mono), "JetBrains Mono", ui-monospace, monospace',
-            padding: { top: 12, bottom: 12 },
-            renderLineHighlight: "none",
-            overviewRulerLanes: 0,
-            hideCursorInOverviewRuler: true,
-            scrollBeyondLastLine: false,
-            wordWrap: "on",
-            automaticLayout: true,
-            scrollbar: {
-              verticalScrollbarSize: 6,
-              horizontalScrollbarSize: 6,
-              useShadows: false,
-            },
-            ...(readOnly
-              ? { cursorStyle: "line" as const, cursorBlinking: "solid" as const }
-              : {}),
-          }}
+          options={buildMonacoEditorOptions(preferences, readOnly)}
         />
       </div>
     </div>

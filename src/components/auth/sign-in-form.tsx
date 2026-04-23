@@ -43,7 +43,7 @@ export function SignInForm() {
       : isRateLimited
         ? "Too many login attempts. Please try again in 15 minutes."
         : isAccountNotLinked
-          ? "An account with this email already exists. Please sign in with your password first, then link GitHub from your profile."
+          ? "An account with this email already exists. Please sign in with your password first, then link GitHub from Settings."
           : authError === "CredentialsSignin"
             ? "Invalid email or password"
             : authError

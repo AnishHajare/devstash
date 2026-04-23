@@ -1,11 +1,43 @@
-# Current Feature
+# Current Feature: Editor Preferences Settings
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
 
+- Add Editor Preferences section to the Settings page
+- Font size dropdown
+- Tab size dropdown
+- Word wrap toggle (default: on)
+- Minimap toggle (default: off)
+- Theme dropdown: vs-dark, monokai, github-dark (default: vs-dark)
+- Auto-save on change (no save button), with success toast on each save
+- Settings persist to `editorPreferences` JSON column on the User model (migration required)
+- Apply settings live to the Monaco editor component via `EditorPreferencesContext`
+- Load saved preferences on initial Settings page render and on editor boot so refreshes keep the last saved values
+- Existing users with `null` / missing `editorPreferences` fall back to the default preferences object without errors
+- Auto-save shows clear failure feedback and preserves the unsaved local value so the user can retry by changing the field again
+- Restrict saved values to explicit options: font size `12 | 14 | 16 | 18`, tab size `2 | 4`, theme `vs-dark | monokai | github-dark`
+- Use a shared, typed `EditorPreferences` shape for defaults, validation, DB reads, and Monaco mapping
+- Add tests covering default normalization, server action validation/auth, DB persistence wiring, and Monaco preference application
+
 ## Notes
+
+- Store preferences as a JSON column `editorPreferences` on the `User` model
+- Create and run a Prisma migration — never use `db push`
+- Create a server action to update preferences
+- Create `EditorPreferencesContext` so client components (Monaco editor) can read/subscribe to preferences
+- Apply context values to all Monaco editor instances (CodeEditor component)
+- Default preferences object:
+  - `fontSize: 12`
+  - `tabSize: 2`
+  - `wordWrap: true`
+  - `minimap: false`
+  - `theme: "vs-dark"`
+- Settings page should render current saved values, not just defaults
+- Server-side reads must normalize partial / invalid JSON to safe defaults before sending to the client
+- Autosave UX should show `Saving...`, success toast on completion, and error toast if persistence fails
+- Revalidate the Settings page after saving so future server renders stay in sync
 
 ## History
 

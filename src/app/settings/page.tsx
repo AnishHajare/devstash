@@ -5,6 +5,7 @@ import { getUserProfile } from "@/lib/db/profile";
 import { AccountDetailsCard } from "@/components/account/account-details-card";
 import { ChangePasswordSection } from "@/components/account/change-password-section";
 import { DeleteAccountSection } from "@/components/account/delete-account-section";
+import { EditorPreferencesSection } from "@/components/account/editor-preferences-section";
 import { LinkedAccountsSection } from "@/components/account/linked-accounts-section";
 import {
   Card,
@@ -74,6 +75,28 @@ export default async function SettingsPage() {
               linkedProviders={linkedAccounts.map((account) => account.provider)}
               hasPassword={user.hasPassword}
             />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Editor
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Tune Monaco to match how you read and edit code.
+          </p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Code Editor</CardTitle>
+            <CardDescription>
+              Choose your defaults once and apply them anywhere Monaco appears.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <EditorPreferencesSection />
           </CardContent>
         </Card>
       </section>
