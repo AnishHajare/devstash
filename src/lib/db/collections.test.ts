@@ -41,7 +41,9 @@ vi.mock("@/lib/r2", () => ({
 import {
   getCollectionsForUser,
   getPaginatedCollectionsForUser,
+  getFavoriteCollections,
   getCollectionWithItems,
+  toggleFavoriteCollection,
   updateCollection,
   deleteCollection,
 } from "@/lib/db/collections";
@@ -210,6 +212,62 @@ describe("collections db helpers", () => {
     });
   });
 
+  describe("getFavoriteCollections", () => {
+    it("fetches only favorite collections sorted by updated date", async () => {
+      collectionFindMany.mockResolvedValue([
+        {
+          id: "col-1",
+          name: "Favorites",
+          description: null,
+          isFavorite: true,
+          createdAt: new Date("2026-04-21T10:00:00.000Z"),
+          updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+          items: [],
+        },
+      ]);
+
+      const result = await getFavoriteCollections("user-1");
+
+      expect(collectionFindMany).toHaveBeenCalledWith({
+        where: { userId: "user-1", isFavorite: true },
+        orderBy: { updatedAt: "desc" },
+        include: {
+          items: {
+            select: {
+              item: {
+                select: {
+                  itemType: {
+                    select: { id: true, icon: true, color: true, name: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      expect(result).toEqual([
+        {
+          id: "col-1",
+          name: "Favorites",
+          description: null,
+          isFavorite: true,
+          itemCount: 0,
+          createdAt: new Date("2026-04-21T10:00:00.000Z"),
+          updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+          types: [],
+        },
+      ]);
+    });
+
+    it("returns an empty array when the user has no favorite collections", async () => {
+      collectionFindMany.mockResolvedValue([]);
+
+      const result = await getFavoriteCollections("user-1");
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe("getCollectionWithItems", () => {
     it("returns null when the collection does not exist for the user", async () => {
       collectionFindFirst.mockResolvedValue(null);
@@ -358,6 +416,122 @@ describe("collections db helpers", () => {
           },
         ],
       });
+    });
+  });
+
+  describe("toggleFavoriteCollection", () => {
+    it("returns null when the collection does not exist for the user", async () => {
+      collectionFindFirst.mockResolvedValue(null);
+
+      await expect(
+        toggleFavoriteCollection("col-1", "user-1", true)
+      ).resolves.toBeNull();
+
+      expect(collectionFindFirst).toHaveBeenCalledWith({
+        where: { id: "col-1", userId: "user-1" },
+        include: {
+          items: {
+            select: {
+              item: {
+                select: {
+                  itemType: {
+                    select: { id: true, icon: true, color: true, name: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it("updates the collection favorite state and returns collection metadata", async () => {
+      const existingCollection = {
+        id: "col-1",
+        name: "React Patterns",
+        description: "Reusable examples",
+        isFavorite: false,
+        createdAt: new Date("2026-04-21T10:00:00.000Z"),
+        updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+        items: [
+          {
+            item: {
+              itemType: {
+                id: "type-snippet",
+                name: "Snippet",
+                icon: "Code",
+                color: "#3b82f6",
+              },
+            },
+          },
+        ],
+      };
+
+      collectionFindFirst.mockResolvedValue(existingCollection);
+      update.mockResolvedValue({
+        ...existingCollection,
+        isFavorite: true,
+      });
+
+      const result = await toggleFavoriteCollection("col-1", "user-1", true);
+
+      expect(update).toHaveBeenCalledWith({
+        where: { id: "col-1" },
+        data: { isFavorite: true },
+        include: {
+          items: {
+            select: {
+              item: {
+                select: {
+                  itemType: {
+                    select: { id: true, icon: true, color: true, name: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      expect(result).toEqual({
+        id: "col-1",
+        name: "React Patterns",
+        description: "Reusable examples",
+        isFavorite: true,
+        itemCount: 1,
+        createdAt: new Date("2026-04-21T10:00:00.000Z"),
+        updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+        types: [
+          {
+            name: "Snippet",
+            icon: "Code",
+            color: "#3b82f6",
+            count: 1,
+          },
+        ],
+      });
+    });
+
+    it("removes the collection from favorites when toggled to false", async () => {
+      const existingCollection = {
+        id: "col-1",
+        name: "React Patterns",
+        description: null,
+        isFavorite: true,
+        createdAt: new Date("2026-04-21T10:00:00.000Z"),
+        updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+        items: [],
+      };
+
+      collectionFindFirst.mockResolvedValue(existingCollection);
+      update.mockResolvedValue({ ...existingCollection, isFavorite: false });
+
+      const result = await toggleFavoriteCollection("col-1", "user-1", false);
+
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { isFavorite: false } })
+      );
+      expect(result).toMatchObject({ id: "col-1", isFavorite: false });
     });
   });
 
