@@ -1,34 +1,11 @@
-# Current Feature: Settings Page
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Create a protected `/settings` route using the existing dashboard shell/sidebar layout
-- Add a "Settings" link to the user avatar dropdown in the sidebar
-- Move "Change Password" and "Delete Account" from the Profile page to the Settings page
-- Keep the Profile page as read-only (account info + usage stats only)
-- Settings page sections:
-  - **Account**: email, name, avatar/initials, member since, auth provider summary
-  - **Security**: Change Password flow (existing behavior preserved)
-  - **Danger Zone**: Delete Account flow (existing confirmation behavior preserved)
-- Reuse/move existing components rather than duplicating logic
-- Add/update tests where applicable
-
 ## Notes
-
-- `/settings` must be protected like `/dashboard/profile` (auth required)
-- Preserve all existing behavior: validation, dialogs, toasts, and API calls for change password and delete account
-- Do NOT add notification or billing settings yet — those are future features
-- Auth provider summary: show linked providers if already available from existing data
-- Manual QA steps to provide:
-  1. Visit `/settings` while signed in
-  2. Confirm `/settings` is protected when signed out
-  3. Open Settings from sidebar user dropdown
-  4. Change password from Settings
-  5. Delete account from Settings
-  6. Confirm Profile no longer shows account actions
 
 ## History
 
@@ -70,3 +47,4 @@ In Progress
 - 2026-04-22: Completed Collection Actions (Edit, Delete, Favorite UI) — added shared collection action controls for detail and card surfaces, edit dialog plus delete confirmation wired to new update/delete collection server actions, preserved items when deleting collections, and expanded collection action/DB test coverage.
 - 2026-04-23: Completed Global Search / Command Palette — Cmd+K / Ctrl+K opens a shadcn cmdk Dialog with fuzzy search across all items and collections. Grouped results (Items / Collections) with type icons and item counts. Selecting an item opens the ItemDrawer; selecting a collection navigates to /collections/[id]. TopBar search trigger shows ⌘K hint. Client-side fuzzy scoring (exact match ranked first, character-scatter fallback). getSearchableItems DB query (lean select, server-side preview truncation at 140 chars). DashboardTopBar extracted from all 3 layouts. 8 unit tests added (79 total).
 - 2026-04-23: Completed Pagination — URL-driven `?page=N` pagination on `/items/[type]`, `/collections`, and `/collections/[id]`. `PaginationControls` component renders numbered page links plus prev/next buttons (greyed and non-clickable at boundaries, hidden when only one page). `getPaginatedItemsByType`, `getPaginatedCollectionsForUser`, and updated `getCollectionWithItems` use `skip`/`take` with parallel `count` queries — only one page of rows fetched per request. `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`. Out-of-range `?page` values redirect to the last valid page. Self-hosted Inter and JetBrains Mono fonts via `@fontsource-variable` (replaces `next/font/google`, eliminating the Google Fonts network dependency at build time). 5 new tests added.
+- 2026-04-23: Completed Settings Page — new protected `/settings` route using the dashboard shell. Account section shows identity info and linked OAuth providers with unlink support. Security section holds the Change Password flow. Danger Zone holds the Delete Account flow. Profile page is now read-only (identity + usage stats only) with an "Open Settings" button. "Settings" link added to the sidebar user avatar dropdown. Components extracted to `src/components/account/` (AccountDetailsCard, ChangePasswordSection, DeleteAccountSection, LinkedAccountsSection). 10 new tests added (accounts db helpers, profile db helpers, auth-provider-summary, protected-routes utility) — 98 total.
