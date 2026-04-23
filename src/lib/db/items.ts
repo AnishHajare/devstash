@@ -25,6 +25,11 @@ export type ItemWithType = {
   };
 };
 
+export type PaginatedItems = {
+  items: ItemWithType[];
+  totalCount: number;
+};
+
 export type SearchableItem = {
   id: string;
   title: string;
@@ -287,6 +292,45 @@ export async function getItemsByType(
   });
 
   return items.map(serializeItem);
+}
+
+/**
+ * Fetch one page of items filtered by type name for a user.
+ */
+export async function getPaginatedItemsByType(
+  userId: string,
+  typeName: string,
+  {
+    skip,
+    take,
+  }: {
+    skip: number;
+    take: number;
+  }
+): Promise<PaginatedItems> {
+  const where = {
+    userId,
+    itemType: { name: { equals: typeName, mode: "insensitive" as const } },
+  };
+
+  const [items, totalCount] = await Promise.all([
+    prisma.item.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      skip,
+      take,
+      include: {
+        itemType: { select: { id: true, name: true, icon: true, color: true } },
+        tags: { select: { id: true, name: true } },
+      },
+    }),
+    prisma.item.count({ where }),
+  ]);
+
+  return {
+    items: items.map(serializeItem),
+    totalCount,
+  };
 }
 
 /**

@@ -79,6 +79,16 @@ function toCollectionMeta(collection: CollectionMetaSource): CollectionWithMeta 
   };
 }
 
+function toCollectionMetaWithCount(
+  collection: CollectionMetaSource,
+  itemCount: number
+): CollectionWithMeta {
+  return {
+    ...toCollectionMeta(collection),
+    itemCount,
+  };
+}
+
 /**
  * Fetch all collections for a user with item counts and type breakdown.
  * Only selects the itemType fields needed — no full Item rows fetched.
@@ -110,43 +120,66 @@ export async function getCollectionsForUser(
  */
 export async function getCollectionWithItems(
   userId: string,
-  collectionId: string
+  collectionId: string,
+  pagination?: {
+    skip: number;
+    take: number;
+  }
 ): Promise<CollectionDetail | null> {
-  const collection = await prisma.collection.findFirst({
-    where: {
-      id: collectionId,
-      userId,
+  const collectionWhere = {
+    id: collectionId,
+    userId,
+  };
+  const itemWhere = {
+    userId,
+    collections: {
+      some: {
+        collectionId,
+      },
     },
-    include: {
-      items: {
-        orderBy: {
-          item: {
-            updatedAt: "desc",
-          },
-        },
-        select: {
-          item: {
-            include: {
-              itemType: {
-                select: { id: true, name: true, icon: true, color: true },
-              },
-              tags: {
-                select: { id: true, name: true },
+  };
+
+  const [collection, totalItems, items] = await Promise.all([
+    prisma.collection.findFirst({
+      where: collectionWhere,
+      include: {
+        items: {
+          select: {
+            item: {
+              select: {
+                itemType: {
+                  select: { id: true, icon: true, color: true, name: true },
+                },
               },
             },
           },
         },
       },
-    },
-  });
+    }),
+    prisma.item.count({ where: itemWhere }),
+    prisma.item.findMany({
+      where: itemWhere,
+      orderBy: { updatedAt: "desc" },
+      skip: pagination?.skip,
+      take: pagination?.take,
+      include: {
+        itemType: {
+          select: { id: true, name: true, icon: true, color: true },
+        },
+        tags: {
+          select: { id: true, name: true },
+        },
+      },
+    }),
+  ]);
 
   if (!collection) {
     return null;
   }
 
   return {
-    ...toCollectionMeta(collection),
-    items: collection.items.map(({ item }) => serializeItem(item)),
+    ...toCollectionMetaWithCount(collection, totalItems),
+    items: items.map(serializeItem),
   };
 }
 
