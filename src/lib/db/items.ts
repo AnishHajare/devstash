@@ -25,6 +25,17 @@ export type ItemWithType = {
   };
 };
 
+export type SearchableItem = {
+  id: string;
+  title: string;
+  type: {
+    name: string;
+    icon: string;
+    color: string;
+  };
+  preview: string | null;
+};
+
 export function serializeItem(item: {
   createdAt: Date;
   updatedAt: Date;
@@ -35,6 +46,18 @@ export function serializeItem(item: {
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
   } as ItemWithType;
+}
+
+function getItemSearchPreview(item: {
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  fileName: string | null;
+}): string | null {
+  const preview = item.description ?? item.content ?? item.url ?? item.fileName;
+  if (!preview) return null;
+
+  return preview.length > 140 ? `${preview.slice(0, 137)}...` : preview;
 }
 
 type PrismaItemDetail = {
@@ -140,6 +163,40 @@ export async function getRecentItems(
   });
 
   return items.map(serializeItem);
+}
+
+/**
+ * Fetch lightweight item records for client-side global search.
+ */
+export async function getSearchableItems(
+  userId: string
+): Promise<SearchableItem[]> {
+  const items = await prisma.item.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      content: true,
+      url: true,
+      fileName: true,
+      itemType: {
+        select: {
+          name: true,
+          icon: true,
+          color: true,
+        },
+      },
+    },
+  });
+
+  return items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    type: item.itemType,
+    preview: getItemSearchPreview(item),
+  }));
 }
 
 /**
