@@ -1,12 +1,12 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isProtectedPath } from "@/lib/protected-routes";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isProtectedRoute = pathname.startsWith("/dashboard");
-  if (!isProtectedRoute) return NextResponse.next();
+  if (!isProtectedPath(pathname)) return NextResponse.next();
 
   const session = await auth();
   if (!session) {
@@ -19,5 +19,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/settings/:path*"],
 };
