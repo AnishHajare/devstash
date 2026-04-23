@@ -1,30 +1,51 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ItemsGrid } from "@/components/items/items-grid";
+import { PaginationControls } from "@/components/pagination-controls";
 import { getCollectionOptionsForUser } from "@/lib/db/collections";
-import { getItemsByType, getItemTypeByName } from "@/lib/db/items";
+import { getPaginatedItemsByType, getItemTypeByName } from "@/lib/db/items";
 import { typeSlugToName } from "@/lib/item-type-slug";
 import { iconMap } from "@/lib/icon-map";
+import {
+  getPaginationRange,
+  getTotalPages,
+  ITEMS_PER_PAGE,
+  parsePageParam,
+} from "@/lib/pagination";
 
 export default async function ItemsTypePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ type: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
   const { type } = await params;
+  const { page } = await searchParams;
+  const currentPage = parsePageParam(page);
 
   const typeName = typeSlugToName(type);
 
   const itemType = await getItemTypeByName(typeName);
   if (!itemType) notFound();
 
-  const [items, collectionOptions] = await Promise.all([
-    getItemsByType(session.user.id, typeName),
+  const [paginatedItems, collectionOptions] = await Promise.all([
+    getPaginatedItemsByType(
+      session.user.id,
+      typeName,
+      getPaginationRange(currentPage, ITEMS_PER_PAGE)
+    ),
     getCollectionOptionsForUser(session.user.id),
   ]);
+  const { items, totalCount } = paginatedItems;
+  const totalPages = getTotalPages(totalCount, ITEMS_PER_PAGE);
+
+  if (currentPage > totalPages && totalCount > 0) {
+    redirect(`/items/${type}?page=${totalPages}`);
+  }
 
   const Icon = iconMap[itemType.icon];
 
@@ -43,7 +64,7 @@ export default async function ItemsTypePage({
             {typeName}s
           </h1>
           <p className="text-sm text-muted-foreground">
-            {items.length} {items.length === 1 ? "item" : "items"}
+            {totalCount} {totalCount === 1 ? "item" : "items"}
           </p>
         </div>
       </div>
@@ -65,12 +86,19 @@ export default async function ItemsTypePage({
           </p>
         </div>
       ) : (
-        <ItemsGrid
-          items={items}
-          collections={collectionOptions}
-          isGallery={typeName.toLowerCase() === "image"}
-          isFileList={typeName.toLowerCase() === "file"}
-        />
+        <div className="space-y-6">
+          <ItemsGrid
+            items={items}
+            collections={collectionOptions}
+            isGallery={typeName.toLowerCase() === "image"}
+            isFileList={typeName.toLowerCase() === "file"}
+          />
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            getHref={(pageNumber) => `/items/${type}?page=${pageNumber}`}
+          />
+        </div>
       )}
     </div>
   );

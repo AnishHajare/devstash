@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { findMany } = vi.hoisted(() => ({
+const { findMany, count } = vi.hoisted(() => ({
   findMany: vi.fn(),
+  count: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     item: {
       findMany,
+      count,
     },
   },
 }));
@@ -16,7 +18,7 @@ vi.mock("@/lib/r2", () => ({
   deleteFromR2: vi.fn(),
 }));
 
-import { getSearchableItems } from "@/lib/db/items";
+import { getPaginatedItemsByType, getSearchableItems } from "@/lib/db/items";
 
 describe("items db helpers", () => {
   beforeEach(() => {
@@ -111,6 +113,87 @@ describe("items db helpers", () => {
         "https://example.com/docs",
         "global-search.pdf",
       ]);
+    });
+  });
+
+  describe("getPaginatedItemsByType", () => {
+    it("fetches one typed page with skip/take and a matching count query", async () => {
+      findMany.mockResolvedValue([
+        {
+          id: "item-1",
+          title: "React suspense snippet",
+          description: "Streaming boundaries",
+          contentType: "text",
+          content: "const value = use(resource)",
+          url: null,
+          fileUrl: null,
+          fileName: null,
+          fileSize: null,
+          language: "TypeScript",
+          isFavorite: false,
+          isPinned: false,
+          createdAt: new Date("2026-04-21T10:00:00.000Z"),
+          updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+          tags: [{ id: "tag-1", name: "react" }],
+          itemType: {
+            id: "type-snippet",
+            name: "Snippet",
+            icon: "Code",
+            color: "#3b82f6",
+          },
+        },
+      ]);
+      count.mockResolvedValue(22);
+
+      const result = await getPaginatedItemsByType("user-1", "Snippet", {
+        skip: 21,
+        take: 21,
+      });
+
+      const where = {
+        userId: "user-1",
+        itemType: { name: { equals: "Snippet", mode: "insensitive" } },
+      };
+
+      expect(findMany).toHaveBeenCalledWith({
+        where,
+        orderBy: { updatedAt: "desc" },
+        skip: 21,
+        take: 21,
+        include: {
+          itemType: { select: { id: true, name: true, icon: true, color: true } },
+          tags: { select: { id: true, name: true } },
+        },
+      });
+      expect(count).toHaveBeenCalledWith({ where });
+      expect(result).toEqual({
+        totalCount: 22,
+        items: [
+          {
+            id: "item-1",
+            title: "React suspense snippet",
+            description: "Streaming boundaries",
+            contentType: "text",
+            content: "const value = use(resource)",
+            url: null,
+            fileUrl: null,
+            fileName: null,
+            fileSize: null,
+            language: "TypeScript",
+            isFavorite: false,
+            isPinned: false,
+            createdAt: "2026-04-21T10:00:00.000Z",
+            updatedAt: "2026-04-22T10:00:00.000Z",
+            tags: [{ id: "tag-1", name: "react" }],
+            itemType: {
+              id: "type-snippet",
+              name: "Snippet",
+              icon: "Code",
+              color: "#3b82f6",
+            },
+          },
+        ],
+      });
     });
   });
 });
