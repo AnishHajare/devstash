@@ -24,6 +24,11 @@ export type CollectionStats = {
   favoriteCollections: number;
 };
 
+export type PaginatedCollections = {
+  collections: CollectionWithMeta[];
+  totalCount: number;
+};
+
 export type CollectionDetail = CollectionWithMeta & {
   items: ItemWithType[];
 };
@@ -113,6 +118,50 @@ export async function getCollectionsForUser(
   });
 
   return collections.map(toCollectionMeta);
+}
+
+/**
+ * Fetch one page of collections for a user with item counts and type breakdown.
+ */
+export async function getPaginatedCollectionsForUser(
+  userId: string,
+  {
+    skip,
+    take,
+  }: {
+    skip: number;
+    take: number;
+  }
+): Promise<PaginatedCollections> {
+  const where = { userId };
+
+  const [collections, totalCount] = await Promise.all([
+    prisma.collection.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      skip,
+      take,
+      include: {
+        items: {
+          select: {
+            item: {
+              select: {
+                itemType: {
+                  select: { id: true, icon: true, color: true, name: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.collection.count({ where }),
+  ]);
+
+  return {
+    collections: collections.map(toCollectionMeta),
+    totalCount,
+  };
 }
 
 /**
