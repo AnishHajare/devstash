@@ -1,29 +1,11 @@
-# Current Feature: Pinned Items + Fix Item Favorite Pattern
+# Current Feature
 
 ## Status
-Complete
+Not Started
 
 ## Goals
 
-- Create `toggleItemPin` server action in `src/actions/items.ts` (auth + ownership + `{ success, error }` return)
-- Create `toggleItemFavorite` server action in `src/actions/items.ts` (same pattern — fixes weak raw-fetch in drawer)
-- Add `toggleItemPin` and `toggleItemFavorite` DB-layer functions in `src/lib/db/items.ts` with ownership checks
-- Rewrite `togglePin` in `ItemDrawer` to use server action with toast (success + error) and optimistic rollback on failure
-- Rewrite `toggleFavorite` in `ItemDrawer` to use server action with toast (success + error) and optimistic rollback on failure
-- Pass `active={item.isPinned}` to Pin `ActionBtn` (remove hardcoded inline color style, match star pattern)
-- Update `getPaginatedItemsByType` orderBy to `[{ isPinned: 'desc' }, { updatedAt: 'desc' }]` so pinned items surface first in `/items/[type]` listings
-- Update `getCollectionWithItems` orderBy with the same compound sort so pinned items surface first in `/collections/[id]`
-- Unit tests for both new server actions (auth guard, not-found, success, DB error paths)
-- Unit tests for both new DB-layer functions
-
 ## Notes
-
-- **Do not** add a click handler to the Pin icon on `ItemCard` or `ItemRow` — it stays a static indicator per spec
-- The drawer is the sole toggle surface for both pin and favorite
-- The `toggleFavorite` raw-fetch pattern was identified as a pre-existing weakness; this feature is the right time to fix it alongside pin so both toggles are consistent
-- Follow the `toggleFavoriteCollection` pattern exactly: DB fn → server action → caller checks `result.success` → toast + rollback
-- Pin icon on `ActionBtn` should turn blue (`#3b82f6`) when active, same way star turns yellow — driven by the `active` prop, not hardcoded inline style
-- Scope of "sort pinned to top": `/items/[type]` (`getPaginatedItemsByType`) and `/collections/[id]` (`getCollectionWithItems`) — dashboard pinned section already shows only pinned items so no change needed there
 
 ## History
 
@@ -68,3 +50,4 @@ Complete
 - 2026-04-23: Completed Settings Page — new protected `/settings` route using the dashboard shell. Account section shows identity info and linked OAuth providers with unlink support. Security section holds the Change Password flow. Danger Zone holds the Delete Account flow. Profile page is now read-only (identity + usage stats only) with an "Open Settings" button. "Settings" link added to the sidebar user avatar dropdown. Components extracted to `src/components/account/` (AccountDetailsCard, ChangePasswordSection, DeleteAccountSection, LinkedAccountsSection). 10 new tests added (accounts db helpers, profile db helpers, auth-provider-summary, protected-routes utility) — 98 total.
 - 2026-04-23: Completed Editor Preferences Settings — Editor Preferences section added to /settings with font size (12|14|16|18), tab size (2|4), word wrap, minimap, and theme (vs-dark, monokai, github-dark) controls. Preferences persist to editorPreferences JSON column on User (Prisma migration). Auto-save on change with 400ms debounce, Saving.../Saved/error inline status bar, and toast on success/failure. EditorPreferencesProvider context wraps all 4 dashboard layouts; CodeEditor reads from context and applies EDITOR_THEME_CHROME for theme-accurate container/header colours. Shared editorPreferencesSchema used for Zod validation in server action and client-side safeParse on select change. 11 unit tests added (normalizer, Monaco options builder, DB helpers, server action auth/validation/persistence/error — 109 total).
 - 2026-04-24: Completed Favorites Page — /favorites route (protected layout + page) with compact VS Code-style list view. Star icon added to TopBar. getFavoriteItems and getFavoriteCollections DB queries. toggleFavoriteCollection DB fn and server action. CollectionActions favorite button wired (both card and detail variants). FavoritesContent client component with separate Items/Collections sections, inline unfavorite toggle, per-section empty states, and global empty state. Sort by updatedAt desc. 15 unit tests added (124 total).
+- 2026-04-24: Completed Pinned Items + Fix Item Favorite Pattern — toggleItemPin and toggleItemFavorite DB fns (updateMany, ownership-scoped via userId) and server actions (auth + not-found + try/catch + { success, error }). Replaced weak raw-fetch toggles in ItemDrawer with server actions; both now show success/error toasts and roll back optimistic state on failure. Added active prop to Pin ActionBtn. Compound orderBy [isPinned desc, updatedAt desc] applied to getPaginatedItemsByType and getCollectionWithItems so pinned items surface first in /items/[type] and /collections/[id]. 18 new unit tests; 2 stale orderBy assertions updated (142 total).
