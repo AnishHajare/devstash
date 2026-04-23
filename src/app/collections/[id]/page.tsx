@@ -3,28 +3,49 @@ import { FolderOpen, Star } from "lucide-react";
 import { auth } from "@/auth";
 import { CollectionActions } from "@/components/collections/collection-actions";
 import { ItemsGrid } from "@/components/items/items-grid";
+import { PaginationControls } from "@/components/pagination-controls";
 import {
   getCollectionOptionsForUser,
   getCollectionWithItems,
 } from "@/lib/db/collections";
 import { iconMap } from "@/lib/icon-map";
+import {
+  COLLECTIONS_PER_PAGE,
+  getPaginationRange,
+  getTotalPages,
+  parsePageParam,
+} from "@/lib/pagination";
 
 export default async function CollectionDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
   const { id } = await params;
+  const { page } = await searchParams;
+  const currentPage = parsePageParam(page);
 
   const [collection, collectionOptions] = await Promise.all([
-    getCollectionWithItems(session.user.id, id),
+    getCollectionWithItems(
+      session.user.id,
+      id,
+      getPaginationRange(currentPage, COLLECTIONS_PER_PAGE)
+    ),
     getCollectionOptionsForUser(session.user.id),
   ]);
 
   if (!collection) notFound();
+
+  const totalPages = getTotalPages(collection.itemCount, COLLECTIONS_PER_PAGE);
+
+  if (currentPage > totalPages && collection.itemCount > 0) {
+    redirect(`/collections/${id}?page=${totalPages}`);
+  }
 
   const dominantColor = collection.types[0]?.color;
   const standardItems = collection.items.filter(
@@ -145,6 +166,12 @@ export default async function CollectionDetailPage({
                 />
               </div>
             )}
+
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              getHref={(pageNumber) => `/collections/${id}?page=${pageNumber}`}
+            />
           </div>
         )}
       </section>
