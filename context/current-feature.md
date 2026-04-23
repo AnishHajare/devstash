@@ -1,21 +1,11 @@
-# Current Feature: Pagination
+# Current Feature
 
 ## Status
-Complete
+Not Started
 
 ## Goals
 
-- Add pagination to `/items/[type]` and `/collections/[id]` pages
-- Pagination controls at the bottom with numbered page links and prev/next buttons
-- Disable (grey out) prev/next when not available
-- Only fetch the items required for the current page (no over-fetching)
-
 ## Notes
-
-- Constants: `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`
-- Dashboard limits (unchanged): `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
-- Pagination state lives in the URL (`?page=N`) so pages are shareable/bookmarkable
-- DB queries must use `skip`/`take` with a matching `count` query for total pages
 
 ## History
 
@@ -56,4 +46,4 @@ Complete
 - 2026-04-22: Completed Collections Pages — added `/collections` and `/collections/[id]` using the shared dashboard shell and existing collection/item cards, extracted reusable `CollectionCard`, added `getCollectionWithItems` Prisma query for collection metadata plus owned items, and covered the new collection DB mapping with 3 unit tests (58 total).
 - 2026-04-22: Completed Collection Actions (Edit, Delete, Favorite UI) — added shared collection action controls for detail and card surfaces, edit dialog plus delete confirmation wired to new update/delete collection server actions, preserved items when deleting collections, and expanded collection action/DB test coverage.
 - 2026-04-23: Completed Global Search / Command Palette — Cmd+K / Ctrl+K opens a shadcn cmdk Dialog with fuzzy search across all items and collections. Grouped results (Items / Collections) with type icons and item counts. Selecting an item opens the ItemDrawer; selecting a collection navigates to /collections/[id]. TopBar search trigger shows ⌘K hint. Client-side fuzzy scoring (exact match ranked first, character-scatter fallback). getSearchableItems DB query (lean select, server-side preview truncation at 140 chars). DashboardTopBar extracted from all 3 layouts. 8 unit tests added (79 total).
-- 2026-04-23: Completed Pagination — added URL-driven `?page=N` pagination to `/items/[type]` and `/collections/[id]`, shared numbered prev/next controls, page constants, and DB `skip`/`take` queries with matching count queries. Added focused pagination and DB tests.
+- 2026-04-23: Completed Pagination — URL-driven `?page=N` pagination on `/items/[type]` and `/collections/[id]`. `PaginationControls` component renders numbered page links plus prev/next buttons (greyed and non-clickable at boundaries, hidden when only one page). `getPaginatedItemsByType` and updated `getCollectionWithItems` use `skip`/`take` with a parallel `count` query — only one page of rows fetched per request. `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`. Out-of-range `?page` values redirect to the last valid page. Self-hosted Inter and JetBrains Mono fonts via `@fontsource-variable` (replaces `next/font/google`, eliminating the Google Fonts network dependency at build time). 4 new tests added (83 total).
