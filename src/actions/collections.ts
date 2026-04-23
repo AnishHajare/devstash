@@ -6,6 +6,7 @@ import {
   createCollection as dbCreateCollection,
   updateCollection as dbUpdateCollection,
   deleteCollection as dbDeleteCollection,
+  toggleFavoriteCollection as dbToggleFavoriteCollection,
 } from "@/lib/db/collections";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 
@@ -106,5 +107,35 @@ export async function deleteCollection(
     return { success: true };
   } catch {
     return { success: false, error: "Failed to delete collection" };
+  }
+}
+
+type ToggleFavoriteCollectionResult =
+  | { success: true; data: CollectionWithMeta }
+  | { success: false; error: string };
+
+export async function toggleFavoriteCollection(
+  collectionId: string,
+  isFavorite: boolean
+): Promise<ToggleFavoriteCollectionResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    const updated = await dbToggleFavoriteCollection(
+      collectionId,
+      session.user.id,
+      isFavorite
+    );
+
+    if (!updated) {
+      return { success: false, error: "Collection not found" };
+    }
+
+    return { success: true, data: updated };
+  } catch {
+    return { success: false, error: "Failed to update collection favorite" };
   }
 }
