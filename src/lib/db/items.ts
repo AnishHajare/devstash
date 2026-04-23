@@ -334,7 +334,7 @@ export async function getPaginatedItemsByType(
   const [items, totalCount] = await Promise.all([
     prisma.item.findMany({
       where,
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
       skip,
       take,
       include: {
@@ -549,6 +549,38 @@ export async function updateItem(
   });
 
   return toItemDetail(item);
+}
+
+/**
+ * Toggle the isPinned flag on an item, scoped to the owning user.
+ * Returns true if updated, false if not found or not owned.
+ */
+export async function toggleItemPin(
+  id: string,
+  userId: string,
+  isPinned: boolean
+): Promise<boolean> {
+  const result = await prisma.item.updateMany({
+    where: { id, userId },
+    data: { isPinned },
+  });
+  return result.count > 0;
+}
+
+/**
+ * Toggle the isFavorite flag on an item, scoped to the owning user.
+ * Returns true if updated, false if not found or not owned.
+ */
+export async function toggleItemFavorite(
+  id: string,
+  userId: string,
+  isFavorite: boolean
+): Promise<boolean> {
+  const result = await prisma.item.updateMany({
+    where: { id, userId },
+    data: { isFavorite },
+  });
+  return result.count > 0;
 }
 
 /**

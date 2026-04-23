@@ -361,7 +361,7 @@ describe("collections db helpers", () => {
       expect(itemCount).toHaveBeenCalledWith({ where: itemWhere });
       expect(itemFindMany).toHaveBeenCalledWith({
         where: itemWhere,
-        orderBy: { updatedAt: "desc" },
+        orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
         skip: 21,
         take: 21,
         include: {

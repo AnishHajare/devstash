@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { findMany, count } = vi.hoisted(() => ({
+const { findMany, count, updateMany } = vi.hoisted(() => ({
   findMany: vi.fn(),
   count: vi.fn(),
+  updateMany: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -10,6 +11,7 @@ vi.mock("@/lib/prisma", () => ({
     item: {
       findMany,
       count,
+      updateMany,
     },
   },
 }));
@@ -22,6 +24,8 @@ import {
   getFavoriteItems,
   getPaginatedItemsByType,
   getSearchableItems,
+  toggleItemPin,
+  toggleItemFavorite,
 } from "@/lib/db/items";
 
 describe("items db helpers", () => {
@@ -194,6 +198,70 @@ describe("items db helpers", () => {
     });
   });
 
+  describe("toggleItemPin", () => {
+    it("calls updateMany with isPinned and returns true when a row is updated", async () => {
+      updateMany.mockResolvedValue({ count: 1 });
+
+      const result = await toggleItemPin("item-1", "user-1", true);
+
+      expect(updateMany).toHaveBeenCalledWith({
+        where: { id: "item-1", userId: "user-1" },
+        data: { isPinned: true },
+      });
+      expect(result).toBe(true);
+    });
+
+    it("returns false when item does not exist or is not owned by user", async () => {
+      updateMany.mockResolvedValue({ count: 0 });
+
+      const result = await toggleItemPin("missing", "user-1", true);
+
+      expect(result).toBe(false);
+    });
+
+    it("passes isPinned false to unpin an item", async () => {
+      updateMany.mockResolvedValue({ count: 1 });
+
+      await toggleItemPin("item-1", "user-1", false);
+
+      expect(updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { isPinned: false } })
+      );
+    });
+  });
+
+  describe("toggleItemFavorite", () => {
+    it("calls updateMany with isFavorite and returns true when a row is updated", async () => {
+      updateMany.mockResolvedValue({ count: 1 });
+
+      const result = await toggleItemFavorite("item-1", "user-1", true);
+
+      expect(updateMany).toHaveBeenCalledWith({
+        where: { id: "item-1", userId: "user-1" },
+        data: { isFavorite: true },
+      });
+      expect(result).toBe(true);
+    });
+
+    it("returns false when item does not exist or is not owned by user", async () => {
+      updateMany.mockResolvedValue({ count: 0 });
+
+      const result = await toggleItemFavorite("missing", "user-1", false);
+
+      expect(result).toBe(false);
+    });
+
+    it("passes isFavorite false to unfavorite an item", async () => {
+      updateMany.mockResolvedValue({ count: 1 });
+
+      await toggleItemFavorite("item-1", "user-1", false);
+
+      expect(updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { isFavorite: false } })
+      );
+    });
+  });
+
   describe("getPaginatedItemsByType", () => {
     it("fetches one typed page with skip/take and a matching count query", async () => {
       findMany.mockResolvedValue([
@@ -235,7 +303,7 @@ describe("items db helpers", () => {
 
       expect(findMany).toHaveBeenCalledWith({
         where,
-        orderBy: { updatedAt: "desc" },
+        orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
         skip: 21,
         take: 21,
         include: {

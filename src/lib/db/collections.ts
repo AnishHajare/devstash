@@ -235,7 +235,7 @@ export async function getCollectionWithItems(
     prisma.item.count({ where: itemWhere }),
     prisma.item.findMany({
       where: itemWhere,
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
       skip: pagination?.skip,
       take: pagination?.take,
       include: {

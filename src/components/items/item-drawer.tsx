@@ -49,7 +49,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { iconMap } from "@/lib/icon-map";
-import { updateItem, deleteItem as deleteItemAction } from "@/actions/items";
+import {
+  updateItem,
+  deleteItem as deleteItemAction,
+  toggleItemPin as toggleItemPinAction,
+  toggleItemFavorite as toggleItemFavoriteAction,
+} from "@/actions/items";
 import type { ItemDetail } from "@/lib/db/items";
 import type { CollectionOption } from "@/lib/db/collections";
 
@@ -98,6 +103,8 @@ export function ItemDrawer({
   const [editState, setEditState] = useState<EditState | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [favoritePending, setFavoritePending] = useState(false);
+  const [pinPending, setPinPending] = useState(false);
 
   useEffect(() => {
     if (!itemId || !open) return;
@@ -179,27 +186,51 @@ export function ItemDrawer({
   }
 
   async function toggleFavorite() {
-    if (!item) return;
+    if (!item || favoritePending) return;
     const next = !item.isFavorite;
-    setItem({ ...item, isFavorite: next });
-    await fetch(`/api/items/${item.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isFavorite: next }),
-    });
-    router.refresh();
+    setFavoritePending(true);
+    setItem((current) => (current ? { ...current, isFavorite: next } : current));
+
+    try {
+      const result = await toggleItemFavoriteAction(item.id, next);
+      if (!result.success) {
+        setItem((current) => (current ? { ...current, isFavorite: !next } : current));
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(next ? "Added to favorites" : "Removed from favorites");
+      router.refresh();
+    } catch {
+      setItem((current) => (current ? { ...current, isFavorite: !next } : current));
+      toast.error("Failed to update item");
+    } finally {
+      setFavoritePending(false);
+    }
   }
 
   async function togglePin() {
-    if (!item) return;
+    if (!item || pinPending) return;
     const next = !item.isPinned;
-    setItem({ ...item, isPinned: next });
-    await fetch(`/api/items/${item.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isPinned: next }),
-    });
-    router.refresh();
+    setPinPending(true);
+    setItem((current) => (current ? { ...current, isPinned: next } : current));
+
+    try {
+      const result = await toggleItemPinAction(item.id, next);
+      if (!result.success) {
+        setItem((current) => (current ? { ...current, isPinned: !next } : current));
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(next ? "Item pinned" : "Item unpinned");
+      router.refresh();
+    } catch {
+      setItem((current) => (current ? { ...current, isPinned: !next } : current));
+      toast.error("Failed to update item");
+    } finally {
+      setPinPending(false);
+    }
   }
 
   async function copyContent() {
@@ -376,6 +407,7 @@ export function ItemDrawer({
                     onClick={toggleFavorite}
                     label={item.isFavorite ? "Unfavorite" : "Favorite"}
                     active={item.isFavorite}
+                    disabled={favoritePending}
                   >
                     <Star
                       className="h-3.5 w-3.5"
@@ -383,7 +415,12 @@ export function ItemDrawer({
                     />
                   </ActionBtn>
 
-                  <ActionBtn onClick={togglePin} label={item.isPinned ? "Unpin" : "Pin"}>
+                  <ActionBtn
+                    onClick={togglePin}
+                    label={item.isPinned ? "Unpin" : "Pin"}
+                    active={item.isPinned}
+                    disabled={pinPending}
+                  >
                     <Pin
                       className="h-3.5 w-3.5"
                       style={item.isPinned ? { color: "#3b82f6" } : {}}
