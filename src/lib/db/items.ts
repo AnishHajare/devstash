@@ -171,6 +171,24 @@ export async function getRecentItems(
 }
 
 /**
+ * Fetch favorite items for a user sorted by most recently updated.
+ */
+export async function getFavoriteItems(
+  userId: string
+): Promise<ItemWithType[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, isFavorite: true },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      itemType: { select: { id: true, name: true, icon: true, color: true } },
+      tags: { select: { id: true, name: true } },
+    },
+  });
+
+  return items.map(serializeItem);
+}
+
+/**
  * Fetch lightweight item records for client-side global search.
  */
 export async function getSearchableItems(

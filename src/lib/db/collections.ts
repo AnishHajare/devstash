@@ -165,6 +165,33 @@ export async function getPaginatedCollectionsForUser(
 }
 
 /**
+ * Fetch favorite collections for a user with item counts and type breakdown.
+ */
+export async function getFavoriteCollections(
+  userId: string
+): Promise<CollectionWithMeta[]> {
+  const collections = await prisma.collection.findMany({
+    where: { userId, isFavorite: true },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      items: {
+        select: {
+          item: {
+            select: {
+              itemType: {
+                select: { id: true, icon: true, color: true, name: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return collections.map(toCollectionMeta);
+}
+
+/**
  * Fetch a single collection with all items for a user.
  */
 export async function getCollectionWithItems(
@@ -314,6 +341,56 @@ export async function updateCollection(
           item: {
             select: {
               itemType: { select: { id: true, icon: true, color: true, name: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return toCollectionMeta(updatedCollection);
+}
+
+/**
+ * Toggle collection favorite state by id, scoped to the owning user.
+ */
+export async function toggleFavoriteCollection(
+  id: string,
+  userId: string,
+  isFavorite: boolean
+): Promise<CollectionWithMeta | null> {
+  const existingCollection = await prisma.collection.findFirst({
+    where: { id, userId },
+    include: {
+      items: {
+        select: {
+          item: {
+            select: {
+              itemType: {
+                select: { id: true, icon: true, color: true, name: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!existingCollection) {
+    return null;
+  }
+
+  const updatedCollection = await prisma.collection.update({
+    where: { id },
+    data: { isFavorite },
+    include: {
+      items: {
+        select: {
+          item: {
+            select: {
+              itemType: {
+                select: { id: true, icon: true, color: true, name: true },
+              },
             },
           },
         },

@@ -18,7 +18,11 @@ vi.mock("@/lib/r2", () => ({
   deleteFromR2: vi.fn(),
 }));
 
-import { getPaginatedItemsByType, getSearchableItems } from "@/lib/db/items";
+import {
+  getFavoriteItems,
+  getPaginatedItemsByType,
+  getSearchableItems,
+} from "@/lib/db/items";
 
 describe("items db helpers", () => {
   beforeEach(() => {
@@ -113,6 +117,80 @@ describe("items db helpers", () => {
         "https://example.com/docs",
         "global-search.pdf",
       ]);
+    });
+  });
+
+  describe("getFavoriteItems", () => {
+    it("fetches only favorite items sorted by updated date", async () => {
+      findMany.mockResolvedValue([
+        {
+          id: "item-1",
+          title: "React suspense snippet",
+          description: "Streaming boundaries",
+          contentType: "text",
+          content: "const value = use(resource)",
+          url: null,
+          fileUrl: null,
+          fileName: null,
+          fileSize: null,
+          language: "TypeScript",
+          isFavorite: true,
+          isPinned: false,
+          createdAt: new Date("2026-04-21T10:00:00.000Z"),
+          updatedAt: new Date("2026-04-22T10:00:00.000Z"),
+          tags: [{ id: "tag-1", name: "react" }],
+          itemType: {
+            id: "type-snippet",
+            name: "Snippet",
+            icon: "Code",
+            color: "#3b82f6",
+          },
+        },
+      ]);
+
+      const result = await getFavoriteItems("user-1");
+
+      expect(findMany).toHaveBeenCalledWith({
+        where: { userId: "user-1", isFavorite: true },
+        orderBy: { updatedAt: "desc" },
+        include: {
+          itemType: { select: { id: true, name: true, icon: true, color: true } },
+          tags: { select: { id: true, name: true } },
+        },
+      });
+      expect(result).toEqual([
+        {
+          id: "item-1",
+          title: "React suspense snippet",
+          description: "Streaming boundaries",
+          contentType: "text",
+          content: "const value = use(resource)",
+          url: null,
+          fileUrl: null,
+          fileName: null,
+          fileSize: null,
+          language: "TypeScript",
+          isFavorite: true,
+          isPinned: false,
+          createdAt: "2026-04-21T10:00:00.000Z",
+          updatedAt: "2026-04-22T10:00:00.000Z",
+          tags: [{ id: "tag-1", name: "react" }],
+          itemType: {
+            id: "type-snippet",
+            name: "Snippet",
+            icon: "Code",
+            color: "#3b82f6",
+          },
+        },
+      ]);
+    });
+
+    it("returns an empty array when the user has no favorite items", async () => {
+      findMany.mockResolvedValue([]);
+
+      const result = await getFavoriteItems("user-1");
+
+      expect(result).toEqual([]);
     });
   });
 

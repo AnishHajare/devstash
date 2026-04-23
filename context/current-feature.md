@@ -1,11 +1,32 @@
-# Current Feature
+# Current Feature: Favorites Page
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
 
+- Add star icon button (always outline) to `DashboardTopBar` linking to `/favorites`
+- Wire the disabled Favorite button in `CollectionActions` — add `toggleFavoriteCollection` DB fn + server action
+- Add `getFavoriteItems(userId)` and `getFavoriteCollections(userId)` DB queries
+- Create protected `/favorites` route (layout + page) following the existing layout pattern
+- Build `FavoritesContent` client component — compact, VS Code/terminal-style list (no cards)
+- Each item row: type icon (colored) · title · type badge · date — monospace, dense
+- Each collection row: folder icon · name · item count · date
+- Separate sections for items and collections with counts
+- Inline star toggle button on each row to unfavorite directly from the list
+- Click item → opens `ItemDrawer`, click collection → navigates to `/collections/[id]`
+- Empty state per section and global empty state when nothing is a favorite
+- Sort both sections by `updatedAt desc` (no `favoriteAt` column needed)
+
 ## Notes
+
+- `isFavorite` already exists on both `Item` and `Collection` DB models — no schema migration needed
+- `CollectionActions` Favorite button is currently `disabled` on both `card` and `detail` variants — this is the first thing to fix
+- Item favorite toggle already works via `PATCH /api/items/[id]` — reuse the same approach for collections
+- `updatedAt` is used for sort order; toggling favorite bumps `updatedAt` naturally, so recently starred items surface at top
+- TopBar star icon: always outline, no active/filled state when on `/favorites` (avoids making TopBar a client component)
+- `/favorites` layout follows the exact same pattern as `dashboard/`, `items/`, `collections/`, `settings/` layouts
+- UI style: monospace or semi-monospace font, minimal padding, high density, subtle hover states, no cards or heavy borders
 
 ## History
 
