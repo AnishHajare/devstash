@@ -6,6 +6,7 @@ import { Ellipsis, Pencil, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   deleteCollection as deleteCollectionAction,
+  toggleFavoriteCollection as toggleFavoriteCollectionAction,
   updateCollection as updateCollectionAction,
 } from "@/actions/collections";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,8 @@ export function CollectionActions({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [favoritePending, setFavoritePending] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(collection.isFavorite);
   const [form, setForm] = useState<CollectionFormState>(savedValues);
 
   function resetForm() {
@@ -128,6 +131,30 @@ export function CollectionActions({
 
   function stopPropagation(event: React.SyntheticEvent) {
     event.stopPropagation();
+  }
+
+  async function handleFavoriteToggle() {
+    const nextFavorite = !isFavorite;
+    setFavoritePending(true);
+    setIsFavorite(nextFavorite);
+
+    const result = await toggleFavoriteCollectionAction(collection.id, nextFavorite);
+
+    setFavoritePending(false);
+
+    if (!result.success) {
+      setIsFavorite(!nextFavorite);
+      toast.error(result.error);
+      return;
+    }
+
+    setIsFavorite(result.data.isFavorite);
+    toast.success(
+      result.data.isFavorite
+        ? `"${result.data.name}" added to favorites`
+        : `"${result.data.name}" removed from favorites`
+    );
+    router.refresh();
   }
 
   const editDialog = (
@@ -222,10 +249,13 @@ export function CollectionActions({
             variant="outline"
             size="sm"
             className="gap-1.5"
-            disabled
+            onClick={handleFavoriteToggle}
+            disabled={favoritePending}
             aria-label="Favorite collection"
           >
-            <Star className="h-3.5 w-3.5" />
+            <Star
+              className={`h-3.5 w-3.5 ${isFavorite ? "fill-yellow-500 text-yellow-500" : ""}`}
+            />
             Favorite
           </Button>
           <Button
@@ -277,9 +307,15 @@ export function CollectionActions({
           className="w-40"
           onClick={stopPropagation}
         >
-          <DropdownMenuItem disabled>
+          <DropdownMenuItem
+            disabled={favoritePending}
+            onClick={(event) => {
+              event.stopPropagation();
+              void handleFavoriteToggle();
+            }}
+          >
             <Star className="h-4 w-4" />
-            Favorite
+            {isFavorite ? "Unfavorite" : "Favorite"}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={(event) => {
