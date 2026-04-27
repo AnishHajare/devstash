@@ -1,26 +1,11 @@
-# Current Feature: Homepage Prototype
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
-- Create a standalone marketing homepage prototype at `prototypes/homepage/` (index.html + styles.css + script.js)
-- Dark theme with "chaos to order" hero concept (floating icons → pulsing arrow → dashboard preview)
-- Fixed nav with logo, Features/Pricing links, Sign In/Get Started buttons (scroll-aware opacity)
-- Features section: 6 cards (Code Snippets, AI Prompts, Instant Search, Commands, Files & Docs, Collections) with accent colors
-- AI/Pro section: two columns with checklist + code editor mockup showing AI-generated tags
-- Pricing section: Free ($0) vs Pro ($8/mo) with yearly $72/yr toggle
-- Closing CTA + minimal footer
-- Responsive: mobile stacks hero vertically, single-column grids, arrow rotates 90°
-- Animations: chaos icon physics (requestAnimationFrame, bounce, mouse repel), CSS pulse arrow, scroll fade-in
 
 ## Notes
-- This is a standalone prototype — NOT integrated into the Next.js app
-- Output: `prototypes/homepage/index.html`, `styles.css`, `script.js`
-- Accent colors: Snippet #3b82f6, Prompt #f59e0b, Command #06b6d4, Note #22c55e, File #64748b, Image #ec4899, URL #6366f1
-- Chaos container: 8 floating icons (Notion, GitHub, Slack, VS Code, Browser tabs, Terminal, Text file, Bookmark) with bounce/rotation/scale/mouse-repel animations
-- Dashboard preview: simplified mockup with sidebar nav + grid of item cards with colored top borders
-- Full spec: @context/features/homepage-mockup-spec.md
 
 ## History
 
@@ -66,3 +51,4 @@ In Progress
 - 2026-04-23: Completed Editor Preferences Settings — Editor Preferences section added to /settings with font size (12|14|16|18), tab size (2|4), word wrap, minimap, and theme (vs-dark, monokai, github-dark) controls. Preferences persist to editorPreferences JSON column on User (Prisma migration). Auto-save on change with 400ms debounce, Saving.../Saved/error inline status bar, and toast on success/failure. EditorPreferencesProvider context wraps all 4 dashboard layouts; CodeEditor reads from context and applies EDITOR_THEME_CHROME for theme-accurate container/header colours. Shared editorPreferencesSchema used for Zod validation in server action and client-side safeParse on select change. 11 unit tests added (normalizer, Monaco options builder, DB helpers, server action auth/validation/persistence/error — 109 total).
 - 2026-04-24: Completed Favorites Page — /favorites route (protected layout + page) with compact VS Code-style list view. Star icon added to TopBar. getFavoriteItems and getFavoriteCollections DB queries. toggleFavoriteCollection DB fn and server action. CollectionActions favorite button wired (both card and detail variants). FavoritesContent client component with separate Items/Collections sections, inline unfavorite toggle, per-section empty states, and global empty state. Sort by updatedAt desc. 15 unit tests added (124 total).
 - 2026-04-24: Completed Pinned Items + Fix Item Favorite Pattern — toggleItemPin and toggleItemFavorite DB fns (updateMany, ownership-scoped via userId) and server actions (auth + not-found + try/catch + { success, error }). Replaced weak raw-fetch toggles in ItemDrawer with server actions; both now show success/error toasts and roll back optimistic state on failure. Added active prop to Pin ActionBtn. Compound orderBy [isPinned desc, updatedAt desc] applied to getPaginatedItemsByType and getCollectionWithItems so pinned items surface first in /items/[type] and /collections/[id]. 18 new unit tests; 2 stale orderBy assertions updated (142 total).
+- 2026-04-27: Completed Homepage Prototype — standalone marketing page at prototypes/homepage/ (index.html + styles.css + script.js). Dark theme with scroll-driven cloud parallax, cursor-following light effect, Inter/Sora/Space Grotesk fonts. Hero with headline and CTAs, 6 accent-colored feature cards (Code Snippets, AI Prompts, Instant Search, Commands, Files & Docs, Collections), AI section with code editor mockup and typing animation, organization section, pricing cards (Free/Pro), closing CTA. IntersectionObserver reveal animations, scroll-aware cloud field, hover interactions. Responsive layout. Feature specs added to context/features/.
