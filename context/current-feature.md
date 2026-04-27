@@ -1,11 +1,26 @@
-# Current Feature
+# Current Feature: Homepage Prototype
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
+- Create a standalone marketing homepage prototype at `prototypes/homepage/` (index.html + styles.css + script.js)
+- Dark theme with "chaos to order" hero concept (floating icons → pulsing arrow → dashboard preview)
+- Fixed nav with logo, Features/Pricing links, Sign In/Get Started buttons (scroll-aware opacity)
+- Features section: 6 cards (Code Snippets, AI Prompts, Instant Search, Commands, Files & Docs, Collections) with accent colors
+- AI/Pro section: two columns with checklist + code editor mockup showing AI-generated tags
+- Pricing section: Free ($0) vs Pro ($8/mo) with yearly $72/yr toggle
+- Closing CTA + minimal footer
+- Responsive: mobile stacks hero vertically, single-column grids, arrow rotates 90°
+- Animations: chaos icon physics (requestAnimationFrame, bounce, mouse repel), CSS pulse arrow, scroll fade-in
 
 ## Notes
+- This is a standalone prototype — NOT integrated into the Next.js app
+- Output: `prototypes/homepage/index.html`, `styles.css`, `script.js`
+- Accent colors: Snippet #3b82f6, Prompt #f59e0b, Command #06b6d4, Note #22c55e, File #64748b, Image #ec4899, URL #6366f1
+- Chaos container: 8 floating icons (Notion, GitHub, Slack, VS Code, Browser tabs, Terminal, Text file, Bookmark) with bounce/rotation/scale/mouse-repel animations
+- Dashboard preview: simplified mockup with sidebar nav + grid of item cards with colored top borders
+- Full spec: @context/features/homepage-mockup-spec.md
 
 ## History
 
