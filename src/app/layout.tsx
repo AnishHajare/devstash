@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
+import "@fontsource-variable/space-grotesk";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 

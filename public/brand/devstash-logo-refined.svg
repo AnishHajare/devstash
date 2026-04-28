@@ -1,0 +1,40 @@
+<svg width="282" height="218" viewBox="0 0 282 218" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="devstash-logo-title">
+  <title id="devstash-logo-title">Devstash DS logo</title>
+  <defs>
+    <linearGradient id="dGrad" x1="45" y1="36" x2="172" y2="172" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0870FF" />
+      <stop offset="0.54" stop-color="#0964F2" />
+      <stop offset="1" stop-color="#083AC0" />
+    </linearGradient>
+    <linearGradient id="dInner" x1="80" y1="90" x2="165" y2="132" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0869F8" />
+      <stop offset="1" stop-color="#052AA6" />
+    </linearGradient>
+    <linearGradient id="bridge" x1="139" y1="40" x2="185" y2="102" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A73FF" />
+      <stop offset="0.52" stop-color="#149EEB" />
+      <stop offset="1" stop-color="#19D9E3" />
+    </linearGradient>
+    <linearGradient id="sTop" x1="158" y1="36" x2="251" y2="91" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#20E4E8" />
+      <stop offset="1" stop-color="#17D8E1" />
+    </linearGradient>
+    <linearGradient id="sBottom" x1="155" y1="134" x2="244" y2="169" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#20B7F0" />
+      <stop offset="1" stop-color="#096DFF" />
+    </linearGradient>
+    <filter id="softShadow" x="30" y="24" width="238" height="164" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#001A45" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <g filter="url(#softShadow)">
+    <path d="M45 36H112C154 36 178 59 178 91C178 122 154 144 113 144H72V88H45V171H113C177 171 216 139 216 91C216 58 189 36 146 36H45Z" fill="url(#dGrad)" />
+    <path d="M72 88H113C138 88 151 99 151 116C151 133 138 144 113 144H72V88Z" fill="url(#dInner)" opacity="0.98" />
+    <path d="M45 36H112C154 36 178 59 178 91C178 122 154 144 113 144H72V88H45V171H113C177 171 216 139 216 91C216 58 189 36 146 36H45Z" fill="url(#dGrad)" fill-opacity="0.94" />
+    <path d="M141 40C157 43 171 51 181 65C173 74 168 84 167 96C160 80 149 70 135 67C136 56 138 47 141 40Z" fill="url(#bridge)" />
+    <path d="M167 36H251L236 59H181C166 59 158 66 158 78C158 91 168 98 184 98H225V121H183C150 121 128 103 128 78C128 52 143 36 167 36Z" fill="url(#sTop)" />
+    <path d="M183 98H225C249 98 262 113 262 134C262 158 243 171 211 171H135L151 145H211C225 145 234 138 234 126C234 116 226 111 211 111H183V98Z" fill="url(#sBottom)" />
+    <path d="M151 145H211C225 145 234 138 234 126C234 117 228 112 216 111C242 112 258 122 262 134C262 158 243 171 211 171H135L151 145Z" fill="#086DFF" fill-opacity="0.32" />
+    <path d="M45 88H72V171H45V88Z" fill="#096CFF" fill-opacity="0.96" />
+  </g>
+</svg>
