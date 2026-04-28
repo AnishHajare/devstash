@@ -1,11 +1,27 @@
 # Current Feature
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
 
+- Convert the static prototype at `prototypes/homepage/` into the real Next.js homepage at `/` (`src/app/page.tsx`)
+- Preserve design, layout, copy, and animations from the mockup using Tailwind CSS and shadcn/ui
+- Page broken into server components (hero, features, organization, pricing, CTA) and client components (header, AI section, cloud background, reveal-on-scroll)
+- All buttons and links route correctly (Sign in -> `/sign-in`, Register/CTAs -> `/register`, anchor links for Features/Pricing)
+- Responsive layout: 3-col -> 2-col -> 1-col for feature cards; 2-col -> 1-col for pricing; hide nav links on mobile
+- Animations: scroll reveal, cloud parallax, typing effect, hover micro-interactions, `prefers-reduced-motion` support
+- Page does NOT use the dashboard layout/shell — fully static marketing page
+
 ## Notes
+
+- Spec: `context/features/homepage-spec.md`
+- Prototype reference: `prototypes/homepage/` (index.html, styles.css, script.js)
+- Add Space Grotesk font via `@fontsource-variable` for headings
+- Custom CSS for cloud parallax, cursor light, typing caret goes in `globals.css` scoped under `.homepage-` prefix
+- Homepage-specific theme tokens in `globals.css` via `@theme` if needed
+- SVG logo and feature card icons inline (same paths from prototype)
+- No data fetching needed
 
 ## History
 

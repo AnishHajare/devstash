@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-family-sans);
+    --font-heading: var(--font-family-heading);
     --font-sans: var(--font-family-sans);
     --font-mono: var(--font-family-mono);
     --color-sidebar-ring: var(--sidebar-ring);
@@ -51,6 +51,7 @@
 :root {
     --font-family-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-family-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --font-family-heading: "Space Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -247,4 +248,180 @@
   border: none;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin: 1em 0;
+}
+
+/* ─── Homepage ────────────────────────────────────────────── */
+
+.homepage-cloud-field,
+.homepage-cursor-light {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.homepage-cloud-field {
+  z-index: -3;
+  overflow: hidden;
+  background: transparent;
+}
+
+.homepage-cloud {
+  position: absolute;
+  display: none;
+  border-radius: 999px;
+  filter: blur(var(--blur, 46px));
+  opacity: calc(var(--base-opacity, 0.16) + var(--cloud-alpha, 0) * var(--alpha-boost, 0.24));
+  transform:
+    translate3d(
+      calc(var(--x, 0px) + var(--drift-x, 0px) * var(--scroll, 0)),
+      calc(var(--start-y, 70vh) - var(--travel, 80vh) * var(--scroll, 0)),
+      0
+    )
+    scale(calc(var(--scale, 1) + var(--scroll, 0) * 0.18));
+  transition: opacity 160ms linear;
+  will-change: transform, opacity;
+  mix-blend-mode: screen;
+}
+
+.homepage-cloud::before,
+.homepage-cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: inherit;
+  background: inherit;
+}
+
+.homepage-cloud::before {
+  width: 68%;
+  height: 72%;
+  left: 15%;
+  top: -34%;
+}
+
+.homepage-cloud::after {
+  width: 56%;
+  height: 58%;
+  right: -10%;
+  top: 8%;
+}
+
+.homepage-cloud-haze {
+  position: absolute;
+  display: none;
+  inset: auto -8vw -20vh;
+  height: 48vh;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.18), rgba(251, 207, 232, 0.3), rgba(219, 234, 254, 0.24));
+  filter: blur(48px);
+  opacity: calc(0.18 + var(--cloud-alpha, 0) * 0.2);
+  transform: translateY(calc(var(--scroll, 0) * -82vh));
+}
+
+.homepage-cursor-light {
+  z-index: -2;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 35%), rgba(6, 182, 212, 0.018), rgba(37, 99, 235, 0.01) 4rem, transparent 9rem);
+  opacity: 0.12;
+  transition: opacity 180ms ease;
+}
+
+/* Secondary glow — snaps to cursor, tighter and brighter than the lagging one */
+.homepage-cursor-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(
+    140px circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(6, 182, 212, 0.035),
+    rgba(37, 99, 235, 0.01) 28%,
+    transparent 58%
+  );
+  opacity: 0.16;
+  transition: opacity 300ms ease;
+}
+
+/* Gradient border reveal on hoverable cards */
+.hoverable {
+  position: relative;
+  overflow: hidden;
+}
+
+.hoverable::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(6, 182, 212, 0.2),
+    rgba(37, 99, 235, 0.1) 40%,
+    transparent 70%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.hoverable:hover::before {
+  opacity: 0.7;
+}
+
+.homepage-typing-caret::after {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  margin-left: 3px;
+  translate: 0 0.18em;
+  background: #06b6d4;
+  animation: homepage-caret 0.9s steps(2) infinite;
+}
+
+@keyframes homepage-caret {
+  50% { opacity: 0; }
+}
+
+@keyframes logoCursorBlink {
+  50% { opacity: 0; }
+}
+
+.homepage-reveal {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(40px);
+  transition: opacity 700ms ease, transform 700ms ease, filter 700ms ease;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.homepage-reveal.is-visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homepage-reveal {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition: none;
+  }
+  .homepage-cloud,
+  .homepage-cloud-haze,
+  .homepage-cloud-field,
+  .homepage-cursor-light,
+  .homepage-cursor-glow {
+    display: none;
+  }
+  .hoverable::before {
+    display: none;
+  }
+  .homepage-typing-caret::after {
+    animation: none;
+  }
 }
