@@ -1,27 +1,11 @@
 # Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Convert the static prototype at `prototypes/homepage/` into the real Next.js homepage at `/` (`src/app/page.tsx`)
-- Preserve design, layout, copy, and animations from the mockup using Tailwind CSS and shadcn/ui
-- Page broken into server components (hero, features, organization, pricing, CTA) and client components (header, AI section, cloud background, reveal-on-scroll)
-- All buttons and links route correctly (Sign in -> `/sign-in`, Register/CTAs -> `/register`, anchor links for Features/Pricing)
-- Responsive layout: 3-col -> 2-col -> 1-col for feature cards; 2-col -> 1-col for pricing; hide nav links on mobile
-- Animations: scroll reveal, cloud parallax, typing effect, hover micro-interactions, `prefers-reduced-motion` support
-- Page does NOT use the dashboard layout/shell — fully static marketing page
-
 ## Notes
-
-- Spec: `context/features/homepage-spec.md`
-- Prototype reference: `prototypes/homepage/` (index.html, styles.css, script.js)
-- Add Space Grotesk font via `@fontsource-variable` for headings
-- Custom CSS for cloud parallax, cursor light, typing caret goes in `globals.css` scoped under `.homepage-` prefix
-- Homepage-specific theme tokens in `globals.css` via `@theme` if needed
-- SVG logo and feature card icons inline (same paths from prototype)
-- No data fetching needed
 
 ## History
 
@@ -68,3 +52,4 @@ In Progress
 - 2026-04-24: Completed Favorites Page — /favorites route (protected layout + page) with compact VS Code-style list view. Star icon added to TopBar. getFavoriteItems and getFavoriteCollections DB queries. toggleFavoriteCollection DB fn and server action. CollectionActions favorite button wired (both card and detail variants). FavoritesContent client component with separate Items/Collections sections, inline unfavorite toggle, per-section empty states, and global empty state. Sort by updatedAt desc. 15 unit tests added (124 total).
 - 2026-04-24: Completed Pinned Items + Fix Item Favorite Pattern — toggleItemPin and toggleItemFavorite DB fns (updateMany, ownership-scoped via userId) and server actions (auth + not-found + try/catch + { success, error }). Replaced weak raw-fetch toggles in ItemDrawer with server actions; both now show success/error toasts and roll back optimistic state on failure. Added active prop to Pin ActionBtn. Compound orderBy [isPinned desc, updatedAt desc] applied to getPaginatedItemsByType and getCollectionWithItems so pinned items surface first in /items/[type] and /collections/[id]. 18 new unit tests; 2 stale orderBy assertions updated (142 total).
 - 2026-04-27: Completed Homepage Prototype — standalone marketing page at prototypes/homepage/ (index.html + styles.css + script.js). Dark theme with scroll-driven cloud parallax, cursor-following light effect, Inter/Sora/Space Grotesk fonts. Hero with headline and CTAs, 6 accent-colored feature cards (Code Snippets, AI Prompts, Instant Search, Commands, Files & Docs, Collections), AI section with code editor mockup and typing animation, organization section, pricing cards (Free/Pro), closing CTA. IntersectionObserver reveal animations, scroll-aware cloud field, hover interactions. Responsive layout. Feature specs added to context/features/.
+- 2026-04-28: Completed Homepage Implementation — converted the prototype into the real Next.js `/` marketing page with homepage sections, client-side motion effects, Space Grotesk font support, responsive pricing/features layouts, routed CTAs, and Devstash brand logo asset.
