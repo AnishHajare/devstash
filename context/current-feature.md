@@ -1,18 +1,15 @@
-# Current Feature: Add Homepage Top Nav to Auth Pages
+# Current Feature
 
 ## Status
-Complete
+Not Started
 
 ## Goals
 
-- Add the homepage top navigation to the sign-in page.
-- Add the homepage top navigation to the sign-up/register page.
-- Preserve existing auth form behavior and visual layout quality.
+<!-- Add goals for the next feature here -->
 
 ## Notes
 
-- Loaded from inline request: "add the homepage top nav to the sign in and sign up pages".
-- Sign-up route appears to be `/register`.
+<!-- Add notes for the next feature here -->
 
 ## History
 
@@ -62,3 +59,4 @@ Complete
 - 2026-04-28: Completed Homepage Implementation — converted the prototype into the real Next.js `/` marketing page with homepage sections, client-side motion effects, Space Grotesk font support, responsive pricing/features layouts, routed CTAs, and Devstash brand logo asset.
 - 2026-04-29: Completed Responsive Mobile Top Bar — fixed top bar clutter on small screens. Logo text hidden below sm:, search bar replaced with icon-only button that opens the search dialog, "New Item"/"New Collection" labels hidden on mobile, star + "+" dropdown replaces three separate action buttons. NewCollectionDialog and NewItemDialog now support controlled open/hideTrigger props. DashboardTopBar converted to client component with DropdownMenu for mobile actions. Desktop layout unchanged. Build passes, 142 tests pass.
 - 2026-04-29: Completed UI Polish Pass — addressed 20 review issues across mobile navigation, touch discoverability, collection card semantics, collapsed sidebar labels, 44px favorite actions, scoped focus outlines, light/dark theme controls, dark-safe editor selects/checkboxes, sign-in depth, responsive dashboard/homepage/collections layouts, compact pagination ellipses, sidebar pluralization, Favorites typography, and mobile search autofocus. Build passes, 142 tests pass.
+- 2026-04-29: Completed Add Homepage Top Nav to Auth Pages — added a shared auth page shell that renders the homepage header on `/sign-in` and `/register`, preserved the existing auth forms, and updated homepage header section links to route correctly from auth pages. Lint and build pass; browser check confirmed the nav on both auth pages.
