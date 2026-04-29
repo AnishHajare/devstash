@@ -109,20 +109,41 @@ const EMPTY_FORM = {
   tags: "",
 };
 
-export function NewItemDialog({ itemTypes, collections }: Props) {
+type NewItemDialogProps = Props & {
+  /** When provided, the dialog becomes controlled (parent owns open state). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** When true the built-in trigger button is not rendered. */
+  hideTrigger?: boolean;
+};
+
+export function NewItemDialog({
+  itemTypes,
+  collections,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  hideTrigger,
+}: NewItemDialogProps) {
   const router = useRouter();
 
   const defaultType = itemTypes.find((t) => t.name === "snippet") ?? itemTypes[0];
 
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<ItemType>(defaultType);
   const [form, setForm] = useState(EMPTY_FORM);
   const [selectedCollectionIds, setSelectedCollectionIds] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
   function handleOpenChange(isOpen: boolean) {
-    setOpen(isOpen);
+    if (isControlled) {
+      controlledOnOpenChange?.(isOpen);
+    } else {
+      setInternalOpen(isOpen);
+    }
     if (!isOpen) {
       setSelectedType(defaultType);
       setForm(EMPTY_FORM);
@@ -197,14 +218,16 @@ export function NewItemDialog({ itemTypes, collections }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={
-          <Button size="sm" className="h-8 text-xs gap-1.5" />
-        }
-      >
-        <Plus className="h-3.5 w-3.5" />
-        New Item
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger
+          render={
+            <Button size="sm" className="h-8 text-xs gap-1.5" />
+          }
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">New Item</span>
+        </DialogTrigger>
+      )}
 
       <DialogContent className="sm:max-w-lg" showCloseButton>
         <DialogHeader>
