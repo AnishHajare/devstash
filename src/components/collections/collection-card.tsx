@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Star } from "lucide-react";
 import { CollectionActions } from "@/components/collections/collection-actions";
 import { iconMap } from "@/lib/icon-map";
@@ -12,39 +12,26 @@ export function CollectionCard({
 }: {
   collection: CollectionWithMeta;
 }) {
-  const router = useRouter();
   const [hovered, setHovered] = useState(false);
   const dominantColor = collection.types[0]?.color;
 
-  function openCollection() {
-    router.push(`/collections/${collection.id}`);
-  }
-
   return (
     <article
-      role="link"
-      tabIndex={0}
-      className="group relative rounded-lg border border-border bg-card p-4 transition-colors duration-200"
+      className="group relative isolate rounded-lg border border-border bg-card p-4 transition-colors duration-200"
       style={{
         borderLeftColor: dominantColor,
         borderLeftWidth: dominantColor ? "3px" : undefined,
         backgroundColor: hovered && dominantColor ? `${dominantColor}12` : undefined,
       }}
-      onClick={openCollection}
-      onKeyDown={(event) => {
-        if (event.defaultPrevented || event.target !== event.currentTarget) {
-          return;
-        }
-
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          openCollection();
-        }
-      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="flex items-start justify-between">
+      <Link
+        href={`/collections/${collection.id}`}
+        className="absolute inset-0 z-0 rounded-lg focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        aria-label={`Open ${collection.name}`}
+      />
+      <div className="pointer-events-none relative z-10 flex items-start justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span
@@ -68,12 +55,12 @@ export function CollectionCard({
         />
       </div>
       {collection.description && (
-        <p className="mt-2 text-xs text-muted-foreground line-clamp-1">
+        <p className="pointer-events-none relative z-10 mt-2 text-xs text-muted-foreground line-clamp-1">
           {collection.description}
         </p>
       )}
       {collection.types.length > 0 && (
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="pointer-events-none relative z-10 mt-3 flex items-center gap-1.5">
           {collection.types.map((type) => {
             const Icon = iconMap[type.icon];
             return Icon ? (

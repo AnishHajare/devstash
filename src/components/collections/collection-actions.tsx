@@ -294,7 +294,7 @@ export function CollectionActions({
               type="button"
               variant="ghost"
               size="icon-sm"
-              className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
+              className="pointer-events-auto relative z-10 shrink-0 text-muted-foreground opacity-40 transition-opacity group-hover:opacity-100 hover:bg-muted"
               aria-label="Collection options"
               onClick={stopPropagation}
             />

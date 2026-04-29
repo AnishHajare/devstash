@@ -255,7 +255,7 @@ function FavoriteItemRow({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate font-mono text-sm text-foreground">
+          <span className="truncate text-sm font-medium text-foreground">
             {item.title}
           </span>
           <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -272,6 +272,7 @@ function FavoriteItemRow({
         type="button"
         variant="ghost"
         size="icon-sm"
+        className="min-h-[44px] min-w-[44px]"
         aria-label="Remove item from favorites"
         disabled={pending}
         onClick={(event) => {
@@ -320,7 +321,7 @@ function FavoriteCollectionRow({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate font-mono text-sm text-foreground">
+          <span className="truncate text-sm font-medium text-foreground">
             {collection.name}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
@@ -337,6 +338,7 @@ function FavoriteCollectionRow({
         type="button"
         variant="ghost"
         size="icon-sm"
+        className="min-h-[44px] min-w-[44px]"
         aria-label="Remove collection from favorites"
         disabled={pending}
         onClick={(event) => {
