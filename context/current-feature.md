@@ -1,48 +1,15 @@
 # Current Feature
 
 ## Status
-Complete
+Not Started
 
 ## Goals
 
-UI polish pass addressing 20 issues found during UI review. Grouped into 5 phases:
-
-### Phase 1 — Critical Layout & Touch Fixes
-1. **Mobile sidebar toggle overlaps content** — give the floating `PanelLeft` button a visible background/border and reposition so it doesn't cover items (`dashboard-shell.tsx:49-57`)
-2. **Homepage mobile nav missing** — add a hamburger menu on `max-md:` that opens a sheet/drawer with Features and Pricing anchor links (`homepage-header.tsx:35`)
-3. **Hover-only actions invisible on touch** — change ItemCard copy button and CollectionCard three-dot menu from `opacity-0` to a low default opacity (e.g. `opacity-40`) so touch users can discover them (`item-card.tsx:101`, `collection-actions.tsx:297`)
-
-### Phase 2 — Accessibility
-4. **CollectionCard `role="link"` on `<article>`** — replace with a Next.js `<Link>` wrapper or use correct ARIA role (`collection-card.tsx:26`)
-5. **Collapsed sidebar icons use `title` not `aria-label`** — add `aria-label` to each icon link (`sidebar-content.tsx:193-201`)
-6. **Unfavorite button below 44px touch target** — increase to `h-10 w-10` or add padding to meet 44px minimum (`favorites-content.tsx:271-284`)
-7. **Global `*` outline rule on non-interactive elements** — scope the outline to interactive elements only (`globals.css:125`)
-
-### Phase 3 — Dark Mode & Theme Toggle
-8. **Light/dark mode toggle in Settings** — add an Appearance section with sun/moon icon toggle (sun = light, moon = dark). Store preference in localStorage and respect `prefers-color-scheme` as default. Toggle the `dark` class on `<html>` (`layout.tsx:19`, new component)
-9. **Native `<select>` elements break in dark mode** — replace with shadcn `Select` component in Editor Preferences (`editor-preferences-section.tsx:100-150`)
-10. **Native `<input type="checkbox">` breaks in dark mode** — replace with shadcn `Checkbox` component (`editor-preferences-section.tsx:162-184`)
-11. **Sign-in card lacks depth** — add a subtle border or shadow to the card
-
-### Phase 4 — Responsive Polish
-12. **Stat card label overflow at 375px** — add `truncate` to stat labels (`dashboard-main.tsx:62-83`)
-13. **Pricing cards `min-h-[500px]` on mobile** — remove or reduce on small screens (`pricing-section.tsx:41,80`)
-14. **Feature cards `min-h-[220px]` on mobile** — remove on small screens (`features-section.tsx:92`)
-15. **Collections count badge crowds heading** — allow wrapping or reflow on small screens (`collections/page.tsx:36-48`)
-16. **Pagination renders all page numbers** — add ellipsis truncation for large page counts (`pagination-controls.tsx:97-109`)
-
-### Phase 5 — Minor Consistency
-17. **Empty `justify-between` in Recent Items header** — remove or add a "View all" link (`dashboard-main.tsx:118-128`)
-18. **Hardcoded `"s"` pluralization** — use a proper pluralize helper for type names (`sidebar-content.tsx:68`)
-19. **Monospace font for titles in Favorites** — switch to sans-serif to match ItemCard/ItemRow (`favorites-content.tsx:257-265`)
-20. **Global search input not auto-focused on mobile** — add autoFocus to CommandInput (`global-search.tsx:101`)
+<!-- Add goals for the next feature here -->
 
 ## Notes
 
-- The theme toggle should use sun (light) and moon (dark) icons from Lucide
-- Theme preference stored in localStorage with key `devstash-theme`
-- Default to system preference (`prefers-color-scheme`), then user override
-- The toggle lives in Settings under a new "Appearance" section, but also add a small sun/moon toggle in the sidebar footer for quick access
+<!-- Add notes for the next feature here -->
 
 ## History
 
