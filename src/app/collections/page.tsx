@@ -33,14 +33,14 @@ export default async function CollectionsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight">Collections</h1>
           <p className="text-sm text-muted-foreground">
             Browse and organize all of your saved collections.
           </p>
         </div>
-        <div className="rounded-lg border border-border bg-card px-3 py-2 text-right">
+        <div className="w-fit rounded-lg border border-border bg-card px-3 py-2 text-left sm:text-right">
           <p className="text-xs text-muted-foreground">Total collections</p>
           <p className="text-2xl font-bold tabular-nums">{totalCount}</p>
         </div>

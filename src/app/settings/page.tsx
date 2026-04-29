@@ -4,6 +4,7 @@ import { getLinkedAccounts } from "@/lib/db/accounts";
 import { getUserProfile } from "@/lib/db/profile";
 import { AccountDetailsCard } from "@/components/account/account-details-card";
 import { ChangePasswordSection } from "@/components/account/change-password-section";
+import { AppearanceSection } from "@/components/account/appearance-section";
 import { DeleteAccountSection } from "@/components/account/delete-account-section";
 import { EditorPreferencesSection } from "@/components/account/editor-preferences-section";
 import { LinkedAccountsSection } from "@/components/account/linked-accounts-section";
@@ -75,6 +76,28 @@ export default async function SettingsPage() {
               linkedProviders={linkedAccounts.map((account) => account.provider)}
               hasPassword={user.hasPassword}
             />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Appearance
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Pick the visual mode that feels best for your workspace.
+          </p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Interface Theme</CardTitle>
+            <CardDescription>
+              Your choice is saved on this device and system preference is used first.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AppearanceSection />
           </CardContent>
         </Card>
       </section>

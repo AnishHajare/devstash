@@ -115,7 +115,7 @@ export function SignInForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm border border-border shadow-xl shadow-black/5 dark:shadow-black/30">
       <CardHeader className="text-center">
         <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
           DS

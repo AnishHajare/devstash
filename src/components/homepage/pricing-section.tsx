@@ -38,7 +38,7 @@ export function PricingSection() {
       <div className="mx-auto grid max-w-[860px] grid-cols-2 items-stretch gap-6 max-md:max-w-[560px] max-md:grid-cols-1">
         {/* Free card */}
         <RevealOnScroll>
-          <article className="hoverable flex min-h-[500px] flex-col rounded-lg border border-white/10 bg-[rgba(18,19,29,0.76)] p-[34px] shadow-[0_18px_56px_rgba(0,0,0,0.18)] backdrop-blur-[20px] transition-all duration-200 hover:-translate-y-[3px] hover:border-[rgba(37,99,235,0.46)] hover:shadow-[0_26px_70px_rgba(0,0,0,0.28)]">
+          <article className="hoverable flex min-h-[500px] flex-col rounded-lg border border-white/10 bg-[rgba(18,19,29,0.76)] p-[34px] shadow-[0_18px_56px_rgba(0,0,0,0.18)] backdrop-blur-[20px] transition-all duration-200 hover:-translate-y-[3px] hover:border-[rgba(37,99,235,0.46)] hover:shadow-[0_26px_70px_rgba(0,0,0,0.28)] max-md:min-h-0">
             <h3 className="font-heading text-[1.18rem] leading-[1.2] text-[#f4f7ff]">Free</h3>
             <p className="mt-6 font-heading text-[clamp(3.2rem,6vw,4.5rem)] font-bold leading-none text-[#f4f7ff]">
               $0<span className="font-sans text-[0.98rem] font-semibold text-[#9aa3b7]">/month</span>
@@ -77,7 +77,7 @@ export function PricingSection() {
 
         {/* Pro card */}
         <RevealOnScroll delay={120}>
-          <article className="hoverable relative flex min-h-[500px] flex-col rounded-lg border border-white/14 bg-[rgba(18,19,29,0.76)] p-[34px] shadow-[0_18px_56px_rgba(0,0,0,0.18)] backdrop-blur-[20px] transition-all duration-200 hover:-translate-y-[3px] hover:border-[rgba(37,99,235,0.46)] hover:shadow-[0_26px_70px_rgba(0,0,0,0.28)]">
+          <article className="hoverable relative flex min-h-[500px] flex-col rounded-lg border border-white/14 bg-[rgba(18,19,29,0.76)] p-[34px] shadow-[0_18px_56px_rgba(0,0,0,0.18)] backdrop-blur-[20px] transition-all duration-200 hover:-translate-y-[3px] hover:border-[rgba(37,99,235,0.46)] hover:shadow-[0_26px_70px_rgba(0,0,0,0.28)] max-md:min-h-0">
             <div className="absolute top-[22px] right-[22px] rounded-full border border-[rgba(192,132,252,0.28)] bg-[rgba(192,132,252,0.12)] px-2.5 py-[7px] text-[0.75rem] font-extrabold text-[#2563eb]">
               Most popular
             </div>

@@ -89,7 +89,7 @@ export function FeaturesSection() {
       <div className="grid grid-cols-3 gap-x-6 gap-y-7 max-md:grid-cols-2 max-sm:grid-cols-1">
         {FEATURES.map((feature) => (
           <RevealOnScroll key={feature.title}>
-            <article className="hoverable min-h-[214px] rounded-lg border border-white/10 bg-[rgba(18,19,29,0.76)] p-[26px] shadow-[0_18px_56px_rgba(0,0,0,0.18)] backdrop-blur-[20px] transition-all duration-200 hover:-translate-y-[3px] hover:border-[rgba(37,99,235,0.46)] hover:shadow-[0_26px_70px_rgba(0,0,0,0.28)] max-sm:min-h-[220px]">
+            <article className="hoverable min-h-[214px] rounded-lg border border-white/10 bg-[rgba(18,19,29,0.76)] p-[26px] shadow-[0_18px_56px_rgba(0,0,0,0.18)] backdrop-blur-[20px] transition-all duration-200 hover:-translate-y-[3px] hover:border-[rgba(37,99,235,0.46)] hover:shadow-[0_26px_70px_rgba(0,0,0,0.28)] max-sm:min-h-0">
               <span className={`mb-6 inline-flex h-12 w-12 items-center justify-center rounded-lg border ${feature.iconColor}`}>
                 {feature.icon}
               </span>

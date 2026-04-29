@@ -11,6 +11,7 @@ import {
   Circle,
   Settings,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { iconMap } from "@/lib/icon-map";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,16 @@ export type SidebarData = {
 
 function getInitials(name: string | null | undefined): string {
   return name?.split(" ").map((n) => n[0]).join("") ?? "?";
+}
+
+function pluralizeTypeName(name: string): string {
+  if (name.toLowerCase() === "image") {
+    return "Images";
+  }
+  if (name.toLowerCase() === "file") {
+    return "Files";
+  }
+  return `${name}s`;
 }
 
 export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: SidebarData }) {
@@ -65,7 +76,7 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
                 {Icon && (
                   <Icon className="h-4 w-4 shrink-0" style={{ color: type.color }} />
                 )}
-                <span className="truncate">{type.name}s</span>
+                <span className="truncate">{pluralizeTypeName(type.name)}</span>
                 {isProType && (
                   <Badge variant="outline" className="ml-auto h-4 px-1 text-[10px] leading-none font-semibold tracking-wide text-zinc-400 border-zinc-400/50">
                     PRO
@@ -147,6 +158,9 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
 
       {/* User area */}
       <div className="shrink-0 border-t border-border p-3">
+        <div className="mb-2 flex justify-end">
+          <ThemeToggle />
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md p-1 transition-colors hover:bg-muted">
             <Avatar size="sm">
@@ -195,14 +209,16 @@ function CollapsedSidebar({ data }: { data: SidebarData }) {
               href={`/items/${typeNameToSlug(type.name)}`}
               className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               title={typeNameToSlug(type.name)}
+              aria-label={pluralizeTypeName(type.name)}
             >
               {Icon && <Icon className="h-4 w-4" style={{ color: type.color }} />}
             </Link>
           );
         })}
       </div>
-      <div className="shrink-0 border-t border-border py-3">
-        <Link href="/dashboard/profile">
+      <div className="flex shrink-0 flex-col items-center gap-2 border-t border-border py-3">
+        <ThemeToggle />
+        <Link href="/dashboard/profile" aria-label="Open profile">
           <Avatar size="sm">
             {data.user.image && <AvatarImage src={data.user.image} alt={data.user.name ?? "User"} />}
             <AvatarFallback>

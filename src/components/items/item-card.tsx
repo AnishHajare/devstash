@@ -98,8 +98,9 @@ export function ItemCard({
       <div className="mt-3 flex justify-end">
         <button
           onClick={handleCopy}
-          className="flex h-6 w-6 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
+          className="flex h-6 w-6 items-center justify-center rounded opacity-40 transition-opacity group-hover:opacity-100 hover:bg-muted"
           title="Copy to clipboard"
+          aria-label="Copy to clipboard"
         >
           {copied ? (
             <Check className="h-3.5 w-3.5 text-green-500" />
