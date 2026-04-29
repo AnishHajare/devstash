@@ -5,7 +5,15 @@ import { toast } from "sonner";
 import { MonitorCog } from "lucide-react";
 import { updateEditorPreferences } from "@/actions/editor-preferences";
 import { useEditorPreferences } from "@/components/editor/editor-preferences-provider";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   EDITOR_THEME_OPTIONS,
@@ -97,72 +105,88 @@ export function EditorPreferencesSection() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="editor-font-size">Font Size</Label>
-          <select
+          <Select
             id="editor-font-size"
             value={draft.fontSize}
-            onChange={(e) => {
-              const parsed = editorFontSizeSchema.safeParse(e.target.value);
+            onValueChange={(value) => {
+              const parsed = editorFontSizeSchema.safeParse(value);
               if (!parsed.success) return;
               updateField("fontSize", parsed.data);
             }}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
-            {FONT_SIZE_OPTIONS.map((fontSize) => (
-              <option key={fontSize} value={fontSize}>
-                {fontSize}px
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue>{(value) => `${value}px`}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {FONT_SIZE_OPTIONS.map((fontSize) => (
+                <SelectItem key={fontSize} value={fontSize}>
+                  {fontSize}px
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="editor-tab-size">Tab Size</Label>
-          <select
+          <Select
             id="editor-tab-size"
             value={draft.tabSize}
-            onChange={(e) => {
-              const parsed = editorTabSizeSchema.safeParse(e.target.value);
+            onValueChange={(value) => {
+              const parsed = editorTabSizeSchema.safeParse(value);
               if (!parsed.success) return;
               updateField("tabSize", parsed.data);
             }}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
-            {TAB_SIZE_OPTIONS.map((tabSize) => (
-              <option key={tabSize} value={tabSize}>
-                {tabSize} spaces
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue>{(value) => `${value} spaces`}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {TAB_SIZE_OPTIONS.map((tabSize) => (
+                <SelectItem key={tabSize} value={tabSize}>
+                  {tabSize} spaces
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="editor-theme">Theme</Label>
-          <select
+          <Select
             id="editor-theme"
             value={draft.theme}
-            onChange={(e) => {
-              const parsed = editorThemeSchema.safeParse(e.target.value);
+            onValueChange={(value) => {
+              const parsed = editorThemeSchema.safeParse(value);
               if (!parsed.success) return;
               updateField("theme", parsed.data);
             }}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
-            {EDITOR_THEME_OPTIONS.map((theme) => (
-              <option key={theme.value} value={theme.value}>
-                {theme.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue>
+                {(value) =>
+                  EDITOR_THEME_OPTIONS.find((theme) => theme.value === value)?.label ??
+                  "Choose theme"
+                }
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {EDITOR_THEME_OPTIONS.map((theme) => (
+                <SelectItem key={theme.value} value={theme.value}>
+                  {theme.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex items-start gap-3 rounded-lg border border-border p-3">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={draft.wordWrap}
-            onChange={(e) => updateField("wordWrap", e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-input"
+            onCheckedChange={(checked) => updateField("wordWrap", checked)}
+            className="mt-0.5"
           />
           <div className="space-y-1">
             <p className="text-sm font-medium">Word Wrap</p>
@@ -173,11 +197,10 @@ export function EditorPreferencesSection() {
         </label>
 
         <label className="flex items-start gap-3 rounded-lg border border-border p-3">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={draft.minimap}
-            onChange={(e) => updateField("minimap", e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-input"
+            onCheckedChange={(checked) => updateField("minimap", checked)}
+            className="mt-0.5"
           />
           <div className="space-y-1">
             <p className="text-sm font-medium">Minimap</p>
