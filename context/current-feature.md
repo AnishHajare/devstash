@@ -1,15 +1,9 @@
 # Current Feature
 
 ## Status
-Complete
+Not Started
 
 ## Goals
-Responsive mobile top bar — fix clutter on small screens (375px and below).
-
-1. **Icon-only action buttons** — hide "New Collection" and "New Item" labels below `sm:` breakpoint, keep icons
-2. **Shrink logo area** — remove fixed `w-48` on mobile, hide "DevStash" text below `sm:`
-3. **Collapse actions into "+" dropdown** — on mobile, replace the three separate buttons (star, new collection, new item) with a single "+" popover/dropdown menu
-4. **Search icon toggle** — on mobile, show only a search icon; tapping expands the search bar as an overlay
 
 ## Notes
 
