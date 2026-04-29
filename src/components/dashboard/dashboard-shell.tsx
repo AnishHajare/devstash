@@ -46,10 +46,11 @@ export function DashboardShell({ sidebarData, children }: DashboardShellProps) {
       </aside>
 
       {/* Mobile drawer toggle — shown in the main area on small screens */}
-      <div className="md:hidden absolute top-14 left-2 z-40">
+      <div className="md:hidden absolute top-[3.75rem] left-3 z-40">
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon-sm"
+          className="bg-background/80 backdrop-blur-sm shadow-sm"
           onClick={() => setMobileOpen(true)}
           aria-label="Open sidebar"
         >
