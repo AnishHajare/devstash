@@ -3,6 +3,44 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+const ELLIPSIS = "ellipsis";
+type PaginationItem = number | typeof ELLIPSIS;
+
+function getPaginationItems(currentPage: number, totalPages: number): PaginationItem[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+
+  if (currentPage <= 4) {
+    pages.add(2);
+    pages.add(3);
+    pages.add(4);
+    pages.add(5);
+  }
+
+  if (currentPage >= totalPages - 3) {
+    pages.add(totalPages - 4);
+    pages.add(totalPages - 3);
+    pages.add(totalPages - 2);
+    pages.add(totalPages - 1);
+  }
+
+  const sortedPages = [...pages]
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b);
+
+  return sortedPages.flatMap((page, index) => {
+    const previous = sortedPages[index - 1];
+    if (previous && page - previous > 1) {
+      return [ELLIPSIS, page];
+    }
+
+    return [page];
+  });
+}
+
 function PageLink({
   href,
   children,
@@ -94,16 +132,26 @@ export function PaginationControls({
       </BoundaryLink>
 
       <div className="flex flex-wrap items-center justify-center gap-1.5">
-        {Array.from({ length: totalPages }, (_, index) => {
-          const page = index + 1;
+        {getPaginationItems(currentPage, totalPages).map((item, index) => {
+          if (item === ELLIPSIS) {
+            return (
+              <span
+                key={`ellipsis-${index}`}
+                className="inline-flex h-8 min-w-8 items-center justify-center px-2 text-sm text-muted-foreground"
+                aria-hidden="true"
+              >
+                ...
+              </span>
+            );
+          }
 
           return (
             <PageLink
-              key={page}
-              href={getHref(page)}
-              isCurrent={page === currentPage}
+              key={item}
+              href={getHref(item)}
+              isCurrent={item === currentPage}
             >
-              {page}
+              {item}
             </PageLink>
           );
         })}

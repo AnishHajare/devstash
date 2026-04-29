@@ -84,7 +84,7 @@ export function DashboardMain({
 
       {/* Collections */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <h2 className="text-sm font-semibold">Collections</h2>
           <Link
             href="/collections"
@@ -151,7 +151,7 @@ function StatCard({
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="min-w-0 truncate text-xs text-muted-foreground">{label}</span>
         {icon}
       </div>
       <p className="mt-2 text-2xl font-bold tabular-nums">{value}</p>
