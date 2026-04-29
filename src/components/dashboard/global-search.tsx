@@ -69,16 +69,27 @@ export function GlobalSearch({ data, collections }: GlobalSearchProps) {
 
   return (
     <>
+      {/* Desktop: full search bar */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex h-8 w-full min-w-0 items-center gap-2 rounded-lg border border-border bg-muted/50 px-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="hidden sm:flex h-8 w-full min-w-0 items-center gap-2 rounded-lg border border-border bg-muted/50 px-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <Search className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">Search items, collections...</span>
         <kbd className="ml-auto hidden h-5 shrink-0 items-center rounded border border-border bg-background px-1.5 text-xs text-muted-foreground sm:inline-flex">
           ⌘K
         </kbd>
+      </button>
+
+      {/* Mobile: icon-only search button */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Search"
+        className="inline-flex sm:hidden size-7 shrink-0 items-center justify-center rounded-[min(var(--radius-md),12px)] border border-border bg-background text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 dark:border-input dark:bg-input/30 dark:hover:bg-input/50"
+      >
+        <Search className="h-3.5 w-3.5" />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,14 +20,36 @@ import { createCollection } from "@/actions/collections";
 
 const EMPTY_FORM = { name: "", description: "" };
 
-export function NewCollectionDialog() {
+type NewCollectionDialogProps = {
+  /** When provided, the dialog becomes controlled (parent owns open state). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Extra classes applied to the default trigger button. */
+  triggerClassName?: string;
+  /** When true the built-in trigger button is not rendered. */
+  hideTrigger?: boolean;
+};
+
+export function NewCollectionDialog({
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  triggerClassName,
+  hideTrigger,
+}: NewCollectionDialogProps = {}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
 
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
   function handleOpenChange(isOpen: boolean) {
-    setOpen(isOpen);
+    if (isControlled) {
+      controlledOnOpenChange?.(isOpen);
+    } else {
+      setInternalOpen(isOpen);
+    }
     if (!isOpen) setForm(EMPTY_FORM);
   }
 
@@ -58,15 +81,17 @@ export function NewCollectionDialog() {
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-8 text-xs gap-1.5"
-        onClick={() => setOpen(true)}
-      >
-        <Plus className="h-3.5 w-3.5" />
-        New Collection
-      </Button>
+      {!hideTrigger && (
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn("h-8 text-xs gap-1.5", triggerClassName)}
+          onClick={() => handleOpenChange(true)}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">New Collection</span>
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md" showCloseButton>

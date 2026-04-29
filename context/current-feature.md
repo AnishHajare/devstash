@@ -1,9 +1,15 @@
 # Current Feature
 
 ## Status
-Not Started
+Complete
 
 ## Goals
+Responsive mobile top bar — fix clutter on small screens (375px and below).
+
+1. **Icon-only action buttons** — hide "New Collection" and "New Item" labels below `sm:` breakpoint, keep icons
+2. **Shrink logo area** — remove fixed `w-48` on mobile, hide "DevStash" text below `sm:`
+3. **Collapse actions into "+" dropdown** — on mobile, replace the three separate buttons (star, new collection, new item) with a single "+" popover/dropdown menu
+4. **Search icon toggle** — on mobile, show only a search icon; tapping expands the search bar as an overlay
 
 ## Notes
 
@@ -53,3 +59,4 @@ Not Started
 - 2026-04-24: Completed Pinned Items + Fix Item Favorite Pattern — toggleItemPin and toggleItemFavorite DB fns (updateMany, ownership-scoped via userId) and server actions (auth + not-found + try/catch + { success, error }). Replaced weak raw-fetch toggles in ItemDrawer with server actions; both now show success/error toasts and roll back optimistic state on failure. Added active prop to Pin ActionBtn. Compound orderBy [isPinned desc, updatedAt desc] applied to getPaginatedItemsByType and getCollectionWithItems so pinned items surface first in /items/[type] and /collections/[id]. 18 new unit tests; 2 stale orderBy assertions updated (142 total).
 - 2026-04-27: Completed Homepage Prototype — standalone marketing page at prototypes/homepage/ (index.html + styles.css + script.js). Dark theme with scroll-driven cloud parallax, cursor-following light effect, Inter/Sora/Space Grotesk fonts. Hero with headline and CTAs, 6 accent-colored feature cards (Code Snippets, AI Prompts, Instant Search, Commands, Files & Docs, Collections), AI section with code editor mockup and typing animation, organization section, pricing cards (Free/Pro), closing CTA. IntersectionObserver reveal animations, scroll-aware cloud field, hover interactions. Responsive layout. Feature specs added to context/features/.
 - 2026-04-28: Completed Homepage Implementation — converted the prototype into the real Next.js `/` marketing page with homepage sections, client-side motion effects, Space Grotesk font support, responsive pricing/features layouts, routed CTAs, and Devstash brand logo asset.
+- 2026-04-29: Completed Responsive Mobile Top Bar — fixed top bar clutter on small screens. Logo text hidden below sm:, search bar replaced with icon-only button that opens the search dialog, "New Item"/"New Collection" labels hidden on mobile, star + "+" dropdown replaces three separate action buttons. NewCollectionDialog and NewItemDialog now support controlled open/hideTrigger props. DashboardTopBar converted to client component with DropdownMenu for mobile actions. Desktop layout unchanged. Build passes, 142 tests pass.
