@@ -37,8 +37,8 @@ export function HomepageHeader() {
 
         {/* Nav links — hidden on mobile */}
         <nav className="flex justify-center gap-[clamp(18px,3vw,34px)] text-[#c8cfdf] text-[0.92rem] font-semibold max-md:hidden" aria-label="Primary navigation">
-          <a href="#features" className="transition-colors hover:text-white">Features</a>
-          <a href="#pricing" className="transition-colors hover:text-white">Pricing</a>
+          <Link href="/#features" className="transition-colors hover:text-white">Features</Link>
+          <Link href="/#pricing" className="transition-colors hover:text-white">Pricing</Link>
         </nav>
 
         {/* Spacer for mobile grid balance */}
@@ -76,20 +76,20 @@ export function HomepageHeader() {
           aria-label="Mobile navigation"
         >
           <div className="mx-auto flex w-[min(1180px,calc(100%-40px))] flex-col gap-1 py-4">
-            <a
-              href="#features"
+            <Link
+              href="/#features"
               className="rounded-lg px-3 py-2.5 text-[0.92rem] font-semibold text-[#c8cfdf] transition-colors hover:bg-white/5 hover:text-white"
               onClick={() => setMobileOpen(false)}
             >
               Features
-            </a>
-            <a
-              href="#pricing"
+            </Link>
+            <Link
+              href="/#pricing"
               className="rounded-lg px-3 py-2.5 text-[0.92rem] font-semibold text-[#c8cfdf] transition-colors hover:bg-white/5 hover:text-white"
               onClick={() => setMobileOpen(false)}
             >
               Pricing
-            </a>
+            </Link>
             <div className="my-2 border-t border-white/8" />
             <div className="flex flex-col gap-2 px-3">
               <Link

@@ -1,3 +1,4 @@
+import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { RegisterForm } from "@/components/auth/register-form";
 
 export const metadata = {
@@ -6,8 +7,8 @@ export const metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <AuthPageShell>
       <RegisterForm />
-    </div>
+    </AuthPageShell>
   );
 }

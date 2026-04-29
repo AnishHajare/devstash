@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { SignInForm } from "@/components/auth/sign-in-form";
 
 export const metadata = {
@@ -7,10 +8,10 @@ export const metadata = {
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <AuthPageShell>
       <Suspense>
         <SignInForm />
       </Suspense>
-    </div>
+    </AuthPageShell>
   );
 }

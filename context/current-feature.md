@@ -1,15 +1,18 @@
-# Current Feature
+# Current Feature: Add Homepage Top Nav to Auth Pages
 
 ## Status
-Not Started
+Complete
 
 ## Goals
 
-<!-- Add goals for the next feature here -->
+- Add the homepage top navigation to the sign-in page.
+- Add the homepage top navigation to the sign-up/register page.
+- Preserve existing auth form behavior and visual layout quality.
 
 ## Notes
 
-<!-- Add notes for the next feature here -->
+- Loaded from inline request: "add the homepage top nav to the sign in and sign up pages".
+- Sign-up route appears to be `/register`.
 
 ## History
 
