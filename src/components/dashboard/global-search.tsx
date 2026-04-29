@@ -100,6 +100,7 @@ export function GlobalSearch({ data, collections }: GlobalSearchProps) {
           <DialogTitle className="sr-only">Global search</DialogTitle>
           <Command shouldFilter={false} className="rounded-xl">
             <CommandInput
+              autoFocus
               value={query}
               onValueChange={setQuery}
               placeholder="Search items and collections..."
