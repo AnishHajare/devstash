@@ -5,6 +5,8 @@ export type UserProfile = {
   name: string | null;
   email: string | null;
   image: string | null;
+  isPro: boolean;
+  stripeCustomerId: string | null;
   createdAt: string;
   hasPassword: boolean;
 };
@@ -30,6 +32,8 @@ export async function getUserProfile(
           name: true,
           email: true,
           image: true,
+          isPro: true,
+          stripeCustomerId: true,
           password: true,
           createdAt: true,
         },
@@ -55,6 +59,8 @@ export async function getUserProfile(
       name: userData.name,
       email: userData.email,
       image: userData.image,
+      isPro: userData.isPro,
+      stripeCustomerId: userData.stripeCustomerId,
       createdAt: userData.createdAt.toISOString(),
       hasPassword: !!userData.password,
     },

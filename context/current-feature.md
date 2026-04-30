@@ -1,15 +1,28 @@
-# Current Feature
+# Current Feature: Stripe Integration Phase 1 — Core Infrastructure
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Add goals for the next feature here -->
+- Install Stripe SDK and create client singleton with plan config (`src/lib/stripe.ts`)
+- Add `isPro` to JWT and session via auth callbacks (`src/auth.ts`, `src/types/next-auth.d.ts`)
+- Create Stripe Checkout API route (`POST /api/stripe/checkout`) for monthly/annual subscriptions
+- Create Stripe Portal API route (`POST /api/stripe/portal`) for billing management
+- Build feature-gate utility (`src/lib/feature-gate.ts`) with free-tier limits (50 items, 3 collections)
+- Update profile DB query to include `isPro` and `stripeCustomerId`
+- Add 13 unit tests for feature-gate logic
+- Build passes, all tests pass (existing 142 + new feature-gate tests)
 
 ## Notes
 
-<!-- Add notes for the next feature here -->
+- No Prisma migration needed — `isPro`, `stripeCustomerId`, and `stripeSubscriptionId` already exist on User model
+- 6 new env vars: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_MONTHLY_PRICE_ID, STRIPE_ANNUAL_PRICE_ID, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+- Checkout route: gets or creates Stripe customer, saves `stripeCustomerId`, sets `metadata.userId` on subscription
+- Portal route: returns 400 if no `stripeCustomerId` exists
+- Feature gate: Pro users bypass all limits; free users checked against `FREE_LIMITS`
+- This phase is server-side infrastructure only — no UI changes, no webhook handling (Phase 2)
+- Full spec: `context/features/stripe-phase-1-spec.md`
 
 ## History
 

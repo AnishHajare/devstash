@@ -24,6 +24,8 @@ const BASE_USER = {
   name: "Alice",
   email: "alice@example.com",
   image: null,
+  isPro: false,
+  stripeCustomerId: null,
   password: "hashed-pw",
   createdAt: new Date("2025-01-15T00:00:00Z"),
 };
@@ -44,7 +46,22 @@ describe("getUserProfile", () => {
     expect(user.hasPassword).toBe(true);
     expect(user.id).toBe("user-1");
     expect(user.email).toBe("alice@example.com");
+    expect(user.isPro).toBe(false);
+    expect(user.stripeCustomerId).toBeNull();
     expect(user.createdAt).toBe("2025-01-15T00:00:00.000Z");
+  });
+
+  it("returns billing fields when present", async () => {
+    userFindUniqueOrThrow.mockResolvedValue({
+      ...BASE_USER,
+      isPro: true,
+      stripeCustomerId: "cus_123",
+    });
+
+    const { user } = await getUserProfile("user-1");
+
+    expect(user.isPro).toBe(true);
+    expect(user.stripeCustomerId).toBe("cus_123");
   });
 
   it("returns hasPassword false when password is null", async () => {
