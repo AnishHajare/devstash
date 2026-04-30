@@ -1,28 +1,15 @@
-# Current Feature: Stripe Integration Phase 1 — Core Infrastructure
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Install Stripe SDK and create client singleton with plan config (`src/lib/stripe.ts`)
-- Add `isPro` to JWT and session via auth callbacks (`src/auth.ts`, `src/types/next-auth.d.ts`)
-- Create Stripe Checkout API route (`POST /api/stripe/checkout`) for monthly/annual subscriptions
-- Create Stripe Portal API route (`POST /api/stripe/portal`) for billing management
-- Build feature-gate utility (`src/lib/feature-gate.ts`) with free-tier limits (50 items, 3 collections)
-- Update profile DB query to include `isPro` and `stripeCustomerId`
-- Add 13 unit tests for feature-gate logic
-- Build passes, all tests pass (existing 142 + new feature-gate tests)
+<!-- Add goals for the next feature here -->
 
 ## Notes
 
-- No Prisma migration needed — `isPro`, `stripeCustomerId`, and `stripeSubscriptionId` already exist on User model
-- 6 new env vars: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_MONTHLY_PRICE_ID, STRIPE_ANNUAL_PRICE_ID, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-- Checkout route: gets or creates Stripe customer, saves `stripeCustomerId`, sets `metadata.userId` on subscription
-- Portal route: returns 400 if no `stripeCustomerId` exists
-- Feature gate: Pro users bypass all limits; free users checked against `FREE_LIMITS`
-- This phase is server-side infrastructure only — no UI changes, no webhook handling (Phase 2)
-- Full spec: `context/features/stripe-phase-1-spec.md`
+<!-- Add notes for the next feature here -->
 
 ## History
 
@@ -73,3 +60,4 @@ In Progress
 - 2026-04-29: Completed Responsive Mobile Top Bar — fixed top bar clutter on small screens. Logo text hidden below sm:, search bar replaced with icon-only button that opens the search dialog, "New Item"/"New Collection" labels hidden on mobile, star + "+" dropdown replaces three separate action buttons. NewCollectionDialog and NewItemDialog now support controlled open/hideTrigger props. DashboardTopBar converted to client component with DropdownMenu for mobile actions. Desktop layout unchanged. Build passes, 142 tests pass.
 - 2026-04-29: Completed UI Polish Pass — addressed 20 review issues across mobile navigation, touch discoverability, collection card semantics, collapsed sidebar labels, 44px favorite actions, scoped focus outlines, light/dark theme controls, dark-safe editor selects/checkboxes, sign-in depth, responsive dashboard/homepage/collections layouts, compact pagination ellipses, sidebar pluralization, Favorites typography, and mobile search autofocus. Build passes, 142 tests pass.
 - 2026-04-29: Completed Add Homepage Top Nav to Auth Pages — added a shared auth page shell that renders the homepage header on `/sign-in` and `/register`, preserved the existing auth forms, and updated homepage header section links to route correctly from auth pages. Lint and build pass; browser check confirmed the nav on both auth pages.
+- 2026-04-30: Completed Stripe Integration Phase 1 — Core Infrastructure. Stripe client singleton with plan config (src/lib/stripe.ts), isPro synced from DB in JWT/session callbacks (src/auth.ts), checkout API route (POST /api/stripe/checkout) for monthly/annual subscriptions, portal API route (POST /api/stripe/portal) for billing management, feature-gate utility (src/lib/feature-gate.ts) with free-tier limits (50 items, 3 collections), profile DB query updated with isPro and stripeCustomerId. 28 new unit tests added (170 total).
