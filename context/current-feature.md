@@ -1,28 +1,15 @@
-# Current Feature: Stripe Integration Phase 2 — Webhooks, Feature Gating & UI
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Webhook handler at `/api/stripe/webhook` processing `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` events with signature verification
-- Gate `createItem` server action: block pro-type items (File/Image) for free users, enforce 50-item limit
-- Gate `createCollection` server action: enforce 5-collection limit for free users
-- Billing UI section on `/settings` page with upgrade buttons (monthly/annual) for free users and "Manage Subscription" for pro users
-- Pro badge next to user avatar in sidebar for pro users; dimmed File/Image type links for free users
-- Upgrade prompt in error toasts when limits are hit
+<!-- Add goals for the next feature here -->
 
 ## Notes
 
-- Phase 1 is complete (Stripe client, feature-gate utility, checkout/portal routes, `isPro` in session)
-- Webhook route must NOT use auth middleware — Stripe sends server-to-server
-- Raw body via `req.text()` (not `req.json()`) for signature verification
-- All webhook handlers must be idempotent
-- Use `metadata.userId` from Stripe subscription to identify the user
-- `STRIPE_WEBHOOK_SECRET` env var required; return 400 if missing/invalid
-- Stripe CLI needed for local testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook`
-- New files: `src/app/api/stripe/webhook/route.ts`, `src/components/account/billing-section.tsx`
-- Modified files: `src/actions/items.ts`, `src/actions/collections.ts`, `src/app/settings/page.tsx`, `src/components/dashboard/sidebar-content.tsx`
+<!-- Add notes for the next feature here -->
 
 ## History
 
@@ -74,3 +61,4 @@ In Progress
 - 2026-04-29: Completed UI Polish Pass — addressed 20 review issues across mobile navigation, touch discoverability, collection card semantics, collapsed sidebar labels, 44px favorite actions, scoped focus outlines, light/dark theme controls, dark-safe editor selects/checkboxes, sign-in depth, responsive dashboard/homepage/collections layouts, compact pagination ellipses, sidebar pluralization, Favorites typography, and mobile search autofocus. Build passes, 142 tests pass.
 - 2026-04-29: Completed Add Homepage Top Nav to Auth Pages — added a shared auth page shell that renders the homepage header on `/sign-in` and `/register`, preserved the existing auth forms, and updated homepage header section links to route correctly from auth pages. Lint and build pass; browser check confirmed the nav on both auth pages.
 - 2026-04-30: Completed Stripe Integration Phase 1 — Core Infrastructure. Stripe client singleton with plan config (src/lib/stripe.ts), isPro synced from DB in JWT/session callbacks (src/auth.ts), checkout API route (POST /api/stripe/checkout) for monthly/annual subscriptions, portal API route (POST /api/stripe/portal) for billing management, feature-gate utility (src/lib/feature-gate.ts) with free-tier limits (50 items, 3 collections), profile DB query updated with isPro and stripeCustomerId. 28 new unit tests added (170 total).
+- 2026-04-30: Completed Stripe Integration Phase 2 — Webhooks, Feature Gating & Billing UI. Webhook handler (src/app/api/stripe/webhook/route.ts) with signature verification, PermanentWebhookError class for 400 vs 500 distinction, idempotent subscription sync for checkout.session.completed/customer.subscription.updated/customer.subscription.deleted. Feature gates in createItem (pro-type block + 50-item limit) and createCollection (5-collection limit) server actions. BillingSection on /settings with priced upgrade buttons ($8/mo, $72/yr) and portal management. Sidebar PRO badge next to user avatar, dimmed File/Image type links for free users. Upgrade toasts with /settings action link. Free collection limit updated to 5. Theme script migrated to next/script. 17 new unit tests added (187 total).
