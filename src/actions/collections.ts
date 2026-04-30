@@ -8,6 +8,7 @@ import {
   deleteCollection as dbDeleteCollection,
   toggleFavoriteCollection as dbToggleFavoriteCollection,
 } from "@/lib/db/collections";
+import { canCreateCollection, FREE_LIMITS } from "@/lib/feature-gate";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 
 const createCollectionSchema = z.object({
@@ -36,6 +37,17 @@ export async function createCollection(
   const { name, description } = parsed.data;
 
   try {
+    const hasCollectionCapacity = await canCreateCollection(
+      session.user.id,
+      session.user.isPro === true
+    );
+    if (!hasCollectionCapacity) {
+      return {
+        success: false,
+        error: `Upgrade to Pro to create more than ${FREE_LIMITS.collections} collections.`,
+      };
+    }
+
     const created = await dbCreateCollection(session.user.id, {
       name,
       description: description || undefined,

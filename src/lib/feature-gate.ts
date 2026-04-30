@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 export const FREE_LIMITS = {
   items: 50,
-  collections: 3,
+  collections: 5,
 } as const;
 
 export async function canCreateItem(

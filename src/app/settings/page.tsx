@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { FREE_LIMITS } from "@/lib/feature-gate";
 import { getLinkedAccounts } from "@/lib/db/accounts";
 import { getUserProfile } from "@/lib/db/profile";
 import { AccountDetailsCard } from "@/components/account/account-details-card";
 import { ChangePasswordSection } from "@/components/account/change-password-section";
 import { AppearanceSection } from "@/components/account/appearance-section";
+import { BillingSection } from "@/components/account/billing-section";
 import { DeleteAccountSection } from "@/components/account/delete-account-section";
 import { EditorPreferencesSection } from "@/components/account/editor-preferences-section";
 import { LinkedAccountsSection } from "@/components/account/linked-accounts-section";
@@ -21,7 +23,7 @@ export default async function SettingsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [{ user }, linkedAccounts] = await Promise.all([
+  const [{ user, stats }, linkedAccounts] = await Promise.all([
     getUserProfile(session.user.id),
     getLinkedAccounts(session.user.id),
   ]);
@@ -52,6 +54,35 @@ export default async function SettingsPage() {
           title="Profile Details"
           description="Read-only identity details used across your workspace."
         />
+      </section>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Billing
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage the plan that controls storage, limits, and Pro item types.
+          </p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Plan</CardTitle>
+            <CardDescription>
+              Upgrade to Pro or manage an active Stripe subscription.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BillingSection
+              isPro={user.isPro}
+              hasBillingAccount={Boolean(user.stripeCustomerId)}
+              itemCount={stats.totalItems}
+              collectionCount={stats.totalCollections}
+              itemLimit={FREE_LIMITS.items}
+              collectionLimit={FREE_LIMITS.collections}
+            />
+          </CardContent>
+        </Card>
       </section>
 
       <section className="space-y-3">

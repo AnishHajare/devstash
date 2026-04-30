@@ -288,6 +288,7 @@ export type SidebarUser = {
   name: string | null;
   email: string | null;
   image: string | null;
+  isPro: boolean;
 };
 
 /**
@@ -612,7 +613,7 @@ export async function deleteItem(id: string, userId: string): Promise<boolean> {
 export async function getSidebarUser(userId: string): Promise<SidebarUser> {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { name: true, email: true, image: true },
+    select: { name: true, email: true, image: true, isPro: true },
   });
   return user;
 }

@@ -1,15 +1,28 @@
-# Current Feature
+# Current Feature: Stripe Integration Phase 2 — Webhooks, Feature Gating & UI
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Add goals for the next feature here -->
+- Webhook handler at `/api/stripe/webhook` processing `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` events with signature verification
+- Gate `createItem` server action: block pro-type items (File/Image) for free users, enforce 50-item limit
+- Gate `createCollection` server action: enforce 5-collection limit for free users
+- Billing UI section on `/settings` page with upgrade buttons (monthly/annual) for free users and "Manage Subscription" for pro users
+- Pro badge next to user avatar in sidebar for pro users; dimmed File/Image type links for free users
+- Upgrade prompt in error toasts when limits are hit
 
 ## Notes
 
-<!-- Add notes for the next feature here -->
+- Phase 1 is complete (Stripe client, feature-gate utility, checkout/portal routes, `isPro` in session)
+- Webhook route must NOT use auth middleware — Stripe sends server-to-server
+- Raw body via `req.text()` (not `req.json()`) for signature verification
+- All webhook handlers must be idempotent
+- Use `metadata.userId` from Stripe subscription to identify the user
+- `STRIPE_WEBHOOK_SECRET` env var required; return 400 if missing/invalid
+- Stripe CLI needed for local testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook`
+- New files: `src/app/api/stripe/webhook/route.ts`, `src/components/account/billing-section.tsx`
+- Modified files: `src/actions/items.ts`, `src/actions/collections.ts`, `src/app/settings/page.tsx`, `src/components/dashboard/sidebar-content.tsx`
 
 ## History
 
