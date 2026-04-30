@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { findMany, count, updateMany } = vi.hoisted(() => ({
-  findMany: vi.fn(),
-  count: vi.fn(),
-  updateMany: vi.fn(),
-}));
+const { findMany, count, updateMany, userFindUniqueOrThrow } = vi.hoisted(
+  () => ({
+    findMany: vi.fn(),
+    count: vi.fn(),
+    updateMany: vi.fn(),
+    userFindUniqueOrThrow: vi.fn(),
+  })
+);
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -12,6 +15,9 @@ vi.mock("@/lib/prisma", () => ({
       findMany,
       count,
       updateMany,
+    },
+    user: {
+      findUniqueOrThrow: userFindUniqueOrThrow,
     },
   },
 }));
@@ -24,6 +30,7 @@ import {
   getFavoriteItems,
   getPaginatedItemsByType,
   getSearchableItems,
+  getSidebarUser,
   toggleItemPin,
   toggleItemFavorite,
 } from "@/lib/db/items";
@@ -259,6 +266,36 @@ describe("items db helpers", () => {
       expect(updateMany).toHaveBeenCalledWith(
         expect.objectContaining({ data: { isFavorite: false } })
       );
+    });
+  });
+
+  describe("getSidebarUser", () => {
+    it("returns user with isPro field", async () => {
+      userFindUniqueOrThrow.mockResolvedValue({
+        name: "Anish",
+        email: "anish@test.com",
+        image: null,
+        isPro: true,
+      });
+
+      const result = await getSidebarUser("user-1");
+
+      expect(userFindUniqueOrThrow).toHaveBeenCalledWith({
+        where: { id: "user-1" },
+        select: { name: true, email: true, image: true, isPro: true },
+      });
+      expect(result).toEqual({
+        name: "Anish",
+        email: "anish@test.com",
+        image: null,
+        isPro: true,
+      });
+    });
+
+    it("throws when user does not exist", async () => {
+      userFindUniqueOrThrow.mockRejectedValue(new Error("Not found"));
+
+      await expect(getSidebarUser("missing")).rejects.toThrow("Not found");
     });
   });
 

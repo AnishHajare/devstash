@@ -3,7 +3,7 @@ import { RevealOnScroll } from "./reveal-on-scroll";
 
 const FREE_FEATURES = [
   { text: "50 items", included: true },
-  { text: "3 collections", included: true },
+  { text: "5 collections", included: true },
   { text: "Snippets, prompts, commands, notes, and links", included: true },
   { text: "Basic search", included: true },
   { text: "File and image uploads", included: false },

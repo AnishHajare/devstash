@@ -199,7 +199,16 @@ export function NewItemDialog({
     setSubmitting(false);
 
     if (!result.success) {
-      toast.error(result.error);
+      if (result.error.startsWith("Upgrade to Pro")) {
+        toast.error(result.error, {
+          action: {
+            label: "Upgrade",
+            onClick: () => router.push("/settings"),
+          },
+        });
+      } else {
+        toast.error(result.error);
+      }
       return;
     }
 

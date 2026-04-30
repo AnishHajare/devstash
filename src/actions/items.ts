@@ -9,8 +9,9 @@ import {
   toggleItemPin as dbToggleItemPin,
   toggleItemFavorite as dbToggleItemFavorite,
 } from "@/lib/db/items";
+import { canCreateItem, canUseProType, FREE_LIMITS } from "@/lib/feature-gate";
 import type { ItemDetail } from "@/lib/db/items";
-import { TEXT_CONTENT_TYPES, LANGUAGE_TYPES } from "@/lib/item-type-constants";
+import { TEXT_CONTENT_TYPES, LANGUAGE_TYPES, PRO_SYSTEM_TYPES } from "@/lib/item-type-constants";
 
 const createItemSchema = z.object({
   typeId: z.string().min(1, "Type is required"),
@@ -47,6 +48,25 @@ export async function createItem(formData: unknown): Promise<CreateItemResult> {
 
   const { typeId, typeName, contentType, title, description, content, url, language, tags, collectionIds, fileKey, fileName, fileSize } =
     parsed.data;
+  const isPro = session.user.isPro === true;
+  const isProType = PRO_SYSTEM_TYPES.some(
+    (proType) => proType.toLowerCase() === typeName.toLowerCase()
+  );
+
+  if (isProType && !canUseProType(isPro)) {
+    return {
+      success: false,
+      error: "Upgrade to Pro to save files and images.",
+    };
+  }
+
+  const hasItemCapacity = await canCreateItem(session.user.id, isPro);
+  if (!hasItemCapacity) {
+    return {
+      success: false,
+      error: `Upgrade to Pro to save more than ${FREE_LIMITS.items} items.`,
+    };
+  }
 
   if (contentType === "text" && TEXT_CONTENT_TYPES.includes(typeName)) {
     if (!content?.trim()) {

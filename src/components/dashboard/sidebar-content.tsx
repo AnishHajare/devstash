@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { iconMap } from "@/lib/icon-map";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { PRO_SYSTEM_TYPES } from "@/lib/item-type-constants";
@@ -67,11 +68,15 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
           {data.itemTypes.map((type) => {
             const Icon = iconMap[type.icon];
             const isProType = type.isSystem && PRO_SYSTEM_TYPES.includes(type.name);
+            const isLockedProType = isProType && !data.user.isPro;
             return (
               <Link
                 key={type.id}
                 href={`/items/${typeNameToSlug(type.name)}`}
-                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className={cn(
+                  "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                  isLockedProType && "opacity-45 hover:opacity-70"
+                )}
               >
                 {Icon && (
                   <Icon className="h-4 w-4 shrink-0" style={{ color: type.color }} />
@@ -170,9 +175,16 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 text-left">
-              <p className="truncate text-sm font-medium leading-tight">
-                {data.user.name}
-              </p>
+              <div className="flex min-w-0 items-center gap-1.5">
+                <p className="truncate text-sm font-medium leading-tight">
+                  {data.user.name}
+                </p>
+                {data.user.isPro && (
+                  <Badge variant="outline" className="h-4 shrink-0 px-1 text-[10px] leading-none font-semibold tracking-wide text-emerald-500 border-emerald-500/50">
+                    PRO
+                  </Badge>
+                )}
+              </div>
               <p className="truncate text-xs text-muted-foreground">
                 {data.user.email}
               </p>
@@ -203,11 +215,16 @@ function CollapsedSidebar({ data }: { data: SidebarData }) {
       <div className="flex-1 overflow-y-auto py-4 space-y-1">
         {data.itemTypes.map((type) => {
           const Icon = iconMap[type.icon];
+          const isProType = type.isSystem && PRO_SYSTEM_TYPES.includes(type.name);
+          const isLockedProType = isProType && !data.user.isPro;
           return (
             <Link
               key={type.id}
               href={`/items/${typeNameToSlug(type.name)}`}
-              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                isLockedProType && "opacity-45 hover:opacity-70"
+              )}
               title={typeNameToSlug(type.name)}
               aria-label={pluralizeTypeName(type.name)}
             >

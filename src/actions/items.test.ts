@@ -15,6 +15,12 @@ vi.mock("@/lib/db/items", () => ({
   toggleItemFavorite: vi.fn(),
 }));
 
+vi.mock("@/lib/feature-gate", () => ({
+  canCreateItem: vi.fn(),
+  canUseProType: vi.fn((isPro: boolean) => isPro),
+  FREE_LIMITS: { items: 50, collections: 5 },
+}));
+
 import { auth } from "@/auth";
 import {
   createItem as dbCreateItem,
@@ -23,8 +29,9 @@ import {
   toggleItemPin as dbToggleItemPin,
   toggleItemFavorite as dbToggleItemFavorite,
 } from "@/lib/db/items";
+import { canCreateItem } from "@/lib/feature-gate";
 
-type TestSession = { user?: { id?: string } } | null;
+type TestSession = { user?: { id?: string; isPro?: boolean } } | null;
 
 const mockAuth = auth as unknown as MockedFunction<() => Promise<TestSession>>;
 const mockDbCreateItem = vi.mocked(dbCreateItem);
@@ -32,6 +39,7 @@ const mockDbUpdateItem = vi.mocked(dbUpdateItem);
 const mockDbDeleteItem = vi.mocked(dbDeleteItem);
 const mockDbToggleItemPin = vi.mocked(dbToggleItemPin);
 const mockDbToggleItemFavorite = vi.mocked(dbToggleItemFavorite);
+const mockCanCreateItem = vi.mocked(canCreateItem);
 
 const validCreatePayload = {
   typeId: "type-1",
@@ -57,6 +65,7 @@ const validPayload = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockCanCreateItem.mockResolvedValue(true);
 });
 
 // ── createItem — auth ────────────────────────────────────────
@@ -126,6 +135,8 @@ describe("createItem action — validation", () => {
   });
 
   it("returns error when file upload is missing for file type", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } } as never);
+
     const result = await createItem({
       ...validCreatePayload,
       typeName: "file",
@@ -139,6 +150,8 @@ describe("createItem action — validation", () => {
   });
 
   it("returns error when file upload is missing for image type", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } } as never);
+
     const result = await createItem({
       ...validCreatePayload,
       typeName: "image",
@@ -149,6 +162,46 @@ describe("createItem action — validation", () => {
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error).toBe("File upload is required");
     expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("returns upgrade error when a free user creates a pro-only type", async () => {
+    const result = await createItem({
+      ...validCreatePayload,
+      typeName: "file",
+      contentType: "file",
+      content: undefined,
+      fileKey: "user-1/report.pdf",
+      fileName: "report.pdf",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBe("Upgrade to Pro to save files and images.");
+    }
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("returns upgrade error when a free user is at the item limit", async () => {
+    mockCanCreateItem.mockResolvedValue(false);
+
+    const result = await createItem(validCreatePayload);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBe("Upgrade to Pro to save more than 50 items.");
+    }
+    expect(mockDbCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("allows a Pro user to create items past the free limit", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } } as never);
+    mockCanCreateItem.mockResolvedValue(true);
+    mockDbCreateItem.mockResolvedValue({ id: "item-51" } as never);
+
+    const result = await createItem(validCreatePayload);
+
+    expect(result.success).toBe(true);
+    expect(mockDbCreateItem).toHaveBeenCalled();
   });
 });
 
@@ -175,7 +228,10 @@ describe("createItem action — DB", () => {
 
   it("defaults collectionIds to empty array when omitted", async () => {
     mockDbCreateItem.mockResolvedValue({ id: "item-new" } as never);
-    const { collectionIds: _ids, ...payloadWithoutCollections } = validCreatePayload;
+    const payloadWithoutCollections: Partial<typeof validCreatePayload> = {
+      ...validCreatePayload,
+    };
+    delete payloadWithoutCollections.collectionIds;
     await createItem(payloadWithoutCollections);
     expect(mockDbCreateItem).toHaveBeenCalledWith(
       expect.objectContaining({ collectionIds: [] })
@@ -241,6 +297,7 @@ describe("createItem action — success", () => {
   });
 
   it("creates file item with fileUrl, fileName, fileSize and null content", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } } as never);
     mockDbCreateItem.mockResolvedValue({ id: "item-file" } as never);
 
     const result = await createItem({
@@ -403,7 +460,10 @@ describe("updateItem action — DB", () => {
 
   it("defaults collectionIds to empty array when omitted", async () => {
     mockDbUpdateItem.mockResolvedValue({ id: "item-1" } as never);
-    const { collectionIds: _ids, ...payloadWithoutCollections } = validPayload;
+    const payloadWithoutCollections: Partial<typeof validPayload> = {
+      ...validPayload,
+    };
+    delete payloadWithoutCollections.collectionIds;
     await updateItem("item-1", payloadWithoutCollections);
     expect(mockDbUpdateItem).toHaveBeenCalledWith(
       "item-1",

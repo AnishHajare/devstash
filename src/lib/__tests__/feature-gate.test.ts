@@ -54,13 +54,13 @@ describe("feature gate", () => {
   });
 
   it("allows free users below the collection limit", async () => {
-    collectionCount.mockResolvedValue(2);
+    collectionCount.mockResolvedValue(4);
 
     await expect(canCreateCollection("user-1", false)).resolves.toBe(true);
   });
 
   it("blocks free users at the collection limit", async () => {
-    collectionCount.mockResolvedValue(3);
+    collectionCount.mockResolvedValue(5);
 
     await expect(canCreateCollection("user-1", false)).resolves.toBe(false);
   });
@@ -86,6 +86,6 @@ describe("feature gate", () => {
   });
 
   it("sets the free collection limit", () => {
-    expect(FREE_LIMITS.collections).toBe(3);
+    expect(FREE_LIMITS.collections).toBe(5);
   });
 });
