@@ -57,6 +57,18 @@ import {
 } from "@/actions/items";
 import type { ItemDetail } from "@/lib/db/items";
 import type { CollectionOption } from "@/lib/db/collections";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  CODE_LANGUAGES,
+  PLAINTEXT_LANGUAGE_ID,
+  getLanguageLabel,
+} from "@/lib/code-languages";
 
 type ItemDrawerProps = {
   itemId: string | null;
@@ -536,6 +548,40 @@ function ItemEditBody({
         />
       </section>
 
+      {/* Language (above content for snippet/command) */}
+      {showLanguage && (
+        <section>
+          <SectionLabel>Language</SectionLabel>
+          <Select
+            value={editState.language || PLAINTEXT_LANGUAGE_ID}
+            onValueChange={(value) => {
+              const next = typeof value === "string" ? value : "";
+              setEditState((prev) =>
+                prev && {
+                  ...prev,
+                  language: next === PLAINTEXT_LANGUAGE_ID ? "" : next,
+                }
+              );
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue>
+                {(value) =>
+                  getLanguageLabel(typeof value === "string" ? value : null)
+                }
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {CODE_LANGUAGES.map((lang) => (
+                <SelectItem key={lang.id} value={lang.id}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </section>
+      )}
+
       {/* Content */}
       {showContent && (
         <section>
@@ -578,20 +624,6 @@ function ItemEditBody({
             value={editState.url}
             onChange={field("url")}
             placeholder="https://…"
-            accentColor={item.itemType.color}
-          />
-        </section>
-      )}
-
-      {/* Language */}
-      {showLanguage && (
-        <section>
-          <SectionLabel>Language</SectionLabel>
-          <EditInput
-            type="text"
-            value={editState.language}
-            onChange={field("language")}
-            placeholder="e.g. TypeScript"
             accentColor={item.itemType.color}
           />
         </section>
