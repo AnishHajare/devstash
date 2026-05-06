@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { ItemsGrid } from "@/components/items/items-grid";
 import { PaginationControls } from "@/components/pagination-controls";
@@ -6,6 +7,7 @@ import { getCollectionOptionsForUser } from "@/lib/db/collections";
 import { getPaginatedItemsByType, getItemTypeByName } from "@/lib/db/items";
 import { typeSlugToName } from "@/lib/item-type-slug";
 import { iconMap } from "@/lib/icon-map";
+import { PRO_SYSTEM_TYPES } from "@/lib/item-type-constants";
 import {
   getPaginationRange,
   getTotalPages,
@@ -31,6 +33,45 @@ export default async function ItemsTypePage({
 
   const itemType = await getItemTypeByName(typeName);
   if (!itemType) notFound();
+
+  // Block free users from pro-only type pages (File, Image)
+  const isProType = PRO_SYSTEM_TYPES.includes(typeName);
+  if (isProType && !session.user.isPro) {
+    const Icon = iconMap[itemType.icon];
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div
+          className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: `${itemType.color}20` }}
+        >
+          {Icon && (
+            <Icon className="h-8 w-8" style={{ color: itemType.color }} />
+          )}
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {typeName}s are a Pro feature
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          Upgrade to Pro to upload and manage {typeName.toLowerCase()}s, plus
+          get unlimited items, collections, and AI features.
+        </p>
+        <div className="mt-6 flex gap-3">
+          <Link
+            href="/settings"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
+          >
+            Upgrade to Pro
+          </Link>
+          <Link
+            href="/dashboard"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-background px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
+          >
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const [paginatedItems, collectionOptions] = await Promise.all([
     getPaginatedItemsByType(

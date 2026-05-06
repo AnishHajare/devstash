@@ -2,8 +2,8 @@ import Stripe from "stripe";
 
 let stripeClient: Stripe | null = null;
 
-function getRequiredEnv(name: string, fallbackName?: string): string {
-  const value = process.env[name] ?? (fallbackName ? process.env[fallbackName] : undefined);
+function getRequiredEnv(name: string): string {
+  const value = process.env[name];
 
   if (!value) {
     throw new Error(`${name} environment variable is not set`);
@@ -14,7 +14,7 @@ function getRequiredEnv(name: string, fallbackName?: string): string {
 
 export function getStripe(): Stripe {
   if (!stripeClient) {
-    stripeClient = new Stripe(getRequiredEnv("STRIPE_SECRET_KEY", "STRIPLE_SECRET_KEY"), {
+    stripeClient = new Stripe(getRequiredEnv("STRIPE_SECRET_KEY"), {
       typescript: true,
     });
   }
