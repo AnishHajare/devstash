@@ -35,6 +35,18 @@ import {
   LANGUAGE_TYPES,
   MARKDOWN_TYPES,
 } from "@/lib/item-type-constants";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  CODE_LANGUAGES,
+  PLAINTEXT_LANGUAGE_ID,
+  getLanguageLabel,
+} from "@/lib/code-languages";
 
 type ItemType = Pick<ItemTypeWithCount, "id" | "name" | "icon" | "color">;
 
@@ -320,6 +332,39 @@ export function NewItemDialog({
             </div>
           )}
 
+          {/* Language (above content for snippet/command) */}
+          {showLanguage && (
+            <div className="space-y-1.5">
+              <Label htmlFor="ni-language">Language</Label>
+              <Select
+                id="ni-language"
+                value={form.language || PLAINTEXT_LANGUAGE_ID}
+                onValueChange={(value) => {
+                  const next = typeof value === "string" ? value : "";
+                  setForm((prev) => ({
+                    ...prev,
+                    language: next === PLAINTEXT_LANGUAGE_ID ? "" : next,
+                  }));
+                }}
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue>
+                    {(value) =>
+                      getLanguageLabel(typeof value === "string" ? value : null)
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {CODE_LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.id} value={lang.id}>
+                      {lang.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Content */}
           {showContent && (
             <ContentField
@@ -346,20 +391,6 @@ export function NewItemDialog({
                 onChange={set("url")}
                 placeholder="https://..."
                 required
-                className="h-8 text-sm"
-              />
-            </div>
-          )}
-
-          {/* Language */}
-          {showLanguage && (
-            <div className="space-y-1.5">
-              <Label htmlFor="ni-language">Language</Label>
-              <Input
-                id="ni-language"
-                value={form.language}
-                onChange={set("language")}
-                placeholder="e.g. TypeScript, bash"
                 className="h-8 text-sm"
               />
             </div>
