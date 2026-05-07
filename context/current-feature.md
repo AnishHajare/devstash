@@ -1,33 +1,15 @@
-# Current Feature: AI Auto-Tagging
+# Current Feature
 
 ## Status
-Complete
+Not Started
 
 ## Goals
 
-- Establish OpenAI foundation for future AI features: lazy client singleton at `src/lib/openai.ts` with `AI_MODEL` constant (gpt-5-nano), `OPENAI_API_KEY` env guard.
-- Add `aiActionLimiter` (20 requests/hour per user) to `src/lib/rate-limit.ts`.
-- Create `generateAutoTags` server action in `src/actions/ai.ts` with the standard auth → Pro gate → rate limit → Zod validation → ownership check → OpenAI call → `{ success, data | error }` shape.
-- Use the **Responses API** (`client.responses.create`) — NOT Chat Completions (gpt-5-nano returns empty content with Chat Completions).
-- Use `text: { format: { type: 'json_object' } }` and parse `response.output_text` manually — `zodResponseFormat` blows the token budget on this model.
-- Handle both response shapes: `{"tags": ["a","b"]}` and `["a","b"]`. Normalize all returned tags to lowercase.
-- Truncate item content to 2000 chars before sending to the API.
-- Return 3–5 freeform tag suggestions (not constrained to existing DB tags).
-- Add a "Suggest Tags" button (Sparkles icon, ghost variant) near the tags input in both `NewItemDialog` and `ItemDrawer` edit mode.
-- Render suggestions as badges with per-tag accept (check) and reject (X) controls; accepted tags merge into the item's tag list.
-- Hide the Suggest Tags button entirely for free users (UI gating). Server action enforces Pro gate as defense in depth.
-- Toast-based error UX for Pro gating, rate limit, and AI service errors.
-- Unit tests for the server action (mock `@/lib/openai` and `@/lib/prisma`): unauthenticated, not Pro, rate-limited, item not found, both response shapes parsed correctly, lowercase normalization, AI service error mapping.
+<!-- Add feature goals here -->
 
 ## Notes
 
-- Spec: `context/features/ai-auto-tag-spec.md`. Full architectural context: `docs/ai-integration-plan.md`.
-- `OPENAI_API_KEY` is already in `.env`.
-- `canUseAI(isPro)` already exists in `src/lib/feature-gate.ts`; reuse it.
-- `isPro` is on `session.user` server-side; for client-side button visibility, pass `isPro` as a prop into `NewItemDialog` and `ItemDrawer` (or fetch via the existing session hook on those surfaces).
-- Pin the dated alias `gpt-5-nano-2025-08-07` for `AI_MODEL` so behavior is stable when OpenAI rotates the floating tag.
-- This is the first AI feature, so it establishes the foundation (`src/lib/openai.ts`, `aiActionLimiter`, `src/actions/ai.ts`). Subsequent AI features (summary, explain, optimize) reuse all three.
-- Defense in depth: even with the button hidden, the server action MUST re-check Pro and ownership.
+<!-- Add notes, constraints, and links here -->
 
 ## History
 
