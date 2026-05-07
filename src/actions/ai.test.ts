@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
-import { generateAutoTags } from "./ai";
+import { generateAutoTags, generateDescription } from "./ai";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -69,7 +69,7 @@ describe("generateAutoTags", () => {
     expect(mockCheckRateLimit).not.toHaveBeenCalled();
   });
 
-  it("returns an invalid input error for malformed payloads", async () => {
+  it("returns an invalid input error for malformed payloads without burning rate-limit quota", async () => {
     const result = await generateAutoTags({
       title: 123,
       content: "How to invalidate queries",
@@ -79,6 +79,7 @@ describe("generateAutoTags", () => {
       success: false,
       error: "Invalid input",
     });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
     expect(mockCreateResponse).not.toHaveBeenCalled();
   });
 
@@ -253,6 +254,227 @@ describe("generateAutoTags", () => {
     mockCreateResponse.mockRejectedValue(new Error("network"));
 
     const result = await generateAutoTags({
+      title: "React query cache",
+      content: "How to invalidate queries",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "AI service is unavailable. Try again.",
+    });
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+});
+
+describe("generateDescription", () => {
+  it("returns an auth error when unauthenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await generateDescription({
+      title: "React query cache",
+      content: "How to invalidate queries",
+    });
+
+    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("returns an invalid input error for malformed payloads without burning rate-limit quota", async () => {
+    const result = await generateDescription({
+      title: "Valid title",
+      tags: "react",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Invalid input",
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("returns an upgrade error for free users", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: false } } as never);
+    mockCanUseAI.mockReturnValue(false);
+
+    const result = await generateDescription({
+      title: "React query cache",
+      content: "How to invalidate queries",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Upgrade to Pro to use AI features.",
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("maps rate limiting to a friendly error", async () => {
+    mockCheckRateLimit.mockResolvedValue(
+      Response.json({ error: "Too many requests" }, { status: 429 })
+    );
+
+    const result = await generateDescription({
+      title: "React query cache",
+      content: "How to invalidate queries",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Too many AI requests. Please wait and try again.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("requires at least one meaningful field before calling OpenAI", async () => {
+    const result = await generateDescription({
+      typeName: "snippet",
+      title: "   ",
+      content: "",
+      url: "",
+      language: "",
+      fileName: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Add a title, content, URL, language, filename, or tags first.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("parses object-shaped responses correctly", async () => {
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"description":"A React Query snippet for invalidating cached queries after mutations."}',
+    });
+
+    const result = await generateDescription({
+      typeName: "snippet",
+      title: "Invalidate query cache",
+      content: "queryClient.invalidateQueries({ queryKey: ['todos'] })",
+      language: "typescript",
+      tags: ["react-query", "cache"],
+    });
+
+    expect(result).toEqual({
+      success: true,
+      data: {
+        description:
+          "A React Query snippet for invalidating cached queries after mutations.",
+      },
+    });
+  });
+
+  it("parses string-shaped responses correctly", async () => {
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '"A prompt template for structured code reviews with clear findings and follow-up questions."',
+    });
+
+    const result = await generateDescription({
+      typeName: "prompt",
+      title: "Code review prompt",
+      content: "Review this PR and focus on bugs, regressions, and tests.",
+    });
+
+    expect(result).toEqual({
+      success: true,
+      data: {
+        description:
+          "A prompt template for structured code reviews with clear findings and follow-up questions.",
+      },
+    });
+  });
+
+  it("truncates content to 2000 characters before calling OpenAI", async () => {
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"description":"A long-form note about performance profiling techniques."}',
+    });
+
+    await generateDescription({
+      typeName: "note",
+      title: "Profiling note",
+      content: "a".repeat(2500),
+    });
+
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("a".repeat(2000)),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.not.stringContaining("a".repeat(2001)),
+      })
+    );
+  });
+
+  it("includes live metadata fields in the prompt", async () => {
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"description":"A shell command reference for syncing a feature branch with the latest main branch."}',
+    });
+
+    await generateDescription({
+      typeName: "command",
+      title: "Sync branch",
+      content: "git fetch origin && git rebase origin/main",
+      url: "https://git-scm.com/docs/git-rebase",
+      language: "shell",
+      fileName: "branch-sync.sh",
+      tags: ["git", "workflow"],
+    });
+
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Type: command"),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Language: shell"),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("URL: https://git-scm.com/docs/git-rebase"),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Filename: branch-sync.sh"),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Tags: git, workflow"),
+      })
+    );
+  });
+
+  it("maps empty model output to a stable generation error", async () => {
+    mockCreateResponse.mockResolvedValue({
+      output_text: '{"description":""}',
+    });
+
+    const result = await generateDescription({
+      title: "React query cache",
+      content: "How to invalidate queries",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Could not generate a description. Try adding more detail.",
+    });
+  });
+
+  it("maps OpenAI failures to a stable service error", async () => {
+    mockCreateResponse.mockRejectedValue(new Error("network"));
+
+    const result = await generateDescription({
       title: "React query cache",
       content: "How to invalidate queries",
     });
