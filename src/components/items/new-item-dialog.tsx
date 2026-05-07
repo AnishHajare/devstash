@@ -10,6 +10,8 @@ const CodeEditor = dynamic(
 );
 import { MarkdownEditor } from "@/components/items/markdown-editor";
 import { FileUpload } from "@/components/items/file-upload";
+import { SuggestTagsButton } from "@/components/items/ai/suggest-tags-button";
+import { mergeTagString } from "@/components/items/ai/tag-utils";
 import { CollectionMultiSelect } from "@/components/items/collection-multi-select";
 import type { UploadedFile } from "@/components/items/file-upload";
 import { Plus } from "lucide-react";
@@ -103,6 +105,7 @@ function ContentField({
 type Props = {
   itemTypes: ItemType[];
   collections: CollectionOption[];
+  isPro: boolean;
 };
 const FILE_TYPES = ["file", "image"];
 
@@ -132,6 +135,7 @@ type NewItemDialogProps = Props & {
 export function NewItemDialog({
   itemTypes,
   collections,
+  isPro,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   hideTrigger,
@@ -406,6 +410,23 @@ export function NewItemDialog({
               placeholder="react, hooks, auth (comma-separated)"
               className="h-8 text-sm"
             />
+            {isPro && (
+              <SuggestTagsButton
+                title={form.title}
+                content={form.content}
+                typeName={selectedType.name}
+                existingTags={form.tags
+                  .split(",")
+                  .map((tag) => tag.trim())
+                  .filter(Boolean)}
+                onAccept={(tag) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    tags: mergeTagString(prev.tags, tag),
+                  }))
+                }
+              />
+            )}
           </div>
 
           <CollectionMultiSelect

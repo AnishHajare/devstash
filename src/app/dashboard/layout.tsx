@@ -48,6 +48,7 @@ export default async function DashboardLayout({
           collections={collections}
           collectionOptions={collectionOptions}
           searchableItems={searchableItems}
+          isPro={session.user.isPro === true}
         />
 
         {/* Body: sidebar + main */}

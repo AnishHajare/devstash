@@ -24,6 +24,7 @@ export default async function FavoritesPage() {
       initialItems={items}
       initialCollections={collections}
       collectionOptions={collectionOptions}
+      isPro={session.user.isPro === true}
     />
   );
 }

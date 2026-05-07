@@ -12,11 +12,13 @@ import { cn } from "@/lib/utils";
 export function ItemsGrid({
   items,
   collections,
+  isPro,
   isGallery = false,
   isFileList = false,
 }: {
   items: ItemWithType[];
   collections: CollectionOption[];
+  isPro: boolean;
   isGallery?: boolean;
   isFileList?: boolean;
 }) {
@@ -77,6 +79,7 @@ export function ItemsGrid({
         open={open}
         onOpenChange={setOpen}
         collections={collections}
+        isPro={isPro}
       />
     </>
   );

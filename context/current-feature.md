@@ -1,15 +1,33 @@
-# Current Feature
+# Current Feature: AI Auto-Tagging
 
 ## Status
-Not Started
+Complete
 
 ## Goals
 
-<!-- Add goals for the next feature here -->
+- Establish OpenAI foundation for future AI features: lazy client singleton at `src/lib/openai.ts` with `AI_MODEL` constant (gpt-5-nano), `OPENAI_API_KEY` env guard.
+- Add `aiActionLimiter` (20 requests/hour per user) to `src/lib/rate-limit.ts`.
+- Create `generateAutoTags` server action in `src/actions/ai.ts` with the standard auth → Pro gate → rate limit → Zod validation → ownership check → OpenAI call → `{ success, data | error }` shape.
+- Use the **Responses API** (`client.responses.create`) — NOT Chat Completions (gpt-5-nano returns empty content with Chat Completions).
+- Use `text: { format: { type: 'json_object' } }` and parse `response.output_text` manually — `zodResponseFormat` blows the token budget on this model.
+- Handle both response shapes: `{"tags": ["a","b"]}` and `["a","b"]`. Normalize all returned tags to lowercase.
+- Truncate item content to 2000 chars before sending to the API.
+- Return 3–5 freeform tag suggestions (not constrained to existing DB tags).
+- Add a "Suggest Tags" button (Sparkles icon, ghost variant) near the tags input in both `NewItemDialog` and `ItemDrawer` edit mode.
+- Render suggestions as badges with per-tag accept (check) and reject (X) controls; accepted tags merge into the item's tag list.
+- Hide the Suggest Tags button entirely for free users (UI gating). Server action enforces Pro gate as defense in depth.
+- Toast-based error UX for Pro gating, rate limit, and AI service errors.
+- Unit tests for the server action (mock `@/lib/openai` and `@/lib/prisma`): unauthenticated, not Pro, rate-limited, item not found, both response shapes parsed correctly, lowercase normalization, AI service error mapping.
 
 ## Notes
 
-<!-- Add notes for the next feature here -->
+- Spec: `context/features/ai-auto-tag-spec.md`. Full architectural context: `docs/ai-integration-plan.md`.
+- `OPENAI_API_KEY` is already in `.env`.
+- `canUseAI(isPro)` already exists in `src/lib/feature-gate.ts`; reuse it.
+- `isPro` is on `session.user` server-side; for client-side button visibility, pass `isPro` as a prop into `NewItemDialog` and `ItemDrawer` (or fetch via the existing session hook on those surfaces).
+- Pin the dated alias `gpt-5-nano-2025-08-07` for `AI_MODEL` so behavior is stable when OpenAI rotates the floating tag.
+- This is the first AI feature, so it establishes the foundation (`src/lib/openai.ts`, `aiActionLimiter`, `src/actions/ai.ts`). Subsequent AI features (summary, explain, optimize) reuse all three.
+- Defense in depth: even with the button hidden, the server action MUST re-check Pro and ownership.
 
 ## History
 
@@ -63,3 +81,4 @@ Not Started
 - 2026-04-30: Completed Stripe Integration Phase 1 — Core Infrastructure. Stripe client singleton with plan config (src/lib/stripe.ts), isPro synced from DB in JWT/session callbacks (src/auth.ts), checkout API route (POST /api/stripe/checkout) for monthly/annual subscriptions, portal API route (POST /api/stripe/portal) for billing management, feature-gate utility (src/lib/feature-gate.ts) with free-tier limits (50 items, 3 collections), profile DB query updated with isPro and stripeCustomerId. 28 new unit tests added (170 total).
 - 2026-04-30: Completed Stripe Integration Phase 2 — Webhooks, Feature Gating & Billing UI. Webhook handler (src/app/api/stripe/webhook/route.ts) with signature verification, PermanentWebhookError class for 400 vs 500 distinction, idempotent subscription sync for checkout.session.completed/customer.subscription.updated/customer.subscription.deleted. Feature gates in createItem (pro-type block + 50-item limit) and createCollection (5-collection limit) server actions. BillingSection on /settings with priced upgrade buttons ($8/mo, $72/yr) and portal management. Sidebar PRO badge next to user avatar, dimmed File/Image type links for free users. Upgrade toasts with /settings action link. Free collection limit updated to 5. Theme script migrated to next/script. 17 new unit tests added (187 total).
 - 2026-05-06: Completed Language Dropdown — replaced free-text language Input with a curated Select of ~30 Monaco-compatible languages (src/lib/code-languages.ts) and moved the picker above the content editor in both NewItemDialog and the ItemDrawer edit mode. Switching the dropdown retypes Monaco's grammar live so highlighting updates as you type. "Plain text" round-trips to empty string, preserving null storage in the DB. getLanguageLabel() falls back to the raw value for any pre-existing custom language strings. Build passes, 187 tests pass.
+- 2026-05-06: Completed AI Auto-Tagging — added the OpenAI foundation (`src/lib/openai.ts` with pinned `gpt-5-nano-2025-08-07`, `aiActionLimiter` in `src/lib/rate-limit.ts`) and shipped `generateAutoTags` in `src/actions/ai.ts` using the Responses API with manual JSON parsing, lowercase normalization, 2000-character truncation, owned-item checks for edit mode, and stable error mapping. Wired Pro-only "Suggest tags" UI into `NewItemDialog` and `ItemDrawer`, including accept/reject suggestion chips and tag merging across dashboard, items, collections, favorites, search, and settings surfaces. Added 9 unit tests for auth, Pro gating, rate limiting, ownership, both response shapes, normalization, truncation, and service errors. Targeted AI tests pass and production build passes.

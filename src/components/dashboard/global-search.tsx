@@ -28,9 +28,10 @@ import type { CollectionOption } from "@/lib/db/collections";
 type GlobalSearchProps = {
   data: GlobalSearchData;
   collections: CollectionOption[];
+  isPro: boolean;
 };
 
-export function GlobalSearch({ data, collections }: GlobalSearchProps) {
+export function GlobalSearch({ data, collections, isPro }: GlobalSearchProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -199,6 +200,7 @@ export function GlobalSearch({ data, collections }: GlobalSearchProps) {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         collections={collections}
+        isPro={isPro}
       />
     </>
   );

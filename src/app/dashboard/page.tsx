@@ -37,6 +37,7 @@ export default async function DashboardPage() {
       recentItems={recentItems}
       itemStats={itemStats}
       collectionOptions={collectionOptions}
+      isPro={session.user.isPro === true}
     />
   );
 }
