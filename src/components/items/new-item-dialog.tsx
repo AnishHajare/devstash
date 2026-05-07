@@ -10,6 +10,11 @@ const CodeEditor = dynamic(
 );
 import { MarkdownEditor } from "@/components/items/markdown-editor";
 import { FileUpload } from "@/components/items/file-upload";
+import {
+  DescribeButton,
+  DescribeSuggestion,
+  useDescribeSuggestion,
+} from "@/components/items/ai/generate-description-button";
 import { SuggestTagsButton } from "@/components/items/ai/suggest-tags-button";
 import { mergeTagString } from "@/components/items/ai/tag-utils";
 import { CollectionMultiSelect } from "@/components/items/collection-multi-select";
@@ -234,6 +239,24 @@ export function NewItemDialog({
   }
 
   const typeName = selectedType.name.toLowerCase();
+  const parsedTags = form.tags
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+
+  const describe = useDescribeSuggestion({
+    isPro,
+    typeName: selectedType.name,
+    title: form.title,
+    content: form.content,
+    url: form.url,
+    language: form.language,
+    fileName: uploadedFile?.fileName ?? "",
+    tags: parsedTags,
+    currentDescription: form.description,
+    onAccept: (description) => setForm((prev) => ({ ...prev, description })),
+  });
+
   const showContent = TEXT_TYPES.includes(typeName);
   const showLanguage = LANGUAGE_TYPES.includes(typeName);
   const showUrl = typeName === "link";
@@ -310,7 +333,10 @@ export function NewItemDialog({
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label htmlFor="ni-description">Description</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="ni-description">Description</Label>
+              <DescribeButton state={describe} />
+            </div>
             <Input
               id="ni-description"
               value={form.description}
@@ -318,6 +344,7 @@ export function NewItemDialog({
               placeholder="Optional description"
               className="h-8 text-sm"
             />
+            <DescribeSuggestion state={describe} />
           </div>
 
           {/* File upload */}
@@ -415,10 +442,7 @@ export function NewItemDialog({
                 title={form.title}
                 content={form.content}
                 typeName={selectedType.name}
-                existingTags={form.tags
-                  .split(",")
-                  .map((tag) => tag.trim())
-                  .filter(Boolean)}
+                existingTags={parsedTags}
                 onAccept={(tag) =>
                   setForm((prev) => ({
                     ...prev,

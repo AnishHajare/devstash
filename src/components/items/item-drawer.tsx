@@ -9,6 +9,11 @@ const CodeEditor = dynamic(
   { ssr: false }
 );
 import { CollectionMultiSelect } from "@/components/items/collection-multi-select";
+import {
+  DescribeButton,
+  DescribeSuggestion,
+  useDescribeSuggestion,
+} from "@/components/items/ai/generate-description-button";
 import { SuggestTagsButton } from "@/components/items/ai/suggest-tags-button";
 import { mergeTagString } from "@/components/items/ai/tag-utils";
 import { MarkdownEditor, MarkdownView } from "@/components/items/markdown-editor";
@@ -541,11 +546,31 @@ function ItemEditBody({
   collections: CollectionOption[];
   isPro: boolean;
 }) {
+  const describe = useDescribeSuggestion({
+    isPro,
+    typeName: item.itemType.name,
+    title: editState.title,
+    content: editState.content,
+    url: editState.url,
+    language: editState.language,
+    fileName: item.fileName ?? "",
+    tags: editState.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean),
+    currentDescription: editState.description,
+    onAccept: (description) =>
+      setEditState((prev) => (prev ? { ...prev, description } : prev)),
+  });
+
   return (
     <>
       {/* Description */}
       <section>
-        <SectionLabel>Description</SectionLabel>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <SectionLabel>Description</SectionLabel>
+          <DescribeButton state={describe} />
+        </div>
         <EditTextarea
           value={editState.description}
           onChange={field("description")}
@@ -553,6 +578,7 @@ function ItemEditBody({
           accentColor={item.itemType.color}
           className="px-3 py-2.5 text-sm leading-relaxed min-h-[72px]"
         />
+        <DescribeSuggestion state={describe} />
       </section>
 
       {/* Language (above content for snippet/command) */}
