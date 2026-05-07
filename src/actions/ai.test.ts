@@ -69,6 +69,19 @@ describe("generateAutoTags", () => {
     expect(mockCheckRateLimit).not.toHaveBeenCalled();
   });
 
+  it("returns an invalid input error for malformed payloads", async () => {
+    const result = await generateAutoTags({
+      title: 123,
+      content: "How to invalidate queries",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Invalid input",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
   it("returns an upgrade error for free users", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: false } } as never);
     mockCanUseAI.mockReturnValue(false);
@@ -102,6 +115,19 @@ describe("generateAutoTags", () => {
     expect(mockCreateResponse).not.toHaveBeenCalled();
   });
 
+  it("requires a title or content before calling OpenAI", async () => {
+    const result = await generateAutoTags({
+      title: "   ",
+      content: "",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Add a title or some content first.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
   it("returns item not found when an owned item cannot be loaded", async () => {
     mockFindFirst.mockResolvedValue(null);
 
@@ -121,6 +147,33 @@ describe("generateAutoTags", () => {
     });
     expect(result).toEqual({ success: false, error: "Item not found" });
     expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("uses the owned item type when itemId is provided without a type name", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Stored title",
+      content: "Stored content",
+      itemType: { name: "command" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text: '{"tags":["CLI","Debugging","Logs"]}',
+    });
+
+    const result = await generateAutoTags({
+      itemId: "item-123",
+      title: "Edited title",
+      content: "Edited content",
+    });
+
+    expect(result).toEqual({
+      success: true,
+      data: { tags: ["cli", "debugging", "logs"] },
+    });
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Type: command"),
+      })
+    );
   });
 
   it("parses object-shaped responses correctly", async () => {
