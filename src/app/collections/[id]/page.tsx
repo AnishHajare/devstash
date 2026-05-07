@@ -147,7 +147,11 @@ export default async function CollectionDetailPage({
           <div className="space-y-8">
             {standardItems.length > 0 && (
               <div>
-                <ItemsGrid items={standardItems} collections={collectionOptions} />
+                <ItemsGrid
+                  items={standardItems}
+                  collections={collectionOptions}
+                  isPro={session.user.isPro === true}
+                />
               </div>
             )}
 
@@ -162,6 +166,7 @@ export default async function CollectionDetailPage({
                 <ItemsGrid
                   items={imageItems}
                   collections={collectionOptions}
+                  isPro={session.user.isPro === true}
                   isGallery
                 />
               </div>

@@ -30,6 +30,7 @@ type DashboardMainProps = {
     favoriteItems: number;
   };
   collectionOptions: CollectionOption[];
+  isPro: boolean;
 };
 
 export function DashboardMain({
@@ -39,6 +40,7 @@ export function DashboardMain({
   recentItems,
   itemStats,
   collectionOptions,
+  isPro,
 }: DashboardMainProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -132,6 +134,7 @@ export function DashboardMain({
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         collections={collectionOptions}
+        isPro={isPro}
       />
     </div>
   );

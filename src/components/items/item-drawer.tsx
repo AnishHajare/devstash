@@ -9,6 +9,8 @@ const CodeEditor = dynamic(
   { ssr: false }
 );
 import { CollectionMultiSelect } from "@/components/items/collection-multi-select";
+import { SuggestTagsButton } from "@/components/items/ai/suggest-tags-button";
+import { mergeTagString } from "@/components/items/ai/tag-utils";
 import { MarkdownEditor, MarkdownView } from "@/components/items/markdown-editor";
 import { formatBytes } from "@/lib/format-bytes";
 import {
@@ -75,6 +77,7 @@ type ItemDrawerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   collections: CollectionOption[];
+  isPro: boolean;
 };
 
 type EditState = {
@@ -105,6 +108,7 @@ export function ItemDrawer({
   open,
   onOpenChange,
   collections,
+  isPro,
 }: ItemDrawerProps) {
   const router = useRouter();
   const [item, setItem] = useState<ItemDetail | null>(null);
@@ -491,6 +495,7 @@ export function ItemDrawer({
                   showMarkdown={showMarkdown}
                   showUrl={showUrl}
                   collections={collections}
+                  isPro={isPro}
                 />
               ) : (
                 <ItemViewBody
@@ -523,6 +528,7 @@ function ItemEditBody({
   showMarkdown,
   showUrl,
   collections,
+  isPro,
 }: {
   item: ItemDetail;
   editState: EditState;
@@ -533,6 +539,7 @@ function ItemEditBody({
   showMarkdown: boolean;
   showUrl: boolean;
   collections: CollectionOption[];
+  isPro: boolean;
 }) {
   return (
     <>
@@ -639,6 +646,30 @@ function ItemEditBody({
           placeholder="react, hooks, typescript"
           accentColor={item.itemType.color}
         />
+        {isPro && (
+          <div className="mt-2">
+            <SuggestTagsButton
+              itemId={item.id}
+              title={editState.title}
+              content={editState.content}
+              typeName={item.itemType.name}
+              existingTags={editState.tags
+                .split(",")
+                .map((tag) => tag.trim())
+                .filter(Boolean)}
+              onAccept={(tag) =>
+                setEditState((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        tags: mergeTagString(prev.tags, tag),
+                      }
+                    : prev
+                )
+              }
+            />
+          </div>
+        )}
         <p className="mt-1.5 text-xs text-muted-foreground">Comma-separated</p>
       </section>
 

@@ -131,6 +131,7 @@ export default async function ItemsTypePage({
           <ItemsGrid
             items={items}
             collections={collectionOptions}
+            isPro={session.user.isPro === true}
             isGallery={typeName.toLowerCase() === "image"}
             isFileList={typeName.toLowerCase() === "file"}
           />

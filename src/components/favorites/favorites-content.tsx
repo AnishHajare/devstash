@@ -19,6 +19,7 @@ type FavoritesContentProps = {
   initialItems: ItemWithType[];
   initialCollections: CollectionWithMeta[];
   collectionOptions: CollectionOption[];
+  isPro: boolean;
 };
 
 function formatDate(date: string | Date) {
@@ -43,6 +44,7 @@ export function FavoritesContent({
   initialItems,
   initialCollections,
   collectionOptions,
+  isPro,
 }: FavoritesContentProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
@@ -180,6 +182,7 @@ export function FavoritesContent({
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         collections={collectionOptions}
+        isPro={isPro}
       />
     </>
   );
