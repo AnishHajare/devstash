@@ -48,6 +48,7 @@ export default async function CollectionsLayout({
           collections={collections}
           collectionOptions={collectionOptions}
           searchableItems={searchableItems}
+          isPro={session.user.isPro === true}
         />
 
         <DashboardShell sidebarData={{ itemTypes, collections, user: sidebarUser }}>

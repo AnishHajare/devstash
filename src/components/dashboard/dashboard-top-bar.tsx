@@ -25,6 +25,7 @@ type DashboardTopBarProps = {
   collections: CollectionWithMeta[];
   collectionOptions: CollectionOption[];
   searchableItems: SearchableItem[];
+  isPro: boolean;
 };
 
 const iconBtnClass =
@@ -35,6 +36,7 @@ export function DashboardTopBar({
   collections,
   collectionOptions,
   searchableItems,
+  isPro,
 }: DashboardTopBarProps) {
   const [newItemOpen, setNewItemOpen] = useState(false);
   const [newCollectionOpen, setNewCollectionOpen] = useState(false);
@@ -59,6 +61,7 @@ export function DashboardTopBar({
             collections: toSearchableCollections(collections),
           }}
           collections={collectionOptions}
+          isPro={isPro}
         />
       </div>
 
@@ -72,7 +75,11 @@ export function DashboardTopBar({
           <Star className="h-3.5 w-3.5" />
         </Link>
         <NewCollectionDialog />
-        <NewItemDialog itemTypes={itemTypes} collections={collectionOptions} />
+        <NewItemDialog
+          itemTypes={itemTypes}
+          collections={collectionOptions}
+          isPro={isPro}
+        />
       </div>
 
       {/* Mobile actions — "+" dropdown visible below sm */}
@@ -108,6 +115,7 @@ export function DashboardTopBar({
         <NewItemDialog
           itemTypes={itemTypes}
           collections={collectionOptions}
+          isPro={isPro}
           open={newItemOpen}
           onOpenChange={setNewItemOpen}
           hideTrigger
