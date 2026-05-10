@@ -1,15 +1,27 @@
-# Current Feature
+# Current Feature: AI Prompt Optimizer
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Add feature goals here -->
+- Add Pro-only "Optimize" button to the prompt content header (mirroring the Explain button in snippet/command header)
+- Server action `optimizePrompt` in `src/actions/ai.ts` that takes the current prompt content and returns a refined version using `gpt-5-nano`
+- Show an inline preview of the optimized prompt with Accept / Dismiss controls
+- On Accept, replace the existing prompt content in the item drawer (view + edit modes)
+- Free users see Crown + upgrade toast (no server quota consumed), matching the Explain pattern
+- Wire AI rate limiting, auth, ownership check, item-type whitelist (prompt only), empty-content guard, and stable error mapping
+- Unit tests covering auth, Pro gating, rate limit, ownership, type rejection, empty content, response parsing, truncation, prompt metadata, and service errors
+- Lint, build, and all tests pass
 
 ## Notes
 
-<!-- Add notes, constraints, and links here -->
+- Prompt-type items use `MarkdownEditor` / `MarkdownView`, not Monaco's `CodeEditor`. The Explain button currently lives only in `CodeEditor` (used by snippet/command). For prompts we'll need to add an analogous control to the markdown header — likely by extending `MarkdownView` / `MarkdownEditor` with the same `extraControls` / `headerTabs` slots used by `CodeEditor`, or by following the pattern from `ExplainCodeButton`.
+- Reference implementation to mirror: `src/components/items/ai/explain-code-button.tsx` and `explainCode` in `src/actions/ai.ts` (added 2026-05-10).
+- Follow existing AI action conventions: pinned `gpt-5-nano-2025-08-07`, `aiActionLimiter`, manual JSON parsing for both object and string shapes, 2000-char truncation, owned-item check, `{ success, data, error }` return shape.
+- Optimizer system prompt should preserve user intent — instruct the model to keep the original goal, improve clarity / specificity / structure, and return only the refined prompt text (no commentary).
+- View mode: render optimized preview in the same Markdown chrome (Optimize tab parallel to the Explain tab pattern). Accept should replace the stored content (either via the existing updateItem flow or a focused path — decide during implementation).
+- Edit mode: Optimize button can populate the markdown editor directly. Match Explain's UX choices where possible for consistency.
 
 ## History
 

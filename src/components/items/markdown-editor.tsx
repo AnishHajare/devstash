@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState, useMemo } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -15,6 +16,7 @@ type MarkdownEditorProps = {
   onChange?: (value: string) => void;
   accentColor?: string;
   placeholder?: string;
+  extraControls?: ReactNode;
 };
 
 export function MarkdownEditor({
@@ -22,6 +24,7 @@ export function MarkdownEditor({
   onChange,
   accentColor,
   placeholder = "Write markdown...",
+  extraControls,
 }: MarkdownEditorProps) {
   const [tab, setTab] = useState<"write" | "preview">("write");
   const [copied, setCopied] = useState(false);
@@ -93,6 +96,8 @@ export function MarkdownEditor({
 
         <span className="flex-1" />
 
+        {extraControls}
+
         {/* Copy button */}
         <button
           type="button"
@@ -150,17 +155,108 @@ export function MarkdownView({
   content,
   className,
   backgroundColor = "#1e1e1e",
+  copyValue,
+  headerTabs,
+  extraControls,
+  body,
 }: {
   content: string;
   className?: string;
   backgroundColor?: string;
+  copyValue?: string;
+  headerTabs?: {
+    value: string;
+    onChange: (value: string) => void;
+    options: Array<{
+      value: string;
+      label: string;
+    }>;
+  };
+  extraControls?: ReactNode;
+  body?: ReactNode;
 }) {
+  const [copied, setCopied] = useState(false);
   const html = useMemo(() => DOMPurify.sanitize(marked.parse(content) as string), [content]);
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(copyValue ?? content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (!headerTabs && !extraControls && !body && !copyValue) {
+    return (
+      <div
+        className={cn("markdown-preview rounded-md border border-border", className)}
+        style={{ backgroundColor }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  }
+
   return (
     <div
-      className={cn("markdown-preview rounded-md border border-border", className)}
+      className={cn("overflow-hidden rounded-md border border-border", className)}
       style={{ backgroundColor }}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    >
+      <div
+        className="flex items-center h-8 px-3 border-b"
+        style={{ backgroundColor: "#252526", borderColor: "#3e3e42" }}
+      >
+        <div className="flex items-center gap-1.5 shrink-0">
+          {DOT_COLORS.map((color) => (
+            <span
+              key={color}
+              className="rounded-full shrink-0"
+              style={{ width: 10, height: 10, backgroundColor: color }}
+            />
+          ))}
+        </div>
+
+        {headerTabs && headerTabs.options.length > 0 && (
+          <div className="ml-3 flex items-center gap-0.5">
+            {headerTabs.options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => headerTabs.onChange(option.value)}
+                className={`rounded px-2.5 py-0.5 text-xs transition-colors ${
+                  headerTabs.value === option.value
+                    ? "bg-white/10 text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <span className="flex-1" />
+
+        {extraControls}
+
+        <button
+          type="button"
+          onClick={handleCopy}
+          aria-label="Copy"
+          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground hover:bg-white/10 shrink-0"
+        >
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-emerald-400" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
+          <span>{copied ? "Copied" : "Copy"}</span>
+        </button>
+      </div>
+
+      {body ?? (
+        <div
+          className="markdown-preview"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      )}
+    </div>
   );
 }

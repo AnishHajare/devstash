@@ -18,6 +18,11 @@ import {
   ExplainCodeButton,
   useCodeExplanation,
 } from "@/components/items/ai/explain-code-button";
+import {
+  OptimizePromptButton,
+  OptimizePromptSuggestion,
+  usePromptOptimizer,
+} from "@/components/items/ai/optimize-prompt-button";
 import { SuggestTagsButton } from "@/components/items/ai/suggest-tags-button";
 import { mergeTagString } from "@/components/items/ai/tag-utils";
 import { MarkdownEditor, MarkdownView } from "@/components/items/markdown-editor";
@@ -516,6 +521,20 @@ export function ItemDrawer({
                   showFile={showFile}
                   downloadUrl={downloadUrl}
                   typeName={typeName}
+                  onAcceptOptimizedPrompt={(nextContent) => updateItem(item.id, {
+                    title: item.title,
+                    description: item.description ?? null,
+                    content: nextContent,
+                    url: item.url ?? null,
+                    language: item.language ?? null,
+                    tags: item.tags.map((tag) => tag.name),
+                    collectionIds: item.collections.map((collection) => collection.id),
+                  })}
+                  onItemUpdated={(nextItem) => {
+                    setItem(nextItem);
+                    toast.success("Optimized prompt applied");
+                    router.refresh();
+                  }}
                 />
               )}
             </div>
@@ -568,6 +587,23 @@ function ItemEditBody({
     onAccept: (description) =>
       setEditState((prev) => (prev ? { ...prev, description } : prev)),
   });
+  const optimize = usePromptOptimizer({
+    itemId: item.id,
+    isPro,
+    currentContent: editState.content,
+    onAccept: (optimizedPrompt) => {
+      setEditState((prev) =>
+        prev
+          ? {
+              ...prev,
+              content: optimizedPrompt,
+            }
+          : prev
+      );
+      toast.success("Optimized prompt applied");
+    },
+  });
+  const canOptimizePrompt = showMarkdown && item.itemType.name.toLowerCase() === "prompt";
 
   return (
     <>
@@ -635,13 +671,26 @@ function ItemEditBody({
               accentColor={item.itemType.color}
             />
           ) : showMarkdown ? (
-            <MarkdownEditor
-              value={editState.content}
-              onChange={(val) =>
-                setEditState((prev) => prev && { ...prev, content: val })
-              }
-              accentColor={item.itemType.color}
-            />
+            <>
+              <MarkdownEditor
+                value={editState.content}
+                onChange={(val) =>
+                  setEditState((prev) => prev && { ...prev, content: val })
+                }
+                accentColor={item.itemType.color}
+                extraControls={
+                  canOptimizePrompt ? (
+                    <OptimizePromptButton state={optimize} />
+                  ) : undefined
+                }
+              />
+              {canOptimizePrompt && (
+                <OptimizePromptSuggestion
+                  state={optimize}
+                  className="mt-3 rounded-md border border-dashed border-border/80 bg-muted/20 p-2"
+                />
+              )}
+            </>
           ) : (
             <EditTextarea
               value={editState.content}
@@ -734,6 +783,8 @@ function ItemViewBody({
   showFile,
   downloadUrl,
   typeName,
+  onAcceptOptimizedPrompt,
+  onItemUpdated,
 }: {
   item: ItemDetail;
   isPro: boolean;
@@ -742,15 +793,37 @@ function ItemViewBody({
   showFile: boolean;
   downloadUrl: string | null;
   typeName: string;
+  onAcceptOptimizedPrompt: (nextContent: string) => Promise<
+    { success: true; data: ItemDetail } | { success: false; error: string }
+  >;
+  onItemUpdated: (nextItem: ItemDetail) => void;
 }) {
   const explain = useCodeExplanation({
     itemId: item.id,
     isPro,
   });
+  const optimize = usePromptOptimizer({
+    itemId: item.id,
+    isPro,
+    currentContent: item.content ?? "",
+    onAccept: async (optimizedPrompt) => {
+      const result = await onAcceptOptimizedPrompt(optimizedPrompt);
+      if (!result.success) {
+        toast.error(result.error);
+        return false;
+      }
+
+      onItemUpdated(result.data);
+      return true;
+    },
+  });
   const canExplainCode =
     showLanguage && (typeName === "snippet" || typeName === "command");
+  const canOptimizePrompt = showMarkdown && typeName === "prompt";
   const hasExplanation = Boolean(explain.explanation);
   const currentView = hasExplanation ? explain.view : "code";
+  const hasOptimizedPrompt = Boolean(optimize.optimizedPrompt);
+  const currentPromptView = hasOptimizedPrompt ? optimize.view : "prompt";
 
   return (
     <>
@@ -807,7 +880,42 @@ function ItemViewBody({
               }
             />
           ) : showMarkdown ? (
-            <MarkdownView content={item.content} />
+            <MarkdownView
+              content={item.content}
+              copyValue={
+                currentPromptView === "optimize"
+                  ? optimize.optimizedPrompt ?? item.content
+                  : item.content
+              }
+              headerTabs={
+                hasOptimizedPrompt
+                  ? {
+                      value: currentPromptView,
+                      onChange: (next) =>
+                        optimize.setView(next === "optimize" ? "optimize" : "prompt"),
+                      options: [
+                        { value: "prompt", label: "Prompt" },
+                        { value: "optimize", label: "Optimize" },
+                      ],
+                    }
+                  : undefined
+              }
+              extraControls={
+                canOptimizePrompt && !hasOptimizedPrompt ? (
+                  <OptimizePromptButton state={optimize} />
+                ) : undefined
+              }
+              body={
+                currentPromptView === "optimize" && optimize.optimizedPrompt ? (
+                  <OptimizePromptSuggestion
+                    state={optimize}
+                    className="px-3 py-2"
+                    markdownClassName="rounded-none border-0"
+                    markdownBackgroundColor="transparent"
+                  />
+                ) : undefined
+              }
+            />
           ) : (
             <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono leading-relaxed whitespace-pre overflow-x-auto max-h-[260px] overflow-y-auto">
               {item.content}
