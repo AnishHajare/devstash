@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
-import { explainCode, generateAutoTags, generateDescription } from "./ai";
+import {
+  explainCode,
+  generateAutoTags,
+  generateDescription,
+  optimizePrompt,
+} from "./ai";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -719,6 +724,267 @@ describe("explainCode", () => {
     mockCreateResponse.mockRejectedValue(new Error("network"));
 
     const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "AI service is unavailable. Try again.",
+    });
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+});
+
+describe("optimizePrompt", () => {
+  it("returns an auth error when unauthenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Draft prompt",
+    });
+
+    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("returns an invalid input error for malformed payloads without burning rate-limit quota", async () => {
+    const result = await optimizePrompt({ itemId: "", content: "Draft prompt" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Invalid input",
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("returns an upgrade error for free users", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: false } } as never);
+    mockCanUseAI.mockReturnValue(false);
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Draft prompt",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Upgrade to Pro to use AI features.",
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("maps rate limiting to a friendly error", async () => {
+    mockCheckRateLimit.mockResolvedValue(
+      Response.json({ error: "Too many requests" }, { status: 429 })
+    );
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Draft prompt",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Too many AI requests. Please wait and try again.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("returns item not found when an owned item cannot be loaded", async () => {
+    mockFindFirst.mockResolvedValue(null);
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Draft prompt",
+    });
+
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { id: "item-123", userId: "user-1" },
+      select: {
+        title: true,
+        itemType: { select: { name: true } },
+      },
+    });
+    expect(result).toEqual({ success: false, error: "Item not found" });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsupported item types", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Snippet helper",
+      itemType: { name: "snippet" },
+    } as never);
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Draft prompt",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Optimization is only available for prompts.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("requires content before calling OpenAI", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Prompt helper",
+      itemType: { name: "prompt" },
+    } as never);
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "   ",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Add some prompt content first.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("parses object-shaped responses correctly", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Code review prompt",
+      itemType: { name: "prompt" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"optimizedPrompt":"Review the following pull request diff. Summarize the changes, identify risks, and list concrete follow-up questions."}',
+    });
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Review this PR",
+    });
+
+    expect(result).toEqual({
+      success: true,
+      data: {
+        optimizedPrompt:
+          "Review the following pull request diff. Summarize the changes, identify risks, and list concrete follow-up questions.",
+      },
+    });
+  });
+
+  it("parses string-shaped responses correctly", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Bug triage prompt",
+      itemType: { name: "prompt" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '"Triage the following bug report. Extract the root problem, likely impact, missing details, and the next debugging steps."',
+    });
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Help me triage this bug",
+    });
+
+    expect(result).toEqual({
+      success: true,
+      data: {
+        optimizedPrompt:
+          "Triage the following bug report. Extract the root problem, likely impact, missing details, and the next debugging steps.",
+      },
+    });
+  });
+
+  it("truncates content to 2000 characters before calling OpenAI", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Long prompt",
+      itemType: { name: "prompt" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"optimizedPrompt":"A tighter, clearer version of the original prompt."}',
+    });
+
+    await optimizePrompt({
+      itemId: "item-123",
+      content: "a".repeat(2500),
+    });
+
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("a".repeat(2000)),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.not.stringContaining("a".repeat(2001)),
+      })
+    );
+  });
+
+  it("includes item metadata and live content in the prompt", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Code review prompt",
+      itemType: { name: "prompt" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"optimizedPrompt":"Review the provided code changes and call out correctness, maintainability, and testing gaps."}',
+    });
+
+    await optimizePrompt({
+      itemId: "item-123",
+      content: "Look at this patch and tell me if it is okay",
+    });
+
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Item type: prompt"),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Title: Code review prompt"),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining(
+          "Look at this patch and tell me if it is okay"
+        ),
+      })
+    );
+  });
+
+  it("maps empty model output to a stable generation error", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Code review prompt",
+      itemType: { name: "prompt" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text: '{"optimizedPrompt":""}',
+    });
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Review this PR",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Could not optimize the prompt. Try again.",
+    });
+  });
+
+  it("maps OpenAI failures to a stable service error", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Code review prompt",
+      itemType: { name: "prompt" },
+    } as never);
+    mockCreateResponse.mockRejectedValue(new Error("network"));
+
+    const result = await optimizePrompt({
+      itemId: "item-123",
+      content: "Review this PR",
+    });
 
     expect(result).toEqual({
       success: false,
