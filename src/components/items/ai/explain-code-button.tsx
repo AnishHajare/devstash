@@ -5,7 +5,6 @@ import { Crown, Loader2, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { explainCode } from "@/actions/ai";
-import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -83,25 +82,23 @@ export function ExplainCodeButton({
   state: Pick<CodeExplanationState, "pending" | "isPro" | "runExplain">;
 }) {
   const button = (
-    <Button
+    <button
       type="button"
-      size="sm"
-      variant="ghost"
       onClick={state.runExplain}
       title={state.isPro ? "Explain code" : "AI features require Pro subscription"}
       aria-disabled={!state.isPro}
-      className="h-7 gap-1.5 rounded-md px-2 text-[11px] font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground aria-disabled:opacity-60"
+      className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground hover:bg-white/10 shrink-0 aria-disabled:opacity-60 aria-disabled:hover:bg-transparent aria-disabled:hover:text-muted-foreground"
     >
       {state.pending ? (
-        <Loader2 className="h-3 w-3 animate-spin" />
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
       ) : (
         <>
-          {!state.isPro && <Crown className="h-3 w-3" />}
-          <Sparkles className="h-3 w-3" />
+          {!state.isPro && <Crown className="h-3.5 w-3.5" />}
+          <Sparkles className="h-3.5 w-3.5" />
         </>
       )}
-      {state.pending ? "Explaining…" : "Explain"}
-    </Button>
+      <span>{state.pending ? "Explaining…" : "Explain"}</span>
+    </button>
   );
 
   if (state.isPro) {

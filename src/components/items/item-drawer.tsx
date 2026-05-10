@@ -771,7 +771,9 @@ function ItemViewBody({
           {showLanguage ? (
             <CodeEditor
               value={item.content}
-              language={item.language ?? undefined}
+              language={
+                currentView === "explain" ? undefined : item.language ?? undefined
+              }
               readOnly
               copyValue={
                 currentView === "explain" ? explain.explanation ?? item.content : item.content
@@ -790,7 +792,9 @@ function ItemViewBody({
                   : undefined
               }
               extraControls={
-                canExplainCode ? <ExplainCodeButton state={explain} /> : undefined
+                canExplainCode && !hasExplanation ? (
+                  <ExplainCodeButton state={explain} />
+                ) : undefined
               }
               body={
                 currentView === "explain" && explain.explanation ? (
