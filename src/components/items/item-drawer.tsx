@@ -14,6 +14,10 @@ import {
   DescribeSuggestion,
   useDescribeSuggestion,
 } from "@/components/items/ai/generate-description-button";
+import {
+  ExplainCodeButton,
+  useCodeExplanation,
+} from "@/components/items/ai/explain-code-button";
 import { SuggestTagsButton } from "@/components/items/ai/suggest-tags-button";
 import { mergeTagString } from "@/components/items/ai/tag-utils";
 import { MarkdownEditor, MarkdownView } from "@/components/items/markdown-editor";
@@ -504,7 +508,9 @@ export function ItemDrawer({
                 />
               ) : (
                 <ItemViewBody
+                  key={item.id}
                   item={item}
+                  isPro={isPro}
                   showLanguage={showLanguage}
                   showMarkdown={showMarkdown}
                   showFile={showFile}
@@ -722,6 +728,7 @@ function ItemEditBody({
 
 function ItemViewBody({
   item,
+  isPro,
   showLanguage,
   showMarkdown,
   showFile,
@@ -729,12 +736,22 @@ function ItemViewBody({
   typeName,
 }: {
   item: ItemDetail;
+  isPro: boolean;
   showLanguage: boolean;
   showMarkdown: boolean;
   showFile: boolean;
   downloadUrl: string | null;
   typeName: string;
 }) {
+  const explain = useCodeExplanation({
+    itemId: item.id,
+    isPro,
+  });
+  const canExplainCode =
+    showLanguage && (typeName === "snippet" || typeName === "command");
+  const hasExplanation = Boolean(explain.explanation);
+  const currentView = hasExplanation ? explain.view : "code";
+
   return (
     <>
       {/* Description */}
@@ -756,6 +773,34 @@ function ItemViewBody({
               value={item.content}
               language={item.language ?? undefined}
               readOnly
+              copyValue={
+                currentView === "explain" ? explain.explanation ?? item.content : item.content
+              }
+              headerTabs={
+                hasExplanation
+                  ? {
+                      value: currentView,
+                      onChange: (next) =>
+                        explain.setView(next === "explain" ? "explain" : "code"),
+                      options: [
+                        { value: "code", label: "Code" },
+                        { value: "explain", label: "Explain" },
+                      ],
+                    }
+                  : undefined
+              }
+              extraControls={
+                canExplainCode ? <ExplainCodeButton state={explain} /> : undefined
+              }
+              body={
+                currentView === "explain" && explain.explanation ? (
+                  <MarkdownView
+                    content={explain.explanation}
+                    className="h-full overflow-y-auto rounded-none border-0"
+                    backgroundColor="transparent"
+                  />
+                ) : undefined
+              }
             />
           ) : showMarkdown ? (
             <MarkdownView content={item.content} />

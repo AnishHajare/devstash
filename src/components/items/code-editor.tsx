@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import Editor, { type BeforeMount, type OnMount } from "@monaco-editor/react";
 import { Copy, Check } from "lucide-react";
@@ -15,6 +16,17 @@ type CodeEditorProps = {
   language?: string;
   readOnly?: boolean;
   accentColor?: string;
+  copyValue?: string;
+  headerTabs?: {
+    value: string;
+    onChange: (value: string) => void;
+    options: Array<{
+      value: string;
+      label: string;
+    }>;
+  };
+  extraControls?: ReactNode;
+  body?: ReactNode;
 };
 
 const DOT_COLORS = ["#ff5f57", "#febc2e", "#28c840"] as const;
@@ -27,6 +39,10 @@ export function CodeEditor({
   language,
   readOnly = false,
   accentColor,
+  copyValue,
+  headerTabs,
+  extraControls,
+  body,
 }: CodeEditorProps) {
   const { preferences } = useEditorPreferences();
   const themeChrome = EDITOR_THEME_CHROME[preferences.theme];
@@ -35,7 +51,7 @@ export function CodeEditor({
   const containerRef = useRef<HTMLDivElement>(null);
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(value);
+    await navigator.clipboard.writeText(copyValue ?? value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -131,6 +147,25 @@ export function CodeEditor({
           ))}
         </div>
 
+        {headerTabs && headerTabs.options.length > 0 && (
+          <div className="ml-3 flex items-center gap-0.5">
+            {headerTabs.options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => headerTabs.onChange(option.value)}
+                className={`rounded px-2.5 py-0.5 text-xs transition-colors ${
+                  headerTabs.value === option.value
+                    ? "bg-white/10 text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         <span className="flex-1" />
 
         {/* Language label */}
@@ -140,8 +175,11 @@ export function CodeEditor({
           </span>
         )}
 
+        {extraControls}
+
         {/* Copy button */}
         <button
+          type="button"
           onClick={handleCopy}
           aria-label="Copy"
           className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground hover:bg-white/10 shrink-0"
@@ -157,16 +195,18 @@ export function CodeEditor({
 
       {/* Editor area — explicit pixel height driven by content, clamped to MAX_HEIGHT */}
       <div style={{ height: editorHeight }}>
-        <Editor
-          value={value}
-          language={language || "plaintext"}
-          theme={preferences.theme}
-          height={editorHeight}
-          beforeMount={handleBeforeMount}
-          onMount={handleMount}
-          onChange={(val) => onChange?.(val ?? "")}
-          options={buildMonacoEditorOptions(preferences, readOnly)}
-        />
+        {body ?? (
+          <Editor
+            value={value}
+            language={language || "plaintext"}
+            theme={preferences.theme}
+            height={editorHeight}
+            beforeMount={handleBeforeMount}
+            onMount={handleMount}
+            onChange={(val) => onChange?.(val ?? "")}
+            options={buildMonacoEditorOptions(preferences, readOnly)}
+          />
+        )}
       </div>
     </div>
   );

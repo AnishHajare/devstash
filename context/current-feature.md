@@ -1,29 +1,36 @@
-# Current Feature: AI Generate Description
+# Current Feature: AI Explain Code
 
 ## Status
-Complete
+In Progress
 
 ## Goals
 
-- Add an icon button next to the description input that generates a concise (1-2 sentence) description using AI based on the current form state.
-- Work for all item types (snippet, prompt, command, note, link, file, image) — use whatever fields are populated (title, content, URL, language, filename, tags).
-- No need to save the item first — read the live form values client-side and send to a new server action.
-- Wire into both `NewItemDialog` (create flow) and `ItemDrawer` edit mode (update flow).
-- Pro-only, gated and rate-limited like the existing AI Auto-Tagging feature.
+- Add an `explainCode` server action with auth, Pro gating, Zod validation, and AI rate limiting
+- Add an "Explain" button (Sparkles icon) to the code editor window controls header (next to Copy)
+- Restrict the Explain feature to snippet and command types in the item drawer read view (not in create/edit forms)
+- After generating, show Code/Explain tabs in the editor header to toggle between views
+- Render the explanation as markdown in the same container space as the code editor
+- Keep explanations concise (~200-300 words) covering what the code does and key concepts
+- Show a Loader2 spinner during generation
+- Pro-gate in UI: show Crown icon + tooltip ("AI features require Pro subscription") for free users
+- Surface errors via toast (Pro gating, rate limit, AI service errors)
+- Follow existing AI action patterns (manual response parsing, stable error mapping)
+- Add unit tests for the new server action
 
 ## Notes
 
-- Reuse the existing OpenAI foundation: `src/lib/openai.ts` (pinned `gpt-5-nano-2025-08-07`) and `aiActionLimiter` in `src/lib/rate-limit.ts`.
-- Mirror the pattern from `generateAutoTags` in `src/actions/ai.ts`: auth check, Pro gate, rate limit, input validation, Responses API call with manual JSON parsing, stable error mapping, 2000-character content truncation.
-- New server action: `generateDescription` accepting a context payload (type name, title, content, url, language, fileName, tags) — no DB write, just returns the generated text.
-- UI: small wand/sparkles icon button positioned next to or inside the description Input/Textarea. Loading spinner while generating; on success, replace the description value (or offer accept/reject like tag suggestions — TBD during implementation, prefer a simple replace-with-confirm or inline preview).
-- Constraint: prompt must instruct the model to return 1-2 sentences, plain text (no markdown, no quotes), focused on what the item is/does.
-- Free users see the button disabled with the same upgrade-toast pattern used by Suggest Tags.
-- Add unit tests for the new server action (auth, Pro gating, rate limit, validation, both response shapes, truncation, service errors) following the auto-tagging test layout.
+- Explanations are not saved to the database — regenerated on each click
+- Only available in the item drawer read view, not in create/edit forms
+- `isPro` needs to be passed as a prop to the item drawer / code editor
+- Reuse `MarkdownView` for rendering the explanation
+- Reuse `aiActionLimiter` from `src/lib/rate-limit.ts`
+- Reuse OpenAI client / model config from `src/lib/openai.ts`
+- See `docs/ai-integration-plan.md` for full architectural context
+- Spec source: `context/features/ai-explain-spec.md`
+- Working branch: `ai-explain-code`
 
 ## History
 
-- 2026-05-07: Completed AI Generate Description — added `generateDescription` to `src/actions/ai.ts` with auth, Pro gating, AI rate limiting, validation, metadata-aware prompt shaping, truncation, manual response parsing, and stable error mapping. Wired a reusable inline Describe control into `NewItemDialog` and `ItemDrawer` with accept/dismiss preview UX, and adjusted dialog overflow handling so the preview stays usable in the modal. Added focused unit coverage for auth, validation, Pro gating, rate limiting, response parsing, prompt metadata, truncation, and service failures.
 - 2026-03-24: Initial Next.js 16 + Tailwind CSS v4 setup. Cleaned boilerplate, stripped default styles and SVGs.
 - 2026-03-25: Completed Dashboard UI Phase 1 — ShadCN setup, /dashboard route, dark mode by default (Inter + JetBrains Mono fonts), top bar with search and new item button, sidebar and main area placeholders.
 - 2026-03-25: Completed Dashboard UI Phase 2 — Collapsible sidebar with colorful item type icons and counts, links to /items/TYPE, collapsible favorite and all collections sections, user avatar area, drawer toggle, mobile sheet drawer.
@@ -74,3 +81,4 @@ Complete
 - 2026-04-30: Completed Stripe Integration Phase 2 — Webhooks, Feature Gating & Billing UI. Webhook handler (src/app/api/stripe/webhook/route.ts) with signature verification, PermanentWebhookError class for 400 vs 500 distinction, idempotent subscription sync for checkout.session.completed/customer.subscription.updated/customer.subscription.deleted. Feature gates in createItem (pro-type block + 50-item limit) and createCollection (5-collection limit) server actions. BillingSection on /settings with priced upgrade buttons ($8/mo, $72/yr) and portal management. Sidebar PRO badge next to user avatar, dimmed File/Image type links for free users. Upgrade toasts with /settings action link. Free collection limit updated to 5. Theme script migrated to next/script. 17 new unit tests added (187 total).
 - 2026-05-06: Completed Language Dropdown — replaced free-text language Input with a curated Select of ~30 Monaco-compatible languages (src/lib/code-languages.ts) and moved the picker above the content editor in both NewItemDialog and the ItemDrawer edit mode. Switching the dropdown retypes Monaco's grammar live so highlighting updates as you type. "Plain text" round-trips to empty string, preserving null storage in the DB. getLanguageLabel() falls back to the raw value for any pre-existing custom language strings. Build passes, 187 tests pass.
 - 2026-05-06: Completed AI Auto-Tagging — added the OpenAI foundation (`src/lib/openai.ts` with pinned `gpt-5-nano-2025-08-07`, `aiActionLimiter` in `src/lib/rate-limit.ts`) and shipped `generateAutoTags` in `src/actions/ai.ts` using the Responses API with manual JSON parsing, lowercase normalization, 2000-character truncation, owned-item checks for edit mode, and stable error mapping. Wired Pro-only "Suggest tags" UI into `NewItemDialog` and `ItemDrawer`, including accept/reject suggestion chips and tag merging across dashboard, items, collections, favorites, search, and settings surfaces. Added 9 unit tests for auth, Pro gating, rate limiting, ownership, both response shapes, normalization, truncation, and service errors. Targeted AI tests pass and production build passes.
+- 2026-05-07: Completed AI Generate Description — added `generateDescription` to `src/actions/ai.ts` with auth, Pro gating, AI rate limiting, validation, metadata-aware prompt shaping, truncation, manual response parsing, and stable error mapping. Wired a reusable inline Describe control into `NewItemDialog` and `ItemDrawer` with accept/dismiss preview UX, and adjusted dialog overflow handling so the preview stays usable in the modal. Added focused unit coverage for auth, validation, Pro gating, rate limiting, response parsing, prompt metadata, truncation, and service failures.

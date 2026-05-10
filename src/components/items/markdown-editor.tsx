@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { Copy, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 marked.setOptions({ gfm: true, breaks: false });
 
@@ -145,12 +146,20 @@ export function MarkdownEditor({
 }
 
 // Lightweight read-only markdown renderer — used in item drawer view mode
-export function MarkdownView({ content }: { content: string }) {
+export function MarkdownView({
+  content,
+  className,
+  backgroundColor = "#1e1e1e",
+}: {
+  content: string;
+  className?: string;
+  backgroundColor?: string;
+}) {
   const html = useMemo(() => DOMPurify.sanitize(marked.parse(content) as string), [content]);
   return (
     <div
-      className="markdown-preview rounded-md border border-border"
-      style={{ backgroundColor: "#1e1e1e" }}
+      className={cn("markdown-preview rounded-md border border-border", className)}
+      style={{ backgroundColor }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
