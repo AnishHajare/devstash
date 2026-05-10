@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
-import { generateAutoTags, generateDescription } from "./ai";
+import { explainCode, generateAutoTags, generateDescription } from "./ai";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -478,6 +478,247 @@ describe("generateDescription", () => {
       title: "React query cache",
       content: "How to invalidate queries",
     });
+
+    expect(result).toEqual({
+      success: false,
+      error: "AI service is unavailable. Try again.",
+    });
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+});
+
+describe("explainCode", () => {
+  it("returns an auth error when unauthenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("returns an invalid input error for malformed payloads without burning rate-limit quota", async () => {
+    const result = await explainCode({ itemId: "" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Invalid input",
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("returns an upgrade error for free users", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: false } } as never);
+    mockCanUseAI.mockReturnValue(false);
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Upgrade to Pro to use AI features.",
+    });
+    expect(mockCheckRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("maps rate limiting to a friendly error", async () => {
+    mockCheckRateLimit.mockResolvedValue(
+      Response.json({ error: "Too many requests" }, { status: 429 })
+    );
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Too many AI requests. Please wait and try again.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("returns item not found when an owned item cannot be loaded", async () => {
+    mockFindFirst.mockResolvedValue(null);
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { id: "item-123", userId: "user-1" },
+      select: {
+        title: true,
+        content: true,
+        language: true,
+        itemType: { select: { name: true } },
+      },
+    });
+    expect(result).toEqual({ success: false, error: "Item not found" });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsupported item types", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Prompt helper",
+      content: "Review this code",
+      language: "text",
+      itemType: { name: "prompt" },
+    } as never);
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Explanation is only available for snippets and commands.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("requires content before calling OpenAI", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Empty snippet",
+      content: "   ",
+      language: "typescript",
+      itemType: { name: "snippet" },
+    } as never);
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Add some code or command content first.",
+    });
+    expect(mockCreateResponse).not.toHaveBeenCalled();
+  });
+
+  it("parses object-shaped responses correctly", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Invalidate query cache",
+      content: "queryClient.invalidateQueries({ queryKey: ['todos'] })",
+      language: "typescript",
+      itemType: { name: "snippet" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"explanation":"This React Query call marks the `todos` query as stale so the next read refetches fresh data."}',
+    });
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({
+      success: true,
+      data: {
+        explanation:
+          "This React Query call marks the `todos` query as stale so the next read refetches fresh data.",
+      },
+    });
+  });
+
+  it("parses string-shaped responses correctly", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Rebase main",
+      content: "git fetch origin && git rebase origin/main",
+      language: "shell",
+      itemType: { name: "command" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '"This command fetches the latest remote refs and then reapplies your current branch commits on top of `origin/main`."',
+    });
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({
+      success: true,
+      data: {
+        explanation:
+          "This command fetches the latest remote refs and then reapplies your current branch commits on top of `origin/main`.",
+      },
+    });
+  });
+
+  it("truncates content to 2000 characters before calling OpenAI", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Long snippet",
+      content: "a".repeat(2500),
+      language: "typescript",
+      itemType: { name: "snippet" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"explanation":"A code snippet with enough detail to explain the main flow and key concepts."}',
+    });
+
+    await explainCode({ itemId: "item-123" });
+
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("a".repeat(2000)),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.not.stringContaining("a".repeat(2001)),
+      })
+    );
+  });
+
+  it("includes item metadata in the prompt", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Rebase main",
+      content: "git fetch origin && git rebase origin/main",
+      language: "shell",
+      itemType: { name: "command" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text:
+        '{"explanation":"A Git workflow command for syncing your current branch with the latest main branch history."}',
+    });
+
+    await explainCode({ itemId: "item-123" });
+
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Type: command"),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Title: Rebase main"),
+      })
+    );
+    expect(mockCreateResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.stringContaining("Language: shell"),
+      })
+    );
+  });
+
+  it("maps empty model output to a stable generation error", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Rebase main",
+      content: "git fetch origin && git rebase origin/main",
+      language: "shell",
+      itemType: { name: "command" },
+    } as never);
+    mockCreateResponse.mockResolvedValue({
+      output_text: '{"explanation":""}',
+    });
+
+    const result = await explainCode({ itemId: "item-123" });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Could not generate an explanation. Try again.",
+    });
+  });
+
+  it("maps OpenAI failures to a stable service error", async () => {
+    mockFindFirst.mockResolvedValue({
+      title: "Rebase main",
+      content: "git fetch origin && git rebase origin/main",
+      language: "shell",
+      itemType: { name: "command" },
+    } as never);
+    mockCreateResponse.mockRejectedValue(new Error("network"));
+
+    const result = await explainCode({ itemId: "item-123" });
 
     expect(result).toEqual({
       success: false,
