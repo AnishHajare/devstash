@@ -1,27 +1,15 @@
-# Current Feature: AI Prompt Optimizer
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Add Pro-only "Optimize" button to the prompt content header (mirroring the Explain button in snippet/command header)
-- Server action `optimizePrompt` in `src/actions/ai.ts` that takes the current prompt content and returns a refined version using `gpt-5-nano`
-- Show an inline preview of the optimized prompt with Accept / Dismiss controls
-- On Accept, replace the existing prompt content in the item drawer (view + edit modes)
-- Free users see Crown + upgrade toast (no server quota consumed), matching the Explain pattern
-- Wire AI rate limiting, auth, ownership check, item-type whitelist (prompt only), empty-content guard, and stable error mapping
-- Unit tests covering auth, Pro gating, rate limit, ownership, type rejection, empty content, response parsing, truncation, prompt metadata, and service errors
-- Lint, build, and all tests pass
+<!-- Add feature goals here -->
 
 ## Notes
 
-- Prompt-type items use `MarkdownEditor` / `MarkdownView`, not Monaco's `CodeEditor`. The Explain button currently lives only in `CodeEditor` (used by snippet/command). For prompts we'll need to add an analogous control to the markdown header — likely by extending `MarkdownView` / `MarkdownEditor` with the same `extraControls` / `headerTabs` slots used by `CodeEditor`, or by following the pattern from `ExplainCodeButton`.
-- Reference implementation to mirror: `src/components/items/ai/explain-code-button.tsx` and `explainCode` in `src/actions/ai.ts` (added 2026-05-10).
-- Follow existing AI action conventions: pinned `gpt-5-nano-2025-08-07`, `aiActionLimiter`, manual JSON parsing for both object and string shapes, 2000-char truncation, owned-item check, `{ success, data, error }` return shape.
-- Optimizer system prompt should preserve user intent — instruct the model to keep the original goal, improve clarity / specificity / structure, and return only the refined prompt text (no commentary).
-- View mode: render optimized preview in the same Markdown chrome (Optimize tab parallel to the Explain tab pattern). Accept should replace the stored content (either via the existing updateItem flow or a focused path — decide during implementation).
-- Edit mode: Optimize button can populate the markdown editor directly. Match Explain's UX choices where possible for consistency.
+<!-- Add notes, constraints, and links here -->
 
 ## History
 
@@ -77,3 +65,4 @@ In Progress
 - 2026-05-06: Completed AI Auto-Tagging — added the OpenAI foundation (`src/lib/openai.ts` with pinned `gpt-5-nano-2025-08-07`, `aiActionLimiter` in `src/lib/rate-limit.ts`) and shipped `generateAutoTags` in `src/actions/ai.ts` using the Responses API with manual JSON parsing, lowercase normalization, 2000-character truncation, owned-item checks for edit mode, and stable error mapping. Wired Pro-only "Suggest tags" UI into `NewItemDialog` and `ItemDrawer`, including accept/reject suggestion chips and tag merging across dashboard, items, collections, favorites, search, and settings surfaces. Added 9 unit tests for auth, Pro gating, rate limiting, ownership, both response shapes, normalization, truncation, and service errors. Targeted AI tests pass and production build passes.
 - 2026-05-07: Completed AI Generate Description — added `generateDescription` to `src/actions/ai.ts` with auth, Pro gating, AI rate limiting, validation, metadata-aware prompt shaping, truncation, manual response parsing, and stable error mapping. Wired a reusable inline Describe control into `NewItemDialog` and `ItemDrawer` with accept/dismiss preview UX, and adjusted dialog overflow handling so the preview stays usable in the modal. Added focused unit coverage for auth, validation, Pro gating, rate limiting, response parsing, prompt metadata, truncation, and service failures.
 - 2026-05-10: Completed AI Explain Code — added `explainCode` to `src/actions/ai.ts` (Pro-only) with auth, Zod validation, AI rate limiting, ownership check, snippet/command type whitelist, empty-content guard, manual JSON parsing for both object and string response shapes, 2000-char truncation, and stable error mapping. Extended `CodeEditor` with optional `headerTabs`, `extraControls`, `body`, and `copyValue` slots so the item drawer read view can layer Code/Explain tabs and a Sparkles "Explain" button next to Copy without forking the component. Generated explanation renders via `MarkdownView` (now accepts optional `className`/`backgroundColor`) inside the same editor chrome, and the Copy button copies the explanation when on the Explain tab. Free users see a Crown icon + tooltip and an upgrade toast on click, with no server quota burned. New `ExplainCodeButton` + `useCodeExplanation` hook in `src/components/items/ai/explain-code-button.tsx`. 12 new unit tests cover auth, validation, Pro gating, rate limit, ownership, type rejection, empty content, both response shapes, truncation, prompt metadata, empty-output and service errors. Build, lint, and all 36 AI tests pass.
+- 2026-05-10: Completed AI Prompt Optimizer — added `optimizePrompt` to `src/actions/ai.ts` (Pro-only) with auth, Zod validation, AI rate limiting, ownership check, prompt-only type whitelist, empty-content guard, manual JSON parsing for both object and string response shapes, 2000-char truncation, and stable error mapping. Extended `MarkdownEditor` and `MarkdownView` with optional `extraControls`, `headerTabs`, `body`, `copyValue`, `markdownClassName`, and `markdownBackgroundColor` slots so the item drawer prompt header can host Prompt/Optimize tabs and a Sparkles "Optimize" button next to Copy without forking the component. Optimized result renders inline in the same Markdown chrome with Accept/Dismiss controls; view-mode Accept reuses `updateItem`, edit-mode Accept replaces the live editor buffer. Free users see a Crown icon + tooltip and an upgrade toast on click, with no server quota burned. New `OptimizePromptButton` + `usePromptOptimizer` hook in `src/components/items/ai/optimize-prompt-button.tsx`. 14 new unit tests cover auth, validation, Pro gating, rate limit, ownership, type rejection, empty content, both response shapes, truncation, prompt metadata, empty-output and service errors. Build, lint, and all 49 AI tests (236 total) pass.
