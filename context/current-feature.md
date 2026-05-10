@@ -1,33 +1,15 @@
-# Current Feature: AI Explain Code
+# Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-- Add an `explainCode` server action with auth, Pro gating, Zod validation, and AI rate limiting
-- Add an "Explain" button (Sparkles icon) to the code editor window controls header (next to Copy)
-- Restrict the Explain feature to snippet and command types in the item drawer read view (not in create/edit forms)
-- After generating, show Code/Explain tabs in the editor header to toggle between views
-- Render the explanation as markdown in the same container space as the code editor
-- Keep explanations concise (~200-300 words) covering what the code does and key concepts
-- Show a Loader2 spinner during generation
-- Pro-gate in UI: show Crown icon + tooltip ("AI features require Pro subscription") for free users
-- Surface errors via toast (Pro gating, rate limit, AI service errors)
-- Follow existing AI action patterns (manual response parsing, stable error mapping)
-- Add unit tests for the new server action
+<!-- Add feature goals here -->
 
 ## Notes
 
-- Explanations are not saved to the database — regenerated on each click
-- Only available in the item drawer read view, not in create/edit forms
-- `isPro` needs to be passed as a prop to the item drawer / code editor
-- Reuse `MarkdownView` for rendering the explanation
-- Reuse `aiActionLimiter` from `src/lib/rate-limit.ts`
-- Reuse OpenAI client / model config from `src/lib/openai.ts`
-- See `docs/ai-integration-plan.md` for full architectural context
-- Spec source: `context/features/ai-explain-spec.md`
-- Working branch: `ai-explain-code`
+<!-- Add notes, constraints, and links here -->
 
 ## History
 
@@ -82,3 +64,4 @@ In Progress
 - 2026-05-06: Completed Language Dropdown — replaced free-text language Input with a curated Select of ~30 Monaco-compatible languages (src/lib/code-languages.ts) and moved the picker above the content editor in both NewItemDialog and the ItemDrawer edit mode. Switching the dropdown retypes Monaco's grammar live so highlighting updates as you type. "Plain text" round-trips to empty string, preserving null storage in the DB. getLanguageLabel() falls back to the raw value for any pre-existing custom language strings. Build passes, 187 tests pass.
 - 2026-05-06: Completed AI Auto-Tagging — added the OpenAI foundation (`src/lib/openai.ts` with pinned `gpt-5-nano-2025-08-07`, `aiActionLimiter` in `src/lib/rate-limit.ts`) and shipped `generateAutoTags` in `src/actions/ai.ts` using the Responses API with manual JSON parsing, lowercase normalization, 2000-character truncation, owned-item checks for edit mode, and stable error mapping. Wired Pro-only "Suggest tags" UI into `NewItemDialog` and `ItemDrawer`, including accept/reject suggestion chips and tag merging across dashboard, items, collections, favorites, search, and settings surfaces. Added 9 unit tests for auth, Pro gating, rate limiting, ownership, both response shapes, normalization, truncation, and service errors. Targeted AI tests pass and production build passes.
 - 2026-05-07: Completed AI Generate Description — added `generateDescription` to `src/actions/ai.ts` with auth, Pro gating, AI rate limiting, validation, metadata-aware prompt shaping, truncation, manual response parsing, and stable error mapping. Wired a reusable inline Describe control into `NewItemDialog` and `ItemDrawer` with accept/dismiss preview UX, and adjusted dialog overflow handling so the preview stays usable in the modal. Added focused unit coverage for auth, validation, Pro gating, rate limiting, response parsing, prompt metadata, truncation, and service failures.
+- 2026-05-10: Completed AI Explain Code — added `explainCode` to `src/actions/ai.ts` (Pro-only) with auth, Zod validation, AI rate limiting, ownership check, snippet/command type whitelist, empty-content guard, manual JSON parsing for both object and string response shapes, 2000-char truncation, and stable error mapping. Extended `CodeEditor` with optional `headerTabs`, `extraControls`, `body`, and `copyValue` slots so the item drawer read view can layer Code/Explain tabs and a Sparkles "Explain" button next to Copy without forking the component. Generated explanation renders via `MarkdownView` (now accepts optional `className`/`backgroundColor`) inside the same editor chrome, and the Copy button copies the explanation when on the Explain tab. Free users see a Crown icon + tooltip and an upgrade toast on click, with no server quota burned. New `ExplainCodeButton` + `useCodeExplanation` hook in `src/components/items/ai/explain-code-button.tsx`. 12 new unit tests cover auth, validation, Pro gating, rate limit, ownership, type rejection, empty content, both response shapes, truncation, prompt metadata, empty-output and service errors. Build, lint, and all 36 AI tests pass.
