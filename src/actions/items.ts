@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { auth } from "@/auth";
+import { requireAuth } from "@/lib/auth/require-auth";
+import { parseOrError } from "@/lib/zod-helpers";
 import {
   createItem as dbCreateItem,
   updateItem as dbUpdateItem,
@@ -35,20 +36,15 @@ type CreateItemResult =
 
 
 export async function createItem(formData: unknown): Promise<CreateItemResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
-  const parsed = createItemSchema.safeParse(formData);
-  if (!parsed.success) {
-    const first = parsed.error.issues[0];
-    return { success: false, error: first?.message ?? "Validation failed" };
-  }
+  const parsed = parseOrError(createItemSchema, formData);
+  if (!parsed.success) return parsed;
 
   const { typeId, typeName, contentType, title, description, content, url, language, tags, collectionIds, fileKey, fileName, fileSize } =
     parsed.data;
-  const isPro = session.user.isPro === true;
+  const { userId, isPro } = authResult;
   const isProType = PRO_SYSTEM_TYPES.some(
     (proType) => proType.toLowerCase() === typeName.toLowerCase()
   );
@@ -60,7 +56,7 @@ export async function createItem(formData: unknown): Promise<CreateItemResult> {
     };
   }
 
-  const hasItemCapacity = await canCreateItem(session.user.id, isPro);
+  const hasItemCapacity = await canCreateItem(userId, isPro);
   if (!hasItemCapacity) {
     return {
       success: false,
@@ -105,7 +101,7 @@ export async function createItem(formData: unknown): Promise<CreateItemResult> {
       tags,
       collectionIds,
       itemTypeId: typeId,
-      userId: session.user.id,
+      userId,
     });
 
     return { success: true, data: created };
@@ -132,21 +128,16 @@ export async function updateItem(
   itemId: string,
   formData: unknown
 ): Promise<UpdateItemResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
-  const parsed = updateItemSchema.safeParse(formData);
-  if (!parsed.success) {
-    const first = parsed.error.issues[0];
-    return { success: false, error: first?.message ?? "Validation failed" };
-  }
+  const parsed = parseOrError(updateItemSchema, formData);
+  if (!parsed.success) return parsed;
 
   const { title, description, content, url, language, tags, collectionIds } = parsed.data;
 
   try {
-    const updated = await dbUpdateItem(itemId, session.user.id, {
+    const updated = await dbUpdateItem(itemId, authResult.userId, {
       title,
       description: description ?? null,
       content: content ?? null,
@@ -172,13 +163,11 @@ export async function toggleItemPin(
   itemId: string,
   isPinned: boolean
 ): Promise<ToggleItemPinResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   try {
-    const updated = await dbToggleItemPin(itemId, session.user.id, isPinned);
+    const updated = await dbToggleItemPin(itemId, authResult.userId, isPinned);
     if (!updated) {
       return { success: false, error: "Item not found" };
     }
@@ -194,13 +183,11 @@ export async function toggleItemFavorite(
   itemId: string,
   isFavorite: boolean
 ): Promise<ToggleItemFavoriteResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   try {
-    const updated = await dbToggleItemFavorite(itemId, session.user.id, isFavorite);
+    const updated = await dbToggleItemFavorite(itemId, authResult.userId, isFavorite);
     if (!updated) {
       return { success: false, error: "Item not found" };
     }
@@ -213,13 +200,11 @@ export async function toggleItemFavorite(
 type DeleteItemResult = { success: true } | { success: false; error: string };
 
 export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   try {
-    const deleted = await dbDeleteItem(itemId, session.user.id);
+    const deleted = await dbDeleteItem(itemId, authResult.userId);
     if (!deleted) {
       return { success: false, error: "Item not found" };
     }

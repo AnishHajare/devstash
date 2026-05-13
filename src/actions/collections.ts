@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { auth } from "@/auth";
+import { requireAuth } from "@/lib/auth/require-auth";
+import { parseOrError } from "@/lib/zod-helpers";
 import {
   createCollection as dbCreateCollection,
   updateCollection as dbUpdateCollection,
@@ -23,23 +24,18 @@ type CreateCollectionResult =
 export async function createCollection(
   formData: unknown
 ): Promise<CreateCollectionResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
-  const parsed = createCollectionSchema.safeParse(formData);
-  if (!parsed.success) {
-    const first = parsed.error.issues[0];
-    return { success: false, error: first?.message ?? "Validation failed" };
-  }
+  const parsed = parseOrError(createCollectionSchema, formData);
+  if (!parsed.success) return parsed;
 
   const { name, description } = parsed.data;
 
   try {
     const hasCollectionCapacity = await canCreateCollection(
-      session.user.id,
-      session.user.isPro === true
+      authResult.userId,
+      authResult.isPro
     );
     if (!hasCollectionCapacity) {
       return {
@@ -48,7 +44,7 @@ export async function createCollection(
       };
     }
 
-    const created = await dbCreateCollection(session.user.id, {
+    const created = await dbCreateCollection(authResult.userId, {
       name,
       description: description || undefined,
     });
@@ -71,21 +67,16 @@ export async function updateCollection(
   collectionId: string,
   formData: unknown
 ): Promise<UpdateCollectionResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
-  const parsed = updateCollectionSchema.safeParse(formData);
-  if (!parsed.success) {
-    const first = parsed.error.issues[0];
-    return { success: false, error: first?.message ?? "Validation failed" };
-  }
+  const parsed = parseOrError(updateCollectionSchema, formData);
+  if (!parsed.success) return parsed;
 
   const { name, description } = parsed.data;
 
   try {
-    const updated = await dbUpdateCollection(collectionId, session.user.id, {
+    const updated = await dbUpdateCollection(collectionId, authResult.userId, {
       name,
       description: description ?? null,
     });
@@ -105,13 +96,11 @@ type DeleteCollectionResult = { success: true } | { success: false; error: strin
 export async function deleteCollection(
   collectionId: string
 ): Promise<DeleteCollectionResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   try {
-    const deleted = await dbDeleteCollection(collectionId, session.user.id);
+    const deleted = await dbDeleteCollection(collectionId, authResult.userId);
     if (!deleted) {
       return { success: false, error: "Collection not found" };
     }
@@ -130,15 +119,13 @@ export async function toggleFavoriteCollection(
   collectionId: string,
   isFavorite: boolean
 ): Promise<ToggleFavoriteCollectionResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   try {
     const updated = await dbToggleFavoriteCollection(
       collectionId,
-      session.user.id,
+      authResult.userId,
       isFavorite
     );
 

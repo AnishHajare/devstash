@@ -1,9 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { auth } from "@/auth";
-import { canUseAI } from "@/lib/feature-gate";
-import { aiActionLimiter, checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { requireAuth } from "@/lib/auth/require-auth";
+import { requireAIAccess } from "@/lib/auth/require-ai-access";
 import { getOpenAI, AI_MODEL } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 
@@ -163,12 +162,17 @@ function buildDescriptionPrompt(
   return parts.join("\n\n");
 }
 
-function normalizeDescription(value: string): string {
-  return value
-    .trim()
-    .replace(/^["']+|["']+$/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+function normalizeAIText(
+  value: string,
+  options: { normalizeNewlines?: boolean } = {}
+): string {
+  let out = value.trim().replace(/^["']+|["']+$/g, "");
+  if (options.normalizeNewlines) {
+    out = out.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  } else {
+    out = out.replace(/\s+/g, " ");
+  }
+  return out.trim();
 }
 
 function buildExplanationPrompt(input: {
@@ -193,16 +197,11 @@ function buildExplanationPrompt(input: {
   return parts.join("\n\n");
 }
 
-function normalizeExplanation(value: string): string {
-  return value
-    .trim()
-    .replace(/^["']+|["']+$/g, "")
-    .replace(/\r\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-function parseDescription(raw: string): string {
+function parseAIJsonString(
+  raw: string,
+  key: string,
+  normalize: (value: string) => string
+): string {
   const trimmed = raw.trim();
   if (!trimmed) return "";
 
@@ -210,49 +209,25 @@ function parseDescription(raw: string): string {
     const parsed = JSON.parse(trimmed) as unknown;
 
     if (typeof parsed === "string") {
-      return normalizeDescription(parsed);
+      return normalize(parsed);
     }
 
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      "description" in parsed &&
-      typeof (parsed as { description: unknown }).description === "string"
-    ) {
-      return normalizeDescription((parsed as { description: string }).description);
+    if (parsed && typeof parsed === "object" && key in parsed) {
+      const val = (parsed as Record<string, unknown>)[key];
+      if (typeof val === "string") return normalize(val);
     }
   } catch {
-    return normalizeDescription(trimmed);
+    return normalize(trimmed);
   }
 
   return "";
 }
 
-function parseExplanation(raw: string): string {
-  const trimmed = raw.trim();
-  if (!trimmed) return "";
-
-  try {
-    const parsed = JSON.parse(trimmed) as unknown;
-
-    if (typeof parsed === "string") {
-      return normalizeExplanation(parsed);
-    }
-
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      "explanation" in parsed &&
-      typeof (parsed as { explanation: unknown }).explanation === "string"
-    ) {
-      return normalizeExplanation((parsed as { explanation: string }).explanation);
-    }
-  } catch {
-    return normalizeExplanation(trimmed);
-  }
-
-  return "";
-}
+const normalizeDescription = (value: string) => normalizeAIText(value);
+const normalizeExplanation = (value: string) =>
+  normalizeAIText(value, { normalizeNewlines: true });
+const normalizeOptimizedPrompt = (value: string) =>
+  normalizeAIText(value, { normalizeNewlines: true });
 
 function buildOptimizePrompt(input: { title: string; content: string }): string {
   const truncatedContent = input.content.slice(0, MAX_CONTENT_CHARS);
@@ -265,43 +240,6 @@ function buildOptimizePrompt(input: { title: string; content: string }): string 
   parts.push(`Prompt:\n\`\`\`\n${truncatedContent}\n\`\`\``);
 
   return parts.join("\n\n");
-}
-
-function normalizeOptimizedPrompt(value: string): string {
-  return value
-    .trim()
-    .replace(/^["']+|["']+$/g, "")
-    .replace(/\r\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-function parseOptimizedPrompt(raw: string): string {
-  const trimmed = raw.trim();
-  if (!trimmed) return "";
-
-  try {
-    const parsed = JSON.parse(trimmed) as unknown;
-
-    if (typeof parsed === "string") {
-      return normalizeOptimizedPrompt(parsed);
-    }
-
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      "optimizedPrompt" in parsed &&
-      typeof (parsed as { optimizedPrompt: unknown }).optimizedPrompt === "string"
-    ) {
-      return normalizeOptimizedPrompt(
-        (parsed as { optimizedPrompt: string }).optimizedPrompt
-      );
-    }
-  } catch {
-    return normalizeOptimizedPrompt(trimmed);
-  }
-
-  return "";
 }
 
 async function resolvePromptInput(
@@ -346,33 +284,19 @@ async function resolvePromptInput(
 export async function generateAutoTags(
   input: unknown
 ): Promise<GenerateAutoTagsResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  if (!canUseAI(session.user.isPro === true)) {
-    return { success: false, error: "Upgrade to Pro to use AI features." };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   const parsed = generateAutoTagsSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: "Invalid input" };
   }
 
-  const rate = await checkRateLimit(
-    aiActionLimiter,
-    rateLimitKey("ai:tag", session.user.id)
-  );
-  if (rate instanceof Response) {
-    return {
-      success: false,
-      error: "Too many AI requests. Please wait and try again.",
-    };
-  }
+  const access = await requireAIAccess(authResult.userId, authResult.isPro, "ai:tag");
+  if (!access.success) return access;
 
   try {
-    const promptInput = await resolvePromptInput(session.user.id, parsed.data);
+    const promptInput = await resolvePromptInput(authResult.userId, parsed.data);
     if (!promptInput) {
       return { success: false, error: "Item not found" };
     }
@@ -411,30 +335,16 @@ export async function generateAutoTags(
 export async function generateDescription(
   input: unknown
 ): Promise<GenerateDescriptionResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  if (!canUseAI(session.user.isPro === true)) {
-    return { success: false, error: "Upgrade to Pro to use AI features." };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   const parsed = generateDescriptionSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: "Invalid input" };
   }
 
-  const rate = await checkRateLimit(
-    aiActionLimiter,
-    rateLimitKey("ai:description", session.user.id)
-  );
-  if (rate instanceof Response) {
-    return {
-      success: false,
-      error: "Too many AI requests. Please wait and try again.",
-    };
-  }
+  const access = await requireAIAccess(authResult.userId, authResult.isPro, "ai:description");
+  if (!access.success) return access;
 
   const promptInput = {
     ...parsed.data,
@@ -465,7 +375,11 @@ export async function generateDescription(
       },
     });
 
-    const description = parseDescription(response.output_text ?? "");
+    const description = parseAIJsonString(
+      response.output_text ?? "",
+      "description",
+      normalizeDescription
+    );
     if (!description) {
       return {
         success: false,
@@ -484,35 +398,21 @@ export async function generateDescription(
 }
 
 export async function explainCode(input: unknown): Promise<ExplainCodeResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  if (!canUseAI(session.user.isPro === true)) {
-    return { success: false, error: "Upgrade to Pro to use AI features." };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   const parsed = explainCodeSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: "Invalid input" };
   }
 
-  const rate = await checkRateLimit(
-    aiActionLimiter,
-    rateLimitKey("ai:explain", session.user.id)
-  );
-  if (rate instanceof Response) {
-    return {
-      success: false,
-      error: "Too many AI requests. Please wait and try again.",
-    };
-  }
+  const access = await requireAIAccess(authResult.userId, authResult.isPro, "ai:explain");
+  if (!access.success) return access;
 
   const item = await prisma.item.findFirst({
     where: {
       id: parsed.data.itemId,
-      userId: session.user.id,
+      userId: authResult.userId,
     },
     select: {
       title: true,
@@ -560,7 +460,11 @@ export async function explainCode(input: unknown): Promise<ExplainCodeResult> {
       },
     });
 
-    const explanation = parseExplanation(response.output_text ?? "");
+    const explanation = parseAIJsonString(
+      response.output_text ?? "",
+      "explanation",
+      normalizeExplanation
+    );
     if (!explanation) {
       return {
         success: false,
@@ -581,35 +485,21 @@ export async function explainCode(input: unknown): Promise<ExplainCodeResult> {
 export async function optimizePrompt(
   input: unknown
 ): Promise<OptimizePromptResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  if (!canUseAI(session.user.isPro === true)) {
-    return { success: false, error: "Upgrade to Pro to use AI features." };
-  }
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
 
   const parsed = optimizePromptSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: "Invalid input" };
   }
 
-  const rate = await checkRateLimit(
-    aiActionLimiter,
-    rateLimitKey("ai:optimize-prompt", session.user.id)
-  );
-  if (rate instanceof Response) {
-    return {
-      success: false,
-      error: "Too many AI requests. Please wait and try again.",
-    };
-  }
+  const access = await requireAIAccess(authResult.userId, authResult.isPro, "ai:optimize-prompt");
+  if (!access.success) return access;
 
   const item = await prisma.item.findFirst({
     where: {
       id: parsed.data.itemId,
-      userId: session.user.id,
+      userId: authResult.userId,
     },
     select: {
       title: true,
@@ -653,7 +543,11 @@ export async function optimizePrompt(
       },
     });
 
-    const optimizedPrompt = parseOptimizedPrompt(response.output_text ?? "");
+    const optimizedPrompt = parseAIJsonString(
+      response.output_text ?? "",
+      "optimizedPrompt",
+      normalizeOptimizedPrompt
+    );
     if (!optimizedPrompt) {
       return {
         success: false,

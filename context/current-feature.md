@@ -1,15 +1,24 @@
 # Current Feature
 
 ## Status
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Add feature goals here -->
+Refactor `src/actions/` to remove duplication surfaced by the refactor-scanner. All 5 findings:
+
+1. **F1 — `requireAuth()` helper** (high impact, cross-file). The 3-line `auth()` + `session?.user?.id` guard is duplicated 14× across all 4 action files. Extract to `src/lib/auth/require-auth.ts` returning the same `{ success: false; error: "Not authenticated" }` shape on failure so the action can `return authResult`.
+2. **F2 — `requireAIAccess()` helper** (high impact, 4 AI actions). The Pro-gate + rate-limit preamble is duplicated 4× in `ai.ts` with only the rate-limit key slug varying. Co-locate in `src/lib/auth/require-auth.ts`. Reuses existing `canUseAI`, `aiActionLimiter`, `rateLimitKey`, `checkRateLimit`.
+3. **F3 — `parseOrError()` helper** (medium, 5 actions). The Zod `safeParse` + first-issue-message block is duplicated 5× across `items.ts`, `collections.ts`, `editor-preferences.ts`. Extract to `src/lib/zod-helpers.ts`. AI actions intentionally diverge (`"Invalid input"`) and stay as-is.
+4. **F4 — Collapse 3 `parseX` JSON parsers in `ai.ts`** (medium, within-file). `parseDescription`, `parseExplanation`, and `parseOptimizedPrompt` share an identical 25-line skeleton differing only by JSON key + normalize fn. Replace with one generic `parseAIJsonString(raw, key, normalize)` helper.
+5. **F5 — Merge 3 `normalizeX` functions in `ai.ts`** (low, within-file). `normalizeExplanation` and `normalizeOptimizedPrompt` are character-identical; `normalizeDescription` is a subset. Replace with `normalizeAIText(value, { normalizeNewlines })`.
+
+No behaviour changes — all existing error strings preserved, all return shapes preserved.
 
 ## Notes
 
-<!-- Add notes, constraints, and links here -->
+- Tests should continue passing without modification (`auth()` mock still triggers helper internally).
+- Verify `npm run build` and `npm test` pass before commit.
 
 ## History
 
