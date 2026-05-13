@@ -1,24 +1,15 @@
 # Current Feature
 
 ## Status
-In Progress
+Not Started
 
 ## Goals
 
-Refactor `src/actions/` to remove duplication surfaced by the refactor-scanner. All 5 findings:
-
-1. **F1 — `requireAuth()` helper** (high impact, cross-file). The 3-line `auth()` + `session?.user?.id` guard is duplicated 14× across all 4 action files. Extract to `src/lib/auth/require-auth.ts` returning the same `{ success: false; error: "Not authenticated" }` shape on failure so the action can `return authResult`.
-2. **F2 — `requireAIAccess()` helper** (high impact, 4 AI actions). The Pro-gate + rate-limit preamble is duplicated 4× in `ai.ts` with only the rate-limit key slug varying. Co-locate in `src/lib/auth/require-auth.ts`. Reuses existing `canUseAI`, `aiActionLimiter`, `rateLimitKey`, `checkRateLimit`.
-3. **F3 — `parseOrError()` helper** (medium, 5 actions). The Zod `safeParse` + first-issue-message block is duplicated 5× across `items.ts`, `collections.ts`, `editor-preferences.ts`. Extract to `src/lib/zod-helpers.ts`. AI actions intentionally diverge (`"Invalid input"`) and stay as-is.
-4. **F4 — Collapse 3 `parseX` JSON parsers in `ai.ts`** (medium, within-file). `parseDescription`, `parseExplanation`, and `parseOptimizedPrompt` share an identical 25-line skeleton differing only by JSON key + normalize fn. Replace with one generic `parseAIJsonString(raw, key, normalize)` helper.
-5. **F5 — Merge 3 `normalizeX` functions in `ai.ts`** (low, within-file). `normalizeExplanation` and `normalizeOptimizedPrompt` are character-identical; `normalizeDescription` is a subset. Replace with `normalizeAIText(value, { normalizeNewlines })`.
-
-No behaviour changes — all existing error strings preserved, all return shapes preserved.
+<!-- Add feature goals here -->
 
 ## Notes
 
-- Tests should continue passing without modification (`auth()` mock still triggers helper internally).
-- Verify `npm run build` and `npm test` pass before commit.
+<!-- Add notes, constraints, and links here -->
 
 ## History
 
@@ -76,3 +67,4 @@ No behaviour changes — all existing error strings preserved, all return shapes
 - 2026-05-10: Completed AI Explain Code — added `explainCode` to `src/actions/ai.ts` (Pro-only) with auth, Zod validation, AI rate limiting, ownership check, snippet/command type whitelist, empty-content guard, manual JSON parsing for both object and string response shapes, 2000-char truncation, and stable error mapping. Extended `CodeEditor` with optional `headerTabs`, `extraControls`, `body`, and `copyValue` slots so the item drawer read view can layer Code/Explain tabs and a Sparkles "Explain" button next to Copy without forking the component. Generated explanation renders via `MarkdownView` (now accepts optional `className`/`backgroundColor`) inside the same editor chrome, and the Copy button copies the explanation when on the Explain tab. Free users see a Crown icon + tooltip and an upgrade toast on click, with no server quota burned. New `ExplainCodeButton` + `useCodeExplanation` hook in `src/components/items/ai/explain-code-button.tsx`. 12 new unit tests cover auth, validation, Pro gating, rate limit, ownership, type rejection, empty content, both response shapes, truncation, prompt metadata, empty-output and service errors. Build, lint, and all 36 AI tests pass.
 - 2026-05-10: Completed AI Prompt Optimizer — added `optimizePrompt` to `src/actions/ai.ts` (Pro-only) with auth, Zod validation, AI rate limiting, ownership check, prompt-only type whitelist, empty-content guard, manual JSON parsing for both object and string response shapes, 2000-char truncation, and stable error mapping. Extended `MarkdownEditor` and `MarkdownView` with optional `extraControls`, `headerTabs`, `body`, `copyValue`, `markdownClassName`, and `markdownBackgroundColor` slots so the item drawer prompt header can host Prompt/Optimize tabs and a Sparkles "Optimize" button next to Copy without forking the component. Optimized result renders inline in the same Markdown chrome with Accept/Dismiss controls; view-mode Accept reuses `updateItem`, edit-mode Accept replaces the live editor buffer. Free users see a Crown icon + tooltip and an upgrade toast on click, with no server quota burned. New `OptimizePromptButton` + `usePromptOptimizer` hook in `src/components/items/ai/optimize-prompt-button.tsx`. 14 new unit tests cover auth, validation, Pro gating, rate limit, ownership, type rejection, empty content, both response shapes, truncation, prompt metadata, empty-output and service errors. Build, lint, and all 49 AI tests (236 total) pass.
 - 2026-05-13: Completed UI Polish Pass — Playwright-driven review surfaced sidebar/auth/layout gaps; fixes bundled into one pass. `usePathname` wired into `sidebar-content.tsx` so type, collection, and the new Favorites links highlight the current route in both expanded and collapsed sidebars. `register-form.tsx` mirrors `sign-in-form.tsx` with a GitHub OAuth button, "or" divider, and matching `shadow-xl shadow-black/5 dark:shadow-black/30` card shadow. Default theme is now dark regardless of system preference — removed the `prefers-color-scheme` fallback from the inline init script and from `theme-provider.tsx` (no more media-query subscription). `/collections` and `/collections/[id]` page headers align stat cards with the title row (`lg:items-start` → `lg:items-center`). `/settings` widened to `max-w-3xl` to reduce empty space. Mobile sidebar toggle moved from absolute positioning to inline at the top of main content; `StatCard` gained a `mobileLabel` prop so "Favorite Collections" becomes "Fav. Collections" on small screens. Build, lint, and all 236 tests pass.
+- 2026-05-13: Completed Actions Refactor — refactor-scanner surfaced 5 duplication patterns across `src/actions/`. Extracted `requireAuth()` in `src/lib/auth/require-auth.ts` (replaces 14× duplicated 3-line auth check), `requireAIAccess(userId, isPro, keySlug)` in `src/lib/auth/require-ai-access.ts` (split out so non-AI actions don't pull prisma; bundles Pro-gate + rate-limit repeated 4× in ai.ts), and `parseOrError(schema, data)` in `src/lib/zod-helpers.ts` (replaces 5× Zod safeParse + first-issue block in items/collections/editor-preferences). In `ai.ts`, collapsed 3 near-identical `parseX` JSON parsers into one generic `parseAIJsonString(raw, key, normalize)` and merged 3 `normalizeX` functions into `normalizeAIText(value, { normalizeNewlines })`. Net change: 8 files, +194 / −253 lines. No behaviour changes — all error strings and return shapes preserved. Build, lint, and all 236 tests pass.
