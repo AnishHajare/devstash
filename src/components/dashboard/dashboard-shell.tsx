@@ -45,19 +45,6 @@ export function DashboardShell({ sidebarData, children }: DashboardShellProps) {
         <SidebarContent collapsed={collapsed} data={sidebarData} />
       </aside>
 
-      {/* Mobile drawer toggle — shown in the main area on small screens */}
-      <div className="md:hidden absolute top-[3.75rem] left-3 z-40">
-        <Button
-          variant="outline"
-          size="icon-sm"
-          className="bg-background/80 backdrop-blur-sm shadow-sm"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open sidebar"
-        >
-          <PanelLeft className="h-4 w-4" />
-        </Button>
-      </div>
-
       {/* Mobile sheet */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-64 p-0" showCloseButton>
@@ -67,7 +54,18 @@ export function DashboardShell({ sidebarData, children }: DashboardShellProps) {
       </Sheet>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-6 pt-8 md:pt-6">
+      <main className="flex-1 overflow-y-auto p-4 pt-4 sm:p-6 sm:pt-6">
+        <div className="mb-4 flex md:hidden">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            className="bg-background/80 backdrop-blur-sm shadow-sm"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open sidebar"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </Button>
+        </div>
         {children}
       </main>
     </div>

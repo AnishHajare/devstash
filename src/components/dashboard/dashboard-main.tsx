@@ -79,6 +79,7 @@ export function DashboardMain({
         />
         <StatCard
           label="Favorite Collections"
+          mobileLabel="Fav. Collections"
           value={collectionStats.favoriteCollections}
           icon={<Star className="h-4 w-4 text-yellow-400" />}
         />
@@ -144,17 +145,22 @@ export function DashboardMain({
 
 function StatCard({
   label,
+  mobileLabel,
   value,
   icon,
 }: {
   label: string;
+  mobileLabel?: string;
   value: number;
   icon: React.ReactNode;
 }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between">
-        <span className="min-w-0 truncate text-xs text-muted-foreground">{label}</span>
+        <span className="min-w-0 text-xs leading-4 text-muted-foreground">
+          <span className="sm:hidden">{mobileLabel ?? label}</span>
+          <span className="hidden sm:inline">{label}</span>
+        </span>
         {icon}
       </div>
       <p className="mt-2 text-2xl font-bold tabular-nums">{value}</p>

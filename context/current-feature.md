@@ -1,15 +1,43 @@
 # Current Feature
 
 ## Status
-Not Started
+In Progress — UI Polish Pass (Playwright review findings)
 
 ## Goals
 
-<!-- Add feature goals here -->
+Address visual/layout issues observed in a Playwright-driven UI tour of the app (desktop 1440 + mobile 375). Bundle the fixes into a single polish pass.
 
 ## Notes
 
-<!-- Add notes, constraints, and links here -->
+### Flagged by user (must fix)
+
+- **Sidebar — no active state for type links.** On `/items/[type]` routes the matching sidebar link (Snippets, Prompts, Commands, etc.) renders identically to every other link. No active background, accent bar, or font weight. Fix in [sidebar-content.tsx](src/components/dashboard/sidebar-content.tsx) using `usePathname`. Apply to both type links and collection links.
+- **`/register` missing GitHub OAuth button.** Sign-in page has a "Sign in with GitHub" button + "or" divider; register page has none. Mirror the OAuth section from [sign-in-form.tsx](src/components/auth/sign-in-form.tsx) into [register-form.tsx](src/components/auth/register-form.tsx).
+
+### Layout issues observed in browser
+
+- **`/settings` content far off-center.** ~450px of empty space to the left of the settings card on wide displays. The page applies its own `max-w-2xl` inside the dashboard shell with no horizontal centering. Add `mx-auto` (or center inside the shell's main area).
+- **`/collections` stat card mis-aligned.** "Total collections" floats top-right of the page header, vertically dropping below the heading rather than sitting flush with it. Use `flex items-center justify-between` on the header row.
+- **`/collections/[id]` Items/Types stat cards** have the same float-right-of-heading treatment with no clear visual grouping — same fix.
+
+### Sidebar / navigation issues
+
+- **Stale collection highlight.** After visiting `/collections/[id]`, the visited collection ("Design Resources" in test) remained bold/highlighted in the sidebar on `/favorites` and `/settings`. Active state must be tied to current `usePathname`, not last-clicked.
+- **Favorites has no sidebar entry.** `/favorites` is reachable only via the top-bar star icon. Add a sidebar link (under Types or its own section) so users can discover and return to the page.
+
+### Auth pages
+
+- **Register card flatter than sign-in card.** Different shadow depth between two equal-importance pages. Match the sign-in card's `shadow-xl shadow-black/30` (or equivalent) on the register card.
+- **Theme defaults to light despite "dark mode by default."** On first load in a clean browser (no localStorage, `prefers-color-scheme: light`), the app rendered in light mode. If the documented intent is dark-first, the theme script should default to dark regardless of system preference. Confirm intent before changing.
+
+### Mobile (375×812)
+
+- **Orphaned sidebar toggle on `/dashboard`.** The toggle button sits in awkward whitespace below the top bar — looks like a floating control. Tuck it inline with the top bar or remove the gap.
+- **Stat label truncation.** "Favorite Collections" → "Favorite Collectio…" on the mobile stat card. Shorten to "Fav. Collections" on small screens, or allow two lines.
+
+### Screenshots captured
+
+Saved to repo root for reference: `signin.png`, `dashboard.png`, `items-snippets.png`, `collections.png`, `collection-detail.png`, `favorites.png`, `settings.png`, `register.png`, `dashboard-mobile.png`, `signin-mobile.png`. Delete after the fix lands.
 
 ## History
 
