@@ -1,43 +1,15 @@
 # Current Feature
 
 ## Status
-In Progress — UI Polish Pass (Playwright review findings)
+Not Started
 
 ## Goals
 
-Address visual/layout issues observed in a Playwright-driven UI tour of the app (desktop 1440 + mobile 375). Bundle the fixes into a single polish pass.
+<!-- Add feature goals here -->
 
 ## Notes
 
-### Flagged by user (must fix)
-
-- **Sidebar — no active state for type links.** On `/items/[type]` routes the matching sidebar link (Snippets, Prompts, Commands, etc.) renders identically to every other link. No active background, accent bar, or font weight. Fix in [sidebar-content.tsx](src/components/dashboard/sidebar-content.tsx) using `usePathname`. Apply to both type links and collection links.
-- **`/register` missing GitHub OAuth button.** Sign-in page has a "Sign in with GitHub" button + "or" divider; register page has none. Mirror the OAuth section from [sign-in-form.tsx](src/components/auth/sign-in-form.tsx) into [register-form.tsx](src/components/auth/register-form.tsx).
-
-### Layout issues observed in browser
-
-- **`/settings` content far off-center.** ~450px of empty space to the left of the settings card on wide displays. The page applies its own `max-w-2xl` inside the dashboard shell with no horizontal centering. Add `mx-auto` (or center inside the shell's main area).
-- **`/collections` stat card mis-aligned.** "Total collections" floats top-right of the page header, vertically dropping below the heading rather than sitting flush with it. Use `flex items-center justify-between` on the header row.
-- **`/collections/[id]` Items/Types stat cards** have the same float-right-of-heading treatment with no clear visual grouping — same fix.
-
-### Sidebar / navigation issues
-
-- **Stale collection highlight.** After visiting `/collections/[id]`, the visited collection ("Design Resources" in test) remained bold/highlighted in the sidebar on `/favorites` and `/settings`. Active state must be tied to current `usePathname`, not last-clicked.
-- **Favorites has no sidebar entry.** `/favorites` is reachable only via the top-bar star icon. Add a sidebar link (under Types or its own section) so users can discover and return to the page.
-
-### Auth pages
-
-- **Register card flatter than sign-in card.** Different shadow depth between two equal-importance pages. Match the sign-in card's `shadow-xl shadow-black/30` (or equivalent) on the register card.
-- **Theme defaults to light despite "dark mode by default."** On first load in a clean browser (no localStorage, `prefers-color-scheme: light`), the app rendered in light mode. If the documented intent is dark-first, the theme script should default to dark regardless of system preference. Confirm intent before changing.
-
-### Mobile (375×812)
-
-- **Orphaned sidebar toggle on `/dashboard`.** The toggle button sits in awkward whitespace below the top bar — looks like a floating control. Tuck it inline with the top bar or remove the gap.
-- **Stat label truncation.** "Favorite Collections" → "Favorite Collectio…" on the mobile stat card. Shorten to "Fav. Collections" on small screens, or allow two lines.
-
-### Screenshots captured
-
-Saved to repo root for reference: `signin.png`, `dashboard.png`, `items-snippets.png`, `collections.png`, `collection-detail.png`, `favorites.png`, `settings.png`, `register.png`, `dashboard-mobile.png`, `signin-mobile.png`. Delete after the fix lands.
+<!-- Add notes, constraints, and links here -->
 
 ## History
 
@@ -94,3 +66,4 @@ Saved to repo root for reference: `signin.png`, `dashboard.png`, `items-snippets
 - 2026-05-07: Completed AI Generate Description — added `generateDescription` to `src/actions/ai.ts` with auth, Pro gating, AI rate limiting, validation, metadata-aware prompt shaping, truncation, manual response parsing, and stable error mapping. Wired a reusable inline Describe control into `NewItemDialog` and `ItemDrawer` with accept/dismiss preview UX, and adjusted dialog overflow handling so the preview stays usable in the modal. Added focused unit coverage for auth, validation, Pro gating, rate limiting, response parsing, prompt metadata, truncation, and service failures.
 - 2026-05-10: Completed AI Explain Code — added `explainCode` to `src/actions/ai.ts` (Pro-only) with auth, Zod validation, AI rate limiting, ownership check, snippet/command type whitelist, empty-content guard, manual JSON parsing for both object and string response shapes, 2000-char truncation, and stable error mapping. Extended `CodeEditor` with optional `headerTabs`, `extraControls`, `body`, and `copyValue` slots so the item drawer read view can layer Code/Explain tabs and a Sparkles "Explain" button next to Copy without forking the component. Generated explanation renders via `MarkdownView` (now accepts optional `className`/`backgroundColor`) inside the same editor chrome, and the Copy button copies the explanation when on the Explain tab. Free users see a Crown icon + tooltip and an upgrade toast on click, with no server quota burned. New `ExplainCodeButton` + `useCodeExplanation` hook in `src/components/items/ai/explain-code-button.tsx`. 12 new unit tests cover auth, validation, Pro gating, rate limit, ownership, type rejection, empty content, both response shapes, truncation, prompt metadata, empty-output and service errors. Build, lint, and all 36 AI tests pass.
 - 2026-05-10: Completed AI Prompt Optimizer — added `optimizePrompt` to `src/actions/ai.ts` (Pro-only) with auth, Zod validation, AI rate limiting, ownership check, prompt-only type whitelist, empty-content guard, manual JSON parsing for both object and string response shapes, 2000-char truncation, and stable error mapping. Extended `MarkdownEditor` and `MarkdownView` with optional `extraControls`, `headerTabs`, `body`, `copyValue`, `markdownClassName`, and `markdownBackgroundColor` slots so the item drawer prompt header can host Prompt/Optimize tabs and a Sparkles "Optimize" button next to Copy without forking the component. Optimized result renders inline in the same Markdown chrome with Accept/Dismiss controls; view-mode Accept reuses `updateItem`, edit-mode Accept replaces the live editor buffer. Free users see a Crown icon + tooltip and an upgrade toast on click, with no server quota burned. New `OptimizePromptButton` + `usePromptOptimizer` hook in `src/components/items/ai/optimize-prompt-button.tsx`. 14 new unit tests cover auth, validation, Pro gating, rate limit, ownership, type rejection, empty content, both response shapes, truncation, prompt metadata, empty-output and service errors. Build, lint, and all 49 AI tests (236 total) pass.
+- 2026-05-13: Completed UI Polish Pass — Playwright-driven review surfaced sidebar/auth/layout gaps; fixes bundled into one pass. `usePathname` wired into `sidebar-content.tsx` so type, collection, and the new Favorites links highlight the current route in both expanded and collapsed sidebars. `register-form.tsx` mirrors `sign-in-form.tsx` with a GitHub OAuth button, "or" divider, and matching `shadow-xl shadow-black/5 dark:shadow-black/30` card shadow. Default theme is now dark regardless of system preference — removed the `prefers-color-scheme` fallback from the inline init script and from `theme-provider.tsx` (no more media-query subscription). `/collections` and `/collections/[id]` page headers align stat cards with the title row (`lg:items-start` → `lg:items-center`). `/settings` widened to `max-w-3xl` to reduce empty space. Mobile sidebar toggle moved from absolute positioning to inline at the top of main content; `StatCard` gained a `mobileLabel` prop so "Favorite Collections" becomes "Fav. Collections" on small screens. Build, lint, and all 236 tests pass.
