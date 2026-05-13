@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { Check, Crown, Loader2, Sparkles, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { optimizePrompt } from "@/actions/ai";
 import { MarkdownView } from "@/components/items/markdown-editor";
@@ -12,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useProAiAction } from "@/components/items/ai/use-pro-ai-action";
 
 type UsePromptOptimizerContext = {
   itemId: string;
@@ -34,19 +34,10 @@ export type PromptOptimizerState = {
 export function usePromptOptimizer(
   ctx: UsePromptOptimizerContext
 ): PromptOptimizerState {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [optimizedPrompt, setOptimizedPrompt] = useState<string | null>(null);
   const [view, setView] = useState<"prompt" | "optimize">("prompt");
-
-  function showUpgradeToast() {
-    toast.error("Upgrade to Pro to use AI features.", {
-      action: {
-        label: "Upgrade",
-        onClick: () => router.push("/settings"),
-      },
-    });
-  }
+  const { showUpgradeToast, handleProActionError } = useProAiAction();
 
   function runOptimize() {
     if (!ctx.isPro) {
@@ -61,11 +52,7 @@ export function usePromptOptimizer(
       });
 
       if (!result.success) {
-        if (result.error.startsWith("Upgrade to Pro")) {
-          showUpgradeToast();
-        } else {
-          toast.error(result.error);
-        }
+        handleProActionError(result.error);
         return;
       }
 

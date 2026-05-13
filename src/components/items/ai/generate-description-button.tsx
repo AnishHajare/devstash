@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import { Sparkles, Loader2, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { generateDescription } from "@/actions/ai";
 import { Button } from "@/components/ui/button";
+import { useProAiAction } from "@/components/items/ai/use-pro-ai-action";
 
 type DescribeContext = {
   isPro: boolean;
@@ -32,18 +32,9 @@ export type DescribeSuggestionState = {
 export function useDescribeSuggestion(
   ctx: DescribeContext
 ): DescribeSuggestionState {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [suggestion, setSuggestion] = useState<string | null>(null);
-
-  function showUpgradeToast() {
-    toast.error("Upgrade to Pro to use AI features.", {
-      action: {
-        label: "Upgrade",
-        onClick: () => router.push("/settings"),
-      },
-    });
-  }
+  const { showUpgradeToast, handleProActionError } = useProAiAction();
 
   function runGenerate() {
     if (!ctx.isPro) {
@@ -63,11 +54,7 @@ export function useDescribeSuggestion(
       });
 
       if (!result.success) {
-        if (result.error.startsWith("Upgrade to Pro")) {
-          showUpgradeToast();
-        } else {
-          toast.error(result.error);
-        }
+        handleProActionError(result.error);
         return;
       }
 

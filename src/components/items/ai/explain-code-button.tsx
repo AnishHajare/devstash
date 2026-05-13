@@ -2,8 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { Crown, Loader2, Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { explainCode } from "@/actions/ai";
 import {
   Tooltip,
@@ -11,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useProAiAction } from "@/components/items/ai/use-pro-ai-action";
 
 type UseCodeExplanationContext = {
   itemId: string;
@@ -29,19 +28,10 @@ export type CodeExplanationState = {
 export function useCodeExplanation(
   ctx: UseCodeExplanationContext
 ): CodeExplanationState {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [explanation, setExplanation] = useState<string | null>(null);
   const [view, setView] = useState<"code" | "explain">("code");
-
-  function showUpgradeToast() {
-    toast.error("Upgrade to Pro to use AI features.", {
-      action: {
-        label: "Upgrade",
-        onClick: () => router.push("/settings"),
-      },
-    });
-  }
+  const { showUpgradeToast, handleProActionError } = useProAiAction();
 
   function runExplain() {
     if (!ctx.isPro) {
@@ -53,11 +43,7 @@ export function useCodeExplanation(
       const result = await explainCode({ itemId: ctx.itemId });
 
       if (!result.success) {
-        if (result.error.startsWith("Upgrade to Pro")) {
-          showUpgradeToast();
-        } else {
-          toast.error(result.error);
-        }
+        handleProActionError(result.error);
         return;
       }
 
