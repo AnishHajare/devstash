@@ -1,14 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
-const CodeEditor = dynamic(
-  () => import("@/components/items/code-editor").then((m) => m.CodeEditor),
-  { ssr: false }
-);
-import { MarkdownEditor } from "@/components/items/markdown-editor";
 import { FileUpload } from "@/components/items/file-upload";
 import {
   DescribeButton,
@@ -18,6 +12,8 @@ import {
 import { SuggestTagsButton } from "@/components/items/ai/suggest-tags-button";
 import { mergeTagString } from "@/components/items/ai/tag-utils";
 import { CollectionMultiSelect } from "@/components/items/collection-multi-select";
+import { ItemContentField } from "@/components/items/item-content-field";
+import { ItemLanguageSelect } from "@/components/items/item-language-select";
 import type { UploadedFile } from "@/components/items/file-upload";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -42,70 +38,8 @@ import {
   LANGUAGE_TYPES,
   MARKDOWN_TYPES,
 } from "@/lib/item-type-constants";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  CODE_LANGUAGES,
-  PLAINTEXT_LANGUAGE_ID,
-  getLanguageLabel,
-} from "@/lib/code-languages";
 
 type ItemType = Pick<ItemTypeWithCount, "id" | "name" | "icon" | "color">;
-
-function ContentField({
-  value,
-  language,
-  isMonoContent,
-  isMarkdownContent,
-  accentColor,
-  onChangeText,
-  onChangeValue,
-}: {
-  value: string;
-  language: string;
-  isMonoContent: boolean;
-  isMarkdownContent: boolean;
-  accentColor: string;
-  onChangeText: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onChangeValue: (val: string) => void;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor="ni-content">
-        Content <span className="text-destructive">*</span>
-      </Label>
-      {isMonoContent ? (
-        <CodeEditor
-          value={value}
-          onChange={onChangeValue}
-          language={language || undefined}
-          accentColor={accentColor}
-        />
-      ) : isMarkdownContent ? (
-        <MarkdownEditor
-          value={value}
-          onChange={onChangeValue}
-          accentColor={accentColor}
-          placeholder="Write markdown..."
-        />
-      ) : (
-        <textarea
-          id="ni-content"
-          value={value}
-          onChange={onChangeText}
-          placeholder="Enter content..."
-          required
-          className="w-full min-h-[120px] resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-        />
-      )}
-    </div>
-  );
-}
 
 type Props = {
   itemTypes: ItemType[];
@@ -367,42 +301,24 @@ export function NewItemDialog({
           {showLanguage && (
             <div className="space-y-1.5">
               <Label htmlFor="ni-language">Language</Label>
-              <Select
-                id="ni-language"
-                value={form.language || PLAINTEXT_LANGUAGE_ID}
-                onValueChange={(value) => {
-                  const next = typeof value === "string" ? value : "";
-                  setForm((prev) => ({
-                    ...prev,
-                    language: next === PLAINTEXT_LANGUAGE_ID ? "" : next,
-                  }));
-                }}
-              >
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue>
-                    {(value) =>
-                      getLanguageLabel(typeof value === "string" ? value : null)
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {CODE_LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.id} value={lang.id}>
-                      {lang.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ItemLanguageSelect
+                value={form.language}
+                onValueChange={(language) =>
+                  setForm((prev) => ({ ...prev, language }))
+                }
+                triggerClassName="h-8 text-sm"
+              />
             </div>
           )}
 
           {/* Content */}
           {showContent && (
-            <ContentField
+            <ItemContentField
+              id="ni-content"
               value={form.content}
               language={form.language}
-              isMonoContent={isMonoContent}
-              isMarkdownContent={isMarkdownContent}
+              isCode={isMonoContent}
+              isMarkdown={isMarkdownContent}
               accentColor={selectedType.color}
               onChangeText={set("content")}
               onChangeValue={(val) => setForm((prev) => ({ ...prev, content: val }))}
