@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { ItemCard } from "@/components/items/item-card";
 import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { FileListRow } from "@/components/items/file-list-row";
 import { ItemDrawer } from "@/components/items/item-drawer";
+import { useItemDrawerState } from "@/components/items/use-item-drawer-state";
 import type { ItemWithType } from "@/lib/db/items";
 import type { CollectionOption } from "@/lib/db/collections";
 import { cn } from "@/lib/utils";
@@ -22,13 +22,7 @@ export function ItemsGrid({
   isGallery?: boolean;
   isFileList?: boolean;
 }) {
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
-
-  function openDrawer(id: string) {
-    setActiveId(id);
-    setOpen(true);
-  }
+  const drawer = useItemDrawerState();
 
   const isImageItem = (item: ItemWithType) =>
     item.itemType.name.toLowerCase() === "image";
@@ -40,7 +34,7 @@ export function ItemsGrid({
       {isFileList ? (
         <div className="flex flex-col gap-2">
           {items.map((item) => (
-            <FileListRow key={item.id} item={item} onOpen={openDrawer} />
+            <FileListRow key={item.id} item={item} onOpen={drawer.openItem} />
           ))}
         </div>
       ) : (
@@ -59,7 +53,7 @@ export function ItemsGrid({
                 <ImageThumbnailCard
                   key={item.id}
                   item={item}
-                  onOpen={openDrawer}
+                  onOpen={drawer.openItem}
                   className={cn(
                     !isGallery &&
                       "self-start shadow-[0_0_0_1px_rgba(255,255,255,0.02)]",
@@ -70,14 +64,14 @@ export function ItemsGrid({
               );
             }
 
-            return <ItemCard key={item.id} item={item} onOpen={openDrawer} />;
+            return <ItemCard key={item.id} item={item} onOpen={drawer.openItem} />;
           })}
         </div>
       )}
       <ItemDrawer
-        itemId={activeId}
-        open={open}
-        onOpenChange={setOpen}
+        itemId={drawer.itemId}
+        open={drawer.open}
+        onOpenChange={drawer.setOpen}
         collections={collections}
         isPro={isPro}
       />
