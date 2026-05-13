@@ -14,13 +14,7 @@ const THEME_STORAGE_KEY = "devstash-theme";
 const THEME_CHANGE_EVENT = "devstash-theme-change";
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function getSystemTheme(): Theme {
-  if (typeof window === "undefined") {
-    return "dark";
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
+const DEFAULT_THEME: Theme = "dark";
 
 function getStoredTheme(): Theme | null {
   if (typeof window === "undefined") {
@@ -37,11 +31,11 @@ function applyTheme(theme: Theme) {
 }
 
 function getThemeSnapshot(): Theme {
-  return getStoredTheme() ?? getSystemTheme();
+  return getStoredTheme() ?? DEFAULT_THEME;
 }
 
 function getServerThemeSnapshot(): Theme {
-  return "dark";
+  return DEFAULT_THEME;
 }
 
 function subscribeToThemeChanges(onStoreChange: () => void) {
@@ -49,21 +43,12 @@ function subscribeToThemeChanges(onStoreChange: () => void) {
     return () => {};
   }
 
-  const media = window.matchMedia("(prefers-color-scheme: dark)");
-  const notifyIfSystemThemeApplies = () => {
-    if (!getStoredTheme()) {
-      onStoreChange();
-    }
-  };
-
   window.addEventListener("storage", onStoreChange);
   window.addEventListener(THEME_CHANGE_EVENT, onStoreChange);
-  media.addEventListener("change", notifyIfSystemThemeApplies);
 
   return () => {
     window.removeEventListener("storage", onStoreChange);
     window.removeEventListener(THEME_CHANGE_EVENT, onStoreChange);
-    media.removeEventListener("change", notifyIfSystemThemeApplies);
   };
 }
 

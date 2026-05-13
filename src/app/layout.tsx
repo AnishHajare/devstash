@@ -21,9 +21,7 @@ export default function RootLayout({
     (() => {
       const key = "devstash-theme";
       const stored = localStorage.getItem(key);
-      const theme = stored === "light" || stored === "dark"
-        ? stored
-        : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const theme = stored === "light" || stored === "dark" ? stored : "dark";
       document.documentElement.classList.toggle("dark", theme === "dark");
       document.documentElement.style.colorScheme = theme;
     })();

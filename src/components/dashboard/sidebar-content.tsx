@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   Star,
@@ -49,6 +50,7 @@ function pluralizeTypeName(name: string): string {
 }
 
 export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: SidebarData }) {
+  const pathname = usePathname();
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [allOpen, setAllOpen] = useState(true);
 
@@ -69,12 +71,15 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
             const Icon = iconMap[type.icon];
             const isProType = type.isSystem && PRO_SYSTEM_TYPES.includes(type.name);
             const isLockedProType = isProType && !data.user.isPro;
+            const href = `/items/${typeNameToSlug(type.name)}`;
+            const isActive = pathname === href;
             return (
               <Link
                 key={type.id}
-                href={`/items/${typeNameToSlug(type.name)}`}
+                href={href}
                 className={cn(
                   "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                  isActive && "bg-muted font-medium text-foreground",
                   isLockedProType && "opacity-45 hover:opacity-70"
                 )}
               >
@@ -93,6 +98,17 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
               </Link>
             );
           })}
+
+          <Link
+            href="/favorites"
+            className={cn(
+              "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              pathname === "/favorites" && "bg-muted font-medium text-foreground"
+            )}
+          >
+            <Star className="h-4 w-4 shrink-0 text-yellow-500" />
+            <span className="truncate">Favorites</span>
+          </Link>
         </nav>
 
         <Separator className="my-3" />
@@ -210,6 +226,8 @@ export function SidebarContent({ collapsed, data }: { collapsed: boolean; data: 
 }
 
 function CollapsedSidebar({ data }: { data: SidebarData }) {
+  const pathname = usePathname();
+
   return (
     <div className="flex h-full flex-col items-center">
       <div className="flex-1 overflow-y-auto py-4 space-y-1">
@@ -217,12 +235,15 @@ function CollapsedSidebar({ data }: { data: SidebarData }) {
           const Icon = iconMap[type.icon];
           const isProType = type.isSystem && PRO_SYSTEM_TYPES.includes(type.name);
           const isLockedProType = isProType && !data.user.isPro;
+          const href = `/items/${typeNameToSlug(type.name)}`;
+          const isActive = pathname === href;
           return (
             <Link
               key={type.id}
-              href={`/items/${typeNameToSlug(type.name)}`}
+              href={href}
               className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                isActive && "bg-muted text-foreground",
                 isLockedProType && "opacity-45 hover:opacity-70"
               )}
               title={typeNameToSlug(type.name)}
@@ -232,6 +253,17 @@ function CollapsedSidebar({ data }: { data: SidebarData }) {
             </Link>
           );
         })}
+        <Link
+          href="/favorites"
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            pathname === "/favorites" && "bg-muted text-foreground"
+          )}
+          aria-label="Favorites"
+          title="Favorites"
+        >
+          <Star className="h-4 w-4 text-yellow-500" />
+        </Link>
       </div>
       <div className="flex shrink-0 flex-col items-center gap-2 border-t border-border py-3">
         <ThemeToggle />
@@ -259,10 +291,16 @@ function SidebarCollectionLink({
   itemCount: number;
   icon: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const href = `/collections/${id}`;
+
   return (
     <Link
-      href={`/collections/${id}`}
-      className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      href={href}
+      className={cn(
+        "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+        pathname === href && "bg-muted font-medium text-foreground"
+      )}
     >
       {icon}
       <span className="truncate">{name}</span>

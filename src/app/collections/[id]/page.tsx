@@ -58,7 +58,7 @@ export default async function CollectionDetailPage({
   return (
     <div className="space-y-6">
       <section className="rounded-xl border border-border bg-card p-5">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
               <div

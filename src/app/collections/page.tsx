@@ -33,7 +33,7 @@ export default async function CollectionsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight">Collections</h1>
           <p className="text-sm text-muted-foreground">
