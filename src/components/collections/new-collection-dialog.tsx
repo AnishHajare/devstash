@@ -4,10 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { CollectionFormFields } from "@/components/collections/collection-form-fields";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -110,31 +109,7 @@ export function NewCollectionDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="nc-name">
-              Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="nc-name"
-              value={form.name}
-              onChange={set("name")}
-              placeholder="e.g. React Patterns"
-              required
-              className="h-8 text-sm"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="nc-description">Description</Label>
-            <textarea
-              id="nc-description"
-              value={form.description}
-              onChange={set("description")}
-              placeholder="Optional description"
-              rows={3}
-              className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
+          <CollectionFormFields idPrefix="nc" form={form} onChange={set} />
 
           <DialogFooter>
             <Button

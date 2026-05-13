@@ -9,6 +9,7 @@ import {
   toggleFavoriteCollection as toggleFavoriteCollectionAction,
   updateCollection as updateCollectionAction,
 } from "@/actions/collections";
+import { CollectionFormFields } from "@/components/collections/collection-form-fields";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -35,8 +36,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 
 type CollectionActionsProps = {
@@ -166,33 +165,11 @@ export function CollectionActions({
         </DialogHeader>
 
         <form onSubmit={handleSave} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor={`collection-name-${collection.id}`}>
-              Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id={`collection-name-${collection.id}`}
-              value={form.name}
-              onChange={set("name")}
-              placeholder="e.g. React Patterns"
-              required
-              className="h-8 text-sm"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor={`collection-description-${collection.id}`}>
-              Description
-            </Label>
-            <textarea
-              id={`collection-description-${collection.id}`}
-              value={form.description}
-              onChange={set("description")}
-              placeholder="Optional description"
-              rows={3}
-              className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
+          <CollectionFormFields
+            idPrefix={`collection-${collection.id}`}
+            form={form}
+            onChange={set}
+          />
 
           <DialogFooter>
             <Button
