@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
   Star,
@@ -12,6 +11,8 @@ import {
 import { iconMap } from "@/lib/icon-map";
 import { CollectionCard } from "@/components/collections/collection-card";
 import { ItemDrawer } from "@/components/items/item-drawer";
+import { useItemDrawerState } from "@/components/items/use-item-drawer-state";
+import { formatCompactDate } from "@/lib/date-format";
 import type { CollectionOption, CollectionWithMeta } from "@/lib/db/collections";
 import type { ItemWithType } from "@/lib/db/items";
 
@@ -42,13 +43,7 @@ export function DashboardMain({
   collectionOptions,
   isPro,
 }: DashboardMainProps) {
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  function openDrawer(id: string) {
-    setActiveId(id);
-    setDrawerOpen(true);
-  }
+  const drawer = useItemDrawerState();
 
   return (
     <div className="space-y-8">
@@ -112,7 +107,7 @@ export function DashboardMain({
           </div>
           <div className="space-y-2">
             {pinnedItems.map((item) => (
-              <ItemRow key={item.id} item={item} onOpen={openDrawer} />
+              <ItemRow key={item.id} item={item} onOpen={drawer.openItem} />
             ))}
           </div>
         </section>
@@ -125,15 +120,15 @@ export function DashboardMain({
         </div>
         <div className="space-y-2">
           {recentItems.map((item) => (
-            <ItemRow key={item.id} item={item} onOpen={openDrawer} />
+            <ItemRow key={item.id} item={item} onOpen={drawer.openItem} />
           ))}
         </div>
       </section>
 
       <ItemDrawer
-        itemId={activeId}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
+        itemId={drawer.itemId}
+        open={drawer.open}
+        onOpenChange={drawer.setOpen}
         collections={collectionOptions}
         isPro={isPro}
       />
@@ -242,10 +237,7 @@ function ItemRow({
 
       {/* Date */}
       <span className="hidden sm:block shrink-0 text-xs text-muted-foreground/60">
-        {new Date(item.createdAt).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        })}
+        {formatCompactDate(item.createdAt)}
       </span>
     </div>
   );
