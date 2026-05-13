@@ -7,12 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  AuthCardShell,
+  AuthWordmark,
+} from "@/components/auth/auth-card-shell";
+import { AuthFormMessage } from "@/components/auth/auth-form-message";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -60,47 +58,38 @@ export function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
+      <AuthCardShell
+        title="Check your email"
+        description={
+          <>
+            If an account exists for {email}, you&apos;ll receive a password
+            reset link shortly.
+          </>
+        }
+        headerIcon={
           <div className="mx-auto mb-2">
             <Mail className="h-10 w-10 text-muted-foreground" />
           </div>
-          <CardTitle className="text-xl">Check your email</CardTitle>
-          <CardDescription>
-            If an account exists for {email}, you&apos;ll receive a password
-            reset link shortly.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        }
+      >
           <Link
             href="/sign-in"
             className="inline-flex w-full items-center justify-center rounded-lg bg-primary text-primary-foreground px-2.5 h-8 text-sm font-medium transition-all hover:bg-primary/80"
           >
             Back to sign in
           </Link>
-        </CardContent>
-      </Card>
+      </AuthCardShell>
     );
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-          DS
-        </div>
-        <CardTitle className="text-xl">Forgot your password?</CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a reset link.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <AuthCardShell
+      title="Forgot your password?"
+      description="Enter your email and we&apos;ll send you a reset link."
+      headerIcon={<AuthWordmark />}
+    >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
-          )}
+          {error && <AuthFormMessage>{error}</AuthFormMessage>}
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -128,7 +117,6 @@ export function ForgotPasswordForm() {
             Sign in
           </Link>
         </p>
-      </CardContent>
-    </Card>
+    </AuthCardShell>
   );
 }

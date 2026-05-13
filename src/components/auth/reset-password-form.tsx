@@ -8,12 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  AuthCardShell,
+  AuthWordmark,
+} from "@/components/auth/auth-card-shell";
+import { AuthFormMessage } from "@/components/auth/auth-form-message";
 
 export function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -27,47 +25,38 @@ export function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Invalid reset link</CardTitle>
-          <CardDescription>
-            This password reset link is invalid or missing a token.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <AuthCardShell
+        title="Invalid reset link"
+        description="This password reset link is invalid or missing a token."
+      >
           <Link
             href="/forgot-password"
             className="inline-flex w-full items-center justify-center rounded-lg bg-primary text-primary-foreground px-2.5 h-8 text-sm font-medium transition-all hover:bg-primary/80"
           >
             Request a new link
           </Link>
-        </CardContent>
-      </Card>
+      </AuthCardShell>
     );
   }
 
   if (success) {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
+      <AuthCardShell
+        title="Password reset"
+        description="Your password has been reset successfully. You can now sign in with your new password."
+        headerIcon={
           <div className="mx-auto mb-2">
             <CheckCircle2 className="h-10 w-10 text-emerald-500" />
           </div>
-          <CardTitle className="text-xl">Password reset</CardTitle>
-          <CardDescription>
-            Your password has been reset successfully. You can now sign in with
-            your new password.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        }
+      >
           <Link
             href="/sign-in"
             className="inline-flex w-full items-center justify-center rounded-lg bg-primary text-primary-foreground px-2.5 h-8 text-sm font-medium transition-all hover:bg-primary/80"
           >
             Sign in
           </Link>
-        </CardContent>
-      </Card>
+      </AuthCardShell>
     );
   }
 
@@ -120,21 +109,13 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-          DS
-        </div>
-        <CardTitle className="text-xl">Reset your password</CardTitle>
-        <CardDescription>Enter your new password below.</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <AuthCardShell
+      title="Reset your password"
+      description="Enter your new password below."
+      headerIcon={<AuthWordmark />}
+    >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
-          )}
+          {error && <AuthFormMessage>{error}</AuthFormMessage>}
 
           <div className="space-y-2">
             <Label htmlFor="password">New password</Label>
@@ -164,7 +145,6 @@ export function ResetPasswordForm() {
             {loading ? "Resetting…" : "Reset password"}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+    </AuthCardShell>
   );
 }
