@@ -7,7 +7,9 @@ import { FolderOpen, Star } from "lucide-react";
 import { toast } from "sonner";
 import { toggleFavoriteCollection } from "@/actions/collections";
 import { ItemDrawer } from "@/components/items/item-drawer";
+import { useItemDrawerState } from "@/components/items/use-item-drawer-state";
 import { Button } from "@/components/ui/button";
+import { formatShortDate } from "@/lib/date-format";
 import type {
   CollectionOption,
   CollectionWithMeta,
@@ -21,14 +23,6 @@ type FavoritesContentProps = {
   collectionOptions: CollectionOption[];
   isPro: boolean;
 };
-
-function formatDate(date: string | Date) {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 function openRowOnKeyboard(
   event: KeyboardEvent<HTMLDivElement>,
@@ -47,10 +41,9 @@ export function FavoritesContent({
   isPro,
 }: FavoritesContentProps) {
   const router = useRouter();
+  const drawer = useItemDrawerState();
   const [items, setItems] = useState(initialItems);
   const [collections, setCollections] = useState(initialCollections);
-  const [activeItemId, setActiveItemId] = useState<string | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [pendingItemIds, setPendingItemIds] = useState<string[]>([]);
   const [pendingCollectionIds, setPendingCollectionIds] = useState<string[]>([]);
 
@@ -102,8 +95,7 @@ export function FavoritesContent({
   }
 
   function openItem(itemId: string) {
-    setActiveItemId(itemId);
-    setDrawerOpen(true);
+    drawer.openItem(itemId);
   }
 
   const isEmpty = items.length === 0 && collections.length === 0;
@@ -178,9 +170,9 @@ export function FavoritesContent({
       </div>
 
       <ItemDrawer
-        itemId={activeItemId}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
+        itemId={drawer.itemId}
+        open={drawer.open}
+        onOpenChange={drawer.setOpen}
         collections={collectionOptions}
         isPro={isPro}
       />
@@ -268,7 +260,7 @@ function FavoriteItemRow({
       </div>
 
       <span className="hidden shrink-0 font-mono text-xs text-muted-foreground sm:block">
-        {formatDate(item.updatedAt)}
+        {formatShortDate(item.updatedAt)}
       </span>
 
       <Button
@@ -334,7 +326,7 @@ function FavoriteCollectionRow({
       </div>
 
       <span className="hidden shrink-0 font-mono text-xs text-muted-foreground sm:block">
-        {formatDate(collection.updatedAt)}
+        {formatShortDate(collection.updatedAt)}
       </span>
 
       <Button

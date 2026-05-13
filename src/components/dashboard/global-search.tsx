@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileSearch, FolderOpen, Search } from "lucide-react";
 import { ItemDrawer } from "@/components/items/item-drawer";
+import { useItemDrawerState } from "@/components/items/use-item-drawer-state";
 import {
   Command,
   CommandEmpty,
@@ -35,8 +36,7 @@ export function GlobalSearch({ data, collections, isPro }: GlobalSearchProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [activeItemId, setActiveItemId] = useState<string | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawer = useItemDrawerState();
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -58,8 +58,7 @@ export function GlobalSearch({ data, collections, isPro }: GlobalSearchProps) {
   function openItem(id: string) {
     setOpen(false);
     setQuery("");
-    setActiveItemId(id);
-    setDrawerOpen(true);
+    drawer.openItem(id);
   }
 
   function openCollection(id: string) {
@@ -196,9 +195,9 @@ export function GlobalSearch({ data, collections, isPro }: GlobalSearchProps) {
       </Dialog>
 
       <ItemDrawer
-        itemId={activeItemId}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
+        itemId={drawer.itemId}
+        open={drawer.open}
+        onOpenChange={drawer.setOpen}
         collections={collections}
         isPro={isPro}
       />
