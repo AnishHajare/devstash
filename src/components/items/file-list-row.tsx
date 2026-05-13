@@ -14,6 +14,7 @@ import {
   Star,
 } from "lucide-react";
 import type { ItemWithType } from "@/lib/db/items";
+import { formatShortDate } from "@/lib/date-format";
 import { formatBytes } from "@/lib/format-bytes";
 
 type FileCategory = "image" | "video" | "audio" | "archive" | "code" | "text" | "default";
@@ -57,15 +58,6 @@ const CATEGORY_COLOR: Record<FileCategory, string> = {
   text:    "#6b7280",
   default: "#6b7280",
 };
-
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 export function FileListRow({
   item,
@@ -120,14 +112,14 @@ export function FileListRow({
         {/* Mobile: secondary info stacked below name */}
         <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground sm:hidden">
           <span>{formatBytes(item.fileSize)}</span>
-          <span>{formatDate(item.createdAt)}</span>
+          <span>{formatShortDate(item.createdAt)}</span>
         </div>
       </div>
 
       {/* Desktop: size + date */}
       <div className="hidden shrink-0 items-center gap-6 text-xs text-muted-foreground sm:flex">
         <span className="w-16 text-right">{formatBytes(item.fileSize)}</span>
-        <span className="w-24 text-right">{formatDate(item.createdAt)}</span>
+        <span className="w-24 text-right">{formatShortDate(item.createdAt)}</span>
       </div>
 
       {/* Download button */}

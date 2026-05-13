@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Pin, Star, Copy, Check } from "lucide-react";
 import { iconMap } from "@/lib/icon-map";
+import { formatCompactDate } from "@/lib/date-format";
 import type { ItemWithType } from "@/lib/db/items";
 
 export function ItemCard({
@@ -69,10 +70,7 @@ export function ItemCard({
 
           {/* Date */}
           <span className="shrink-0 text-xs text-muted-foreground/60">
-            {new Date(item.createdAt).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}
+            {formatCompactDate(item.createdAt)}
           </span>
         </div>
 
