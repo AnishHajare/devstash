@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import { DevstashLogo } from "@/components/brand/devstash-logo";
 
 export function HomepageHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -13,26 +14,10 @@ export function HomepageHeader() {
         {/* Brand */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2.5 font-heading text-[1.08rem] font-semibold tracking-[-0.01em]"
+          className="inline-flex items-center text-white"
           aria-label="DevStash home"
         >
-          <svg
-            className="h-[34px] w-[34px]"
-            viewBox="0 0 64 64"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="logoGradient" x1="4" y1="12" x2="60" y2="56" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#2563eb" />
-                <stop offset="1" stopColor="#06b6d4" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M4 16 Q4 12 8 12 L24 12 L30 18 L56 18 Q60 18 60 22 L60 50 Q60 54 56 54 L8 54 Q4 54 4 50Z"
-              className="fill-[url(#logoGradient)]"
-            />
-          </svg>
-          <span>DevStash</span>
+          <DevstashLogo variant="lockup" size={26} label="DevStash home" />
         </Link>
 
         {/* Nav links — hidden on mobile */}

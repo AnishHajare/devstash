@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="DevStash">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Imperial+Script&amp;display=swap');
+      .ds { font: 400 200px 'Imperial Script', 'Brush Script MT', cursive; fill: currentColor; }
+    </style>
+  </defs>
+  <text x="100" y="148" text-anchor="middle" class="ds">ds</text>
+</svg>

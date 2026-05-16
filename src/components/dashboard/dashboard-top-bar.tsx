@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FolderPlus, Plus, Star } from "lucide-react";
+import { DevstashLogo } from "@/components/brand/devstash-logo";
 import { NewCollectionDialog } from "@/components/collections/new-collection-dialog";
 import { GlobalSearch } from "@/components/dashboard/global-search";
 import { NewItemDialog } from "@/components/items/new-item-dialog";
@@ -43,15 +44,19 @@ export function DashboardTopBar({
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4 sm:gap-4">
-      {/* Logo — hide text on mobile */}
-      <div className="flex shrink-0 items-center gap-2 sm:w-48">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
-          DS
-        </div>
-        <span className="hidden text-sm font-semibold sm:inline">
-          DevStash
+      {/* Logo — mark only on mobile, full lockup sm+ */}
+      <Link
+        href="/dashboard"
+        aria-label="DevStash home"
+        className="flex shrink-0 items-center text-foreground sm:w-48"
+      >
+        <span className="sm:hidden">
+          <DevstashLogo variant="mark" size={20} />
         </span>
-      </div>
+        <span className="hidden sm:inline">
+          <DevstashLogo variant="lockup" size={18} />
+        </span>
+      </Link>
 
       {/* Search — full bar on sm+, icon-only on mobile */}
       <div className="flex max-w-md flex-1 items-center">
