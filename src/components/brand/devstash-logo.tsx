@@ -17,11 +17,11 @@ export function DevstashLogo({
   label = "DevStash",
 }: DevstashLogoProps) {
   const markFontSize = Math.round(size * 1.55);
-  const wordFontSize = Math.round(size * 0.62);
+  const wordFontSize = Math.round(size * 0.78);
 
   return (
     <span
-      className={cn("inline-flex items-baseline gap-2 leading-none", className)}
+      className={cn("inline-flex items-baseline gap-4 leading-none", className)}
       role="img"
       aria-label={label}
     >
@@ -33,6 +33,7 @@ export function DevstashLogo({
           fontWeight: 400,
           fontSize: markFontSize,
           letterSpacing: "-0.01em",
+          WebkitTextStroke: "0.6px currentColor",
         }}
       >
         ds
@@ -47,7 +48,7 @@ export function DevstashLogo({
             letterSpacing: "-0.025em",
           }}
         >
-          devstash
+          DevStash
         </span>
       ) : null}
     </span>
