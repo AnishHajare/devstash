@@ -3,13 +3,32 @@ import Script from "next/script";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import "@fontsource-variable/space-grotesk";
+import "@fontsource/imperial-script";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://devstash.io";
+
 export const metadata: Metadata = {
-  title: "DevStash",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "DevStash",
+    template: "%s · DevStash",
+  },
   description: "One hub for all your developer knowledge.",
+  openGraph: {
+    type: "website",
+    siteName: "DevStash",
+    title: "DevStash",
+    description: "One hub for all your developer knowledge.",
+    url: siteUrl,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DevStash",
+    description: "One hub for all your developer knowledge.",
+  },
 };
 
 export default function RootLayout({
